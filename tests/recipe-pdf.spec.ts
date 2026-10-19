@@ -1,9 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, PDFName, PDFDict, PDFArray } from "pdf-lib";
 import { readFile } from "node:fs/promises";
 import { buildRecipePdf } from "../src/lib/recipe-pdf";
 import { demoRecipes, demoIngredients } from "../src/lib/demo-recipes";
 import { defaultUnits } from "../src/lib/units";
+
+const loadFont = (path: string) => readFile(`public${path}`);
 
 test("recipe book keeps separate Letter cards and rejects unavailable private images", async () => {
   const recipes = [
@@ -18,6 +20,7 @@ test("recipe book keeps separate Letter cards and rejects unavailable private im
     async () => {
       throw new Error("unexpected image");
     },
+    loadFont,
   );
   const pdf = await PDFDocument.load(bytes);
   expect(pdf.getPageCount()).toBe(4);
@@ -25,6 +28,19 @@ test("recipe book keeps separate Letter cards and rejects unavailable private im
     Array(4).fill({ width: 612, height: 792 }),
   );
   expect(pdf.getTitle()).toBe("Mon livre de recettes");
+  // A viewer must not substitute fonts: that changed weights and line breaks.
+  const fonts = pdf
+    .getPage(0)
+    .node.Resources()!
+    .lookup(PDFName.of("Font"), PDFDict);
+  for (const [, ref] of fonts.entries()) {
+    const font = pdf.context.lookup(ref, PDFDict);
+    const descendant = font
+      .lookup(PDFName.of("DescendantFonts"), PDFArray)
+      .lookup(0, PDFDict);
+    const descriptor = descendant.lookup(PDFName.of("FontDescriptor"), PDFDict);
+    expect(descriptor.has(PDFName.of("FontFile2"))).toBe(true);
+  }
   await expect(
     buildRecipePdf(
       [{ ...demoRecipes[0], image: "/api/recipe-images/private" }],
@@ -34,6 +50,7 @@ test("recipe book keeps separate Letter cards and rejects unavailable private im
       async () => {
         throw new Error("image_unavailable");
       },
+      loadFont,
     ),
   ).rejects.toThrow("image_unavailable");
 });

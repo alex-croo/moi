@@ -1,6 +1,6 @@
+import fontkit from "@pdf-lib/fontkit";
 import {
   PDFDocument,
-  StandardFonts,
   rgb,
   pushGraphicsState,
   popGraphicsState,
@@ -28,16 +28,26 @@ export async function buildRecipePdf(
   units: UnitPreferences,
   locale: Locale,
   loadImage: RecipeImageLoader,
+  loadFont: RecipeImageLoader = async (path) => {
+    const response = await fetch(path);
+    if (!response.ok) throw new Error("font_unavailable");
+    return new Uint8Array(await response.arrayBuffer());
+  },
 ) {
   if (!recipes.length) throw new Error("empty_selection");
   const pdf = await PDFDocument.create();
-  const sans = await pdf.embedFont(StandardFonts.Helvetica);
-  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const serif = await pdf.embedFont(StandardFonts.TimesRomanBold);
-  const green = rgb(0.16, 0.34, 0.26),
+  // Embed the reference card's typefaces: relying on PDF viewer substitutions
+  // changes both the visual weight and the line breaks between devices.
+  pdf.registerFontkit(fontkit);
+  const [sans, bold, serif] = await Promise.all(
+    ["DejaVuSans", "DejaVuSans-Bold", "DejaVuSerif-Bold"].map(async (name) =>
+      pdf.embedFont(await loadFont(`/fonts/${name}.ttf`), { subset: true }),
+    ),
+  );
+  const green = rgb(0.18, 0.39, 0.3),
     ink = rgb(0.14, 0.21, 0.17),
     muted = rgb(0.4, 0.45, 0.41),
-    pale = rgb(0.93, 0.96, 0.92);
+    pale = rgb(0.93, 0.96, 0.93);
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
   const clean = (value: string) =>
     value
@@ -56,34 +66,65 @@ export async function buildRecipePdf(
         }
       })
       .join("");
+  type Run = { value: string; font: PDFFont };
+  // Keep measured runs, including bold quantities, through wrapping and drawing.
+  // Whitespace is emitted once, so measurement matches the actual PDF text.
+  const wrapRuns = (runs: Run[], width: number, size: number): Run[][] => {
+    const lines: Run[][] = [[]];
+    let used = 0;
+    let pendingSpace = false;
+    const append = (value: string, font: PDFFont) => {
+      const line = lines[lines.length - 1];
+      const previous = line[line.length - 1];
+      if (previous?.font === font) previous.value += value;
+      else line.push({ value, font });
+      used += font.widthOfTextAtSize(value, size);
+    };
+    const next = () => {
+      lines.push([]);
+      used = 0;
+      pendingSpace = false;
+    };
+    for (const run of runs) {
+      for (const token of clean(run.value).split(/(\n|[^\S\n]+)/)) {
+        if (token === "\n") {
+          next();
+          continue;
+        }
+        if (!token) continue;
+        if (/^\s+$/.test(token)) {
+          pendingSpace = used > 0;
+          continue;
+        }
+        const space = pendingSpace ? " " : "";
+        if (
+          used &&
+          used + run.font.widthOfTextAtSize(space + token, size) > width
+        )
+          next();
+        if (pendingSpace) append(" ", run.font);
+        pendingSpace = false;
+        for (const character of token) {
+          if (
+            used &&
+            used + run.font.widthOfTextAtSize(character, size) > width
+          )
+            next();
+          append(character, run.font);
+        }
+      }
+    }
+    return lines;
+  };
   const wrap = (
     value: string,
     width: number,
     size: number,
     font: PDFFont = sans,
-  ) => {
-    const lines: string[] = [];
-    for (const paragraph of clean(value).split("\n")) {
-      let line = "";
-      for (const word of paragraph.split(/\s+/)) {
-        if (line && font.widthOfTextAtSize(`${line} ${word}`, size) > width) {
-          lines.push(line);
-          line = "";
-        }
-        // Hard-break a very long token so future recipe content cannot escape the column.
-        for (const char of word) {
-          if (font.widthOfTextAtSize(line + char, size) > width && line) {
-            lines.push(line);
-            line = "";
-          }
-          line += char;
-        }
-        line += " ";
-      }
-      lines.push(line.trimEnd());
-    }
-    return lines;
-  };
+  ) =>
+    wrapRuns([{ value, font }], width, size).map((line) =>
+      line.map((r) => r.value).join(""),
+    );
   const text = (
     page: PDFPage,
     value: string,
@@ -139,13 +180,31 @@ export async function buildRecipePdf(
     });
     page.pushOperators(popGraphicsState());
   }
+  const drawRuns = (
+    page: PDFPage,
+    runs: Run[],
+    x: number,
+    y: number,
+    size: number,
+  ) => {
+    for (const run of runs) {
+      text(page, run.value, x, y, size, run.font);
+      x += run.font.widthOfTextAtSize(run.value, size);
+    }
+  };
   for (const [recipeIndex, recipe] of recipes.entries()) {
     const pages: PDFPage[] = [];
     const title = locale === "fr" ? recipe.title : recipe.titleEn;
+    const note = instructionText(
+      (locale === "fr" ? recipe.note : recipe.noteEn || recipe.note) || "",
+      units,
+      locale,
+    );
+    const [preparation = "", ...notes] = note.split("\n");
     const newPage = () => {
       const page = pdf.addPage([612, 792]);
       pages.push(page);
-      text(page, "i am able.", 30, 760, 14, serif, green);
+      text(page, "i am able.", 30, 756, 14, serif, green);
       const label = t(
         `CUISINER À LA MAISON / ${recipe.servings} PORTIONS`,
         `COOK AT HOME / ${recipe.servings} SERVINGS`,
@@ -153,37 +212,37 @@ export async function buildRecipePdf(
       text(
         page,
         label,
-        582 - bold.widthOfTextAtSize(clean(label), 8),
-        762,
-        8,
+        582 - bold.widthOfTextAtSize(clean(label), 8.4),
+        756,
+        8.4,
         bold,
         muted,
       );
       page.drawLine({
-        start: { x: 30, y: 747 },
-        end: { x: 582, y: 747 },
+        start: { x: 30, y: 746 },
+        end: { x: 582, y: 746 },
         thickness: 0.5,
         color: pale,
       });
       return page;
     };
     const page = newPage();
-    const titleLines = wrap(title, 552, 23, serif);
+    const titleLines = wrap(title, 552, 22.5, serif);
     titleLines.forEach((line, i) =>
-      text(page, line, 30, 722 - i * 26, 23, serif),
+      text(page, line, 30, 710 - i * 27, 22.5, serif),
     );
-    let y = 722 - titleLines.length * 26;
+    let y = 710 - (titleLines.length - 1) * 27 - 23;
     const subtitle = wrap(
       locale === "fr" ? recipe.subtitle : recipe.subtitleEn,
       552,
-      10,
+      10.7,
     );
     subtitle.forEach((line, i) =>
-      text(page, line, 30, y - i * 13, 10, sans, muted),
+      text(page, line, 30, y - i * 14, 10.7, sans, muted),
     );
-    y -= subtitle.length * 13 + 12;
+    y -= (subtitle.length - 1) * 14 + 14;
     await photo(page, recipe.image, 30, y - 162, 552, 162);
-    const strip = y - 202;
+    const strip = y - 213;
     page.drawRectangle({
       x: 30,
       y: strip,
@@ -196,130 +255,193 @@ export async function buildRecipePdf(
       `${recipe.servings} ${t("PORTIONS", "SERVINGS")}`,
       42,
       strip + 10,
-      9,
+      9.2,
       bold,
       green,
     );
-    text(page, `${recipe.minutes} MIN`, 235, strip + 10, 9, bold, green);
+    text(page, `${recipe.minutes} MIN`, 224, strip + 10, 9.2, bold, green);
     const temp = recipe.note?.match(/\{\{temp:([\d.]+)\}\}/);
     if (temp)
       text(
         page,
         measure("temp", Number(temp[1]), units, locale),
-        420,
+        398,
         strip + 10,
-        9,
+        9.2,
         bold,
         green,
       );
+
     const macros = recipeNutrition(recipe, ingredients);
     const mix = recipe.ingredients.filter((line) =>
       line.note?.startsWith("Mélange maison"),
     );
     const regular = recipe.ingredients.filter((line) => !mix.includes(line));
-    type Line = { value: string; bold?: boolean; gap?: number };
-    const ingredientLines = (lines: typeof regular): Line[] =>
+    type Line = {
+      runs: Run[];
+      size: number;
+      height: number;
+      color?: typeof ink;
+    };
+    const heading = (value: string): Line => ({
+      runs: [{ value, font: bold }],
+      size: 10.6,
+      height: 24,
+      color: green,
+    });
+    const ingredientLines = (
+      lines: typeof regular,
+      width: number,
+      size: number,
+    ): Line[] =>
       lines.flatMap((line) => {
         const ingredient = ingredients.find((i) => i.id === line.ingredientId);
         if (!ingredient) throw new Error("missing_ingredient");
-        const name = locale === "fr" ? ingredient.name : ingredient.nameEn;
-        const label = `${name} (${quantityLabel(line.quantity, units, locale)})${line.optional ? t(" - facultatif", " - optional") : ""}`;
-        return wrap(label, 255, 9).map((value, i, all) => ({
-          value,
-          gap: i === all.length - 1 ? 5 : 0,
+        return wrapRuns(
+          [
+            {
+              value: `${locale === "fr" ? ingredient.name : ingredient.nameEn} `,
+              font: sans,
+            },
+            {
+              value: `(${quantityLabel(line.quantity, units, locale)})`,
+              font: bold,
+            },
+            {
+              value: line.optional ? t(" - facultatif", " - optional") : "",
+              font: sans,
+            },
+          ],
+          width,
+          size,
+        ).map((runs, i, all) => ({
+          runs,
+          size,
+          height: i === all.length - 1 ? 16 : 12,
         }));
       });
+    const paragraph = (value: string, width: number, size = 8.5): Line[] =>
+      wrap(value, width, size).map((value) => ({
+        runs: [{ value, font: sans }],
+        size,
+        height: 12,
+        color: muted,
+      }));
+    const space = (height: number): Line => ({ runs: [], size: 0, height });
     const left: Line[] = [
-      {
-        value: t("INGRÉDIENTS POUR LE REPAS", "INGREDIENTS FOR THE MEAL"),
-        bold: true,
-        gap: 10,
-      },
-      ...ingredientLines(regular),
+      heading(t("INGRÉDIENTS POUR LE REPAS", "INGREDIENTS FOR THE MEAL")),
+      ...ingredientLines(regular, 268, 9.7),
     ];
     const right: Line[] = [];
-    if (mix.length)
-      right.push(
-        {
-          value: t("MÉLANGE D’ÉPICES MAISON", "HOMEMADE SEASONING"),
-          bold: true,
-          gap: 10,
-        },
-        ...ingredientLines(mix),
-        ...wrap(
-          t(
-            "Dose pour ce repas : mélanger toutes les épices indiquées, sans diviser.",
-            "For this recipe: combine all the listed spices without dividing.",
-          ),
-          255,
-          9,
-        ).map((value) => ({ value })),
-        { value: "", gap: 10 },
-      );
-    const linesHeight = (lines: Line[]) =>
-      lines.reduce((height, line) => height + 12 + (line.gap || 0), 0);
-    const spiceHeight = linesHeight(right);
-    right.push({
-      value: t("PAR PORTION · ESTIMATION", "PER SERVING · ESTIMATE"),
-      bold: true,
-      gap: 9,
-    });
-    if (macros)
-      right.push(
-        { value: `~ ${Math.round(macros.kcal)} kcal`, bold: true, gap: 4 },
-        ...wrap(
-          `${t("Protéines", "Protein")} ${Math.round(macros.protein)} g · ${t("Glucides", "Carbs")} ${Math.round(macros.carbs)} g · ${t("Lipides", "Fat")} ${Math.round(macros.fat)} g`,
-          255,
-          9,
-        ).map((value) => ({ value })),
-        { value: "", gap: 6 },
-      );
-    else
-      right.push({
-        value: t("Valeurs à compléter.", "Values to be completed."),
-        gap: 10,
+    const columnTop = strip - 28;
+    const mixLines = ingredientLines(mix, 244, 9.1);
+    const mixAdvice = paragraph(
+      t(
+        "Dose pour ce repas : mélanger toutes les épices indiquées, sans diviser.",
+        "For this recipe: combine all the listed spices without dividing.",
+      ),
+      244,
+    );
+    // The panel owns its padding and the nutrition section starts below its
+    // actual bottom. The old independent line queues let these two blocks touch.
+    const mixHeight = mix.length
+      ? 27 +
+        17 +
+        mixLines.reduce((n, l) => n + l.height, 0) +
+        12 +
+        mixAdvice.length * 12 +
+        12
+      : 0;
+    if (mix.length) {
+      right.push(space(mixHeight + 20));
+    }
+    const nutrition =
+      left.reduce((n, l) => n + l.height, 0) < mixHeight ? left : right;
+    if (nutrition === left) nutrition.push(space(24));
+    nutrition.push(
+      heading(t("PAR PORTION · ESTIMATION", "PER SERVING · ESTIMATE")),
+    );
+    if (macros) {
+      nutrition.push({
+        runs: [{ value: `~ ${Math.round(macros.kcal)} kcal`, font: serif }],
+        size: 16,
+        height: 23,
+        color: green,
       });
-    if (recipe.note)
-      (linesHeight(left) < linesHeight(right) ? left : right).push(
-        { value: "", gap: 4 },
-        { value: t("À SAVOIR", "GOOD TO KNOW"), bold: true, gap: 8 },
-        ...wrap(
-          instructionText(
-            locale === "fr" ? recipe.note : recipe.noteEn || recipe.note,
-            units,
-            locale,
-          ),
-          255,
-          9,
-        ).map((value) => ({ value })),
+      nutrition.push(
+        ...paragraph(
+          `${t("Protéines", "Protein")} ${Math.round(macros.protein)} g · ${t("Glucides", "Carbs")} ${Math.round(macros.carbs)} g · ${t("Lipides", "Fat")} ${Math.round(macros.fat)} g`,
+          268,
+          8.5,
+        ),
       );
+    } else
+      nutrition.push(
+        ...paragraph(t("Valeurs à compléter.", "Values to be completed."), 268),
+      );
+    // A long future ingredient list continues cleanly instead of shrinking text.
     const queues = [left, right];
     let ingredientPage = page,
-      top = strip - 29;
-    if (spiceHeight && top - spiceHeight >= 75)
-      page.drawRectangle({
-        x: 305,
-        y: top - spiceHeight + 8,
-        width: 277,
-        height: spiceHeight + 10,
-        color: pale,
+      top = columnTop;
+    if (mix.length) {
+      if (columnTop + 10 - mixHeight < 75)
+        throw new Error("seasoning_too_long");
+      const panelTop = columnTop + 10;
+      page.drawSvgPath(
+        `M 6 0 H 262 Q 268 0 268 6 V ${mixHeight - 6} Q 268 ${mixHeight} 262 ${mixHeight} H 6 Q 0 ${mixHeight} 0 ${mixHeight - 6} V 6 Q 0 0 6 0 Z`,
+        { x: 314, y: panelTop, color: pale },
+      );
+      page.drawSvgPath("M 6 0 H 262 Q 268 0 268 6 V 27 H 0 V 6 Q 0 0 6 0 Z", {
+        x: 314,
+        y: panelTop,
+        color: green,
       });
+      text(
+        page,
+        t("MÉLANGE D’ÉPICES MAISON", "HOMEMADE SEASONING"),
+        326,
+        panelTop - 17,
+        9.2,
+        bold,
+        rgb(1, 1, 1),
+      );
+      let lineY = panelTop - 44;
+      for (const line of mixLines) {
+        drawRuns(page, line.runs, 326, lineY, line.size);
+        lineY -= line.height;
+      }
+      page.drawLine({
+        start: { x: 326, y: lineY + 2 },
+        end: { x: 570, y: lineY + 2 },
+        thickness: 0.5,
+        color: rgb(0.82, 0.87, 0.82),
+      });
+      lineY -= 12;
+      for (const line of mixAdvice) {
+        text(page, line.runs[0].value, 326, lineY, line.size, sans, ink);
+        lineY -= line.height;
+      }
+    }
     while (queues.some((q) => q.length)) {
       for (let col = 0; col < 2; col++) {
         let lineY = top;
-        const x = col === 0 ? 30 : 315;
-        while (queues[col].length && lineY >= 75) {
-          const line = queues[col].shift()!;
-          text(
-            ingredientPage,
-            line.value,
-            x,
-            lineY,
-            9,
-            line.bold ? bold : sans,
-            line.bold ? green : ink,
-          );
-          lineY -= 12 + (line.gap || 0);
+        while (queues[col].length) {
+          const line = queues[col][0];
+          if (line.runs.length && lineY - line.size * 0.25 < 66) break;
+          queues[col].shift();
+          const x = col === 0 ? 30 : 314;
+          if (line.color && line.runs.length === 1)
+            text(
+              ingredientPage,
+              line.runs[0].value,
+              x,
+              lineY,
+              line.size,
+              line.runs[0].font,
+              line.color,
+            );
+          else drawRuns(ingredientPage, line.runs, x, lineY, line.size);
+          lineY -= line.height;
         }
       }
       if (queues.some((q) => q.length)) {
@@ -328,76 +450,94 @@ export async function buildRecipePdf(
           ingredientPage,
           t("Les ingrédients · suite", "Ingredients · continued"),
           30,
-          718,
-          23,
+          710,
+          22.5,
           serif,
         );
-        top = 680;
+        top = 674;
       }
     }
-    // Steps use the reference card's two-column, three-row layout. Long steps get
-    // taller rows and extra pages rather than being clipped or reduced to tiny type.
     let step = 0;
     while (step < recipe.steps.length) {
       const p = newPage();
-      text(p, t("À vous de cuisiner", "Let’s get cooking"), 30, 718, 25, serif);
-      const intro = wrap(
-        instructionText(
-          (
-            (locale === "fr" ? recipe.note : recipe.noteEn || recipe.note) || ""
-          ).split("\n")[0],
-          units,
-          locale,
-        ),
-        552,
-        9,
-      );
+      text(p, t("À vous de cuisiner", "Let’s get cooking"), 30, 712, 21, serif);
+      const intro = wrap(preparation, 552, 9.1);
       intro.forEach((line, i) =>
-        text(p, line, 30, 699 - i * 12, 9, sans, muted),
+        text(p, line, 30, 695 - i * 12, 9.1, sans, muted),
       );
-      let top = 699 - intro.length * 12 - 20;
+      const firstTop = 668 - Math.max(0, intro.length - 1) * 12;
+      let top = firstTop;
+      let lastBottom = top;
       while (step < recipe.steps.length) {
         const pair = recipe.steps.slice(step, step + 2).map((s) => ({
           step: s,
-          title: wrap(locale === "fr" ? s.title : s.titleEn, 238, 10, bold),
+          title: wrap(locale === "fr" ? s.title : s.titleEn, 242, 10.5, bold),
           body: wrap(
             instructionText(locale === "fr" ? s.text : s.textEn, units, locale),
-            267,
-            9.2,
+            268,
+            9.1,
           ),
         }));
-        const height = Math.max(
-          170,
+        const contentHeight = Math.max(
           ...pair.map(
-            (s) => 68 + s.title.length * 13 + s.body.length * 12 + 20,
+            (s) =>
+              94 + (s.title.length - 1) * 14 + (s.body.length - 1) * 12 + 3,
           ),
         );
-        if (top - height < 100) break;
+        if (top - contentHeight < 70) break;
         for (const [col, entry] of pair.entries()) {
-          const x = col === 0 ? 30 : 315;
-          await photo(p, entry.step.image, x, top - 58, 267, 58);
-          p.drawCircle({ x: x + 9, y: top - 73, size: 9, color: green });
+          const x = col === 0 ? 30 : 314;
+          await photo(p, entry.step.image, x, top - 58, 268, 58);
+          p.drawCircle({ x: x + 10, y: top - 72, size: 10, color: green });
+          const number = String(step + col + 1);
           text(
             p,
-            String(step + col + 1),
-            x + 6,
-            top - 76,
+            number,
+            x + 10 - bold.widthOfTextAtSize(number, 9) / 2,
+            top - 75,
             9,
             bold,
             rgb(1, 1, 1),
           );
           entry.title.forEach((line, i) =>
-            text(p, line, x + 26, top - 76 - i * 13, 10, bold),
+            text(p, line, x + 26, top - 75 - i * 14, 10.5, bold),
           );
           entry.body.forEach((line, i) =>
-            text(p, line, x, top - 80 - entry.title.length * 13 - i * 12, 9.2),
+            text(
+              p,
+              line,
+              x,
+              top - 94 - (entry.title.length - 1) * 14 - i * 12,
+              9.1,
+            ),
           );
         }
-        top -= height;
+        lastBottom = top - contentHeight;
+        top -= Math.max(177, contentHeight + 24);
         step += pair.length;
       }
-      if (top === 699 - intro.length * 12 - 20)
-        throw new Error("step_too_long");
+      if (top === firstTop) throw new Error("step_too_long");
+      if (step === recipe.steps.length && notes.length) {
+        const lines = wrap(notes.join("\n"), 552, 8.2);
+        let notePage = p;
+        let noteTop = Math.min(138, lastBottom - 24);
+        if (noteTop - 22 - lines.length * 11.5 < 66) {
+          notePage = newPage();
+          noteTop = 710;
+        }
+        text(
+          notePage,
+          t("MES REPÈRES EN CUISINE", "MY COOKING NOTES"),
+          30,
+          noteTop,
+          8.4,
+          bold,
+          green,
+        );
+        lines.forEach((line, i) =>
+          text(notePage, line, 30, noteTop - 19 - i * 11.5, 8.2, sans, muted),
+        );
+      }
     }
     // Each recipe starts on the front of a sheet when the book is printed duplex.
     if (pages.length % 2) {
