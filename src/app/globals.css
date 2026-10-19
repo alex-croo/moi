@@ -2325,6 +2325,17 @@ input[type="file"]::file-selector-button {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.grocery-calculation, .grocery-stock-warning { font-size: 11px; line-height: 1.7; color: #6b785d; }
+.grocery-stock-warning { color: #876842; }
+.grocery-all-ready { padding: 20px; background: #edf3e7; border-radius: 8px; color: #355a2f; }
+.recipe-export-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 0 0 24px; }
+.recipe-export-toolbar > span { font-size: 12px; color: #758067; }
+.recipe-export-toolbar .recipe-export { margin-left: auto; }
+.recipe-export .secondary { font-size: 12px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; }
+.recipe-export [role="alert"] { font-size: 12px; color: #974e3a; max-width: 340px; }
+.recipe-select { display: flex; gap: 10px; align-items: center; padding: 12px 16px; font-size: 11px; color: #637757; background: #f3f5ed; }
+.recipe-select input { width: 17px; height: 17px; accent-color: #244d3d; }
+@media (max-width: 680px) { .sheet-top { flex-wrap: wrap; } .sheet-top > .recipe-export { order: 3; width: 100%; } .recipe-export-toolbar .recipe-export { margin-left: 0; } .planner-actions { flex-wrap: wrap; } }
 .grocery-item h3 {
   font-size: 15px;
   font-weight: 500;

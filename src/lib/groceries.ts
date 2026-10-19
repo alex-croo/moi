@@ -4,6 +4,7 @@ import type {
   Quantity,
   Recipe,
   RecipeIngredient,
+  PantryItem,
 } from "./types";
 import { addDays } from "./units";
 
@@ -13,6 +14,48 @@ export type GroceryItem = {
   estimated: boolean;
   uses: { recipe: Recipe; meals: number }[];
 };
+
+export function groceriesAfterPantry(
+  items: GroceryItem[],
+  pantry: PantryItem[],
+) {
+  return items.map((item) => {
+    let available = 0;
+    let needsStockCheck = false;
+    for (const stock of pantry.filter(
+      (p) => p.inStock && p.ingredientId === item.ingredient.id,
+    )) {
+      const q = stock.quantity;
+      const required = item.quantity;
+      const volume = (kind: Quantity["kind"]) =>
+        kind === "volume" || kind === "spoon";
+      const sameCount =
+        q?.kind === "count" &&
+        required.kind === "count" &&
+        (q.label || "").trim().toLowerCase() ===
+          (required.label || "").trim().toLowerCase() &&
+        (q.labelEn || "").trim().toLowerCase() ===
+          (required.labelEn || "").trim().toLowerCase();
+      if (
+        q &&
+        ((q.kind === "mass" && required.kind === "mass") ||
+          (volume(q.kind) && volume(required.kind)) ||
+          sameCount)
+      )
+        available += q.value;
+      else needsStockCheck = true;
+    }
+    const deducted = Math.min(item.quantity.value, available);
+    const remaining = Math.max(0, item.quantity.value - deducted);
+    return {
+      ...item,
+      required: item.quantity,
+      deducted,
+      needsStockCheck,
+      quantity: { ...item.quantity, value: remaining < 1e-8 ? 0 : remaining },
+    };
+  });
+}
 
 // Add source quantities before formatting: display rounding must never affect totals.
 function totalQuantity(

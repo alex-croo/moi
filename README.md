@@ -11,7 +11,8 @@ pour **iamable.space**, workspace Vercel **moi**.
   stockage local du journal ou du poids. Le rechargement efface les essais.
 - Semainier aligné sur sept jours : déjeuner, dîner, souper et trois collations. Calories quotidiennes estimées pour une portion de chaque recette; export PDF Lettre complet, une journée par page.
 - Liste d’épicerie créée au fil des choix du semainier : ingrédients regroupés, quantités additionnées et unités personnelles appliquées. Les cases « déjà à la maison ou acheté » sont enregistrées par semaine dans l’espace privé.
-- Mes réserves : garde-manger, réfrigérateur, congélateur, épices et condiments. Quantités facultatives converties selon les préférences, aliments libres ou liés au catalogue, état « À renouveler ». Les réserves du catalogue sont signalées dans l’épicerie sans déduction automatique.
+- Fiches recettes PDF Lettre : export individuel, sélection dans la bibliothèque ou recettes de la semaine. Photos, ingrédients, mélange maison et étapes illustrées en recto verso, selon les unités choisies.
+- Mes réserves : garde-manger, réfrigérateur, congélateur, épices et condiments. Quantités facultatives converties selon les préférences, aliments libres ou liés au catalogue, état « À renouveler ». Les quantités compatibles des réserves du catalogue sont déduites de l’épicerie; les quantités inconnues ou non comparables restent à vérifier.
 - Fiches de recettes illustrées; ingrédients canoniques réutilisés et macros calculées.
 - Journal pleine page, paragraphes libres, propositions IA à accepter et protection contre les écritures concurrentes.
 - Unités indépendantes : poids corporel, ingrédients, liquides, cuillères, températures et dimensions. Les préférences sont privées et persistantes.

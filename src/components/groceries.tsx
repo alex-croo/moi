@@ -11,7 +11,7 @@ import type {
   GroceryCheck,
 } from "@/lib/types";
 import { pantryForIngredient, pantryLabel } from "@/lib/pantry";
-import { weeklyGroceries } from "@/lib/groceries";
+import { weeklyGroceries, groceriesAfterPantry } from "@/lib/groceries";
 import { quantityLabel, addDays } from "@/lib/units";
 import { WeekNavigation } from "./week-navigation";
 
@@ -45,17 +45,17 @@ export function GroceryList({
   onPantry: () => void;
 }) {
   const [includeOptional, setIncludeOptional] = useState(false);
+  const [showReady, setShowReady] = useState(false);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
-  const { items, meals, missing } = weeklyGroceries(
-    recipes,
-    ingredients,
-    slots,
-    week,
-    includeOptional,
-  );
+  const {
+    items: plannedItems,
+    meals,
+    missing,
+  } = weeklyGroceries(recipes, ingredients, slots, week, includeOptional);
+  const items = groceriesAfterPantry(plannedItems, pantry);
   const name = (ingredient: Ingredient) =>
     locale === "fr" ? ingredient.name : ingredient.nameEn;
   items.sort((a, b) =>
@@ -64,7 +64,10 @@ export function GroceryList({
   const hasEstimates = items.some((item) => item.estimated);
   const isChecked = (id: string) =>
     checks.some((c) => c.week === week && c.ingredientId === id && c.checked);
-  const ready = items.filter((i) => isChecked(i.ingredient.id)).length;
+  const isReady = (item: (typeof items)[number]) =>
+    item.quantity.value === 0 || isChecked(item.ingredient.id);
+  const ready = items.filter(isReady).length;
+  const visibleItems = items.filter((item) => showReady || !isReady(item));
   async function toggle(ingredientId: string, checked: boolean) {
     setSaving(true);
     setError("");
@@ -94,10 +97,12 @@ export function GroceryList({
         [
           t("Ma liste d’épicerie", "My grocery list"),
           `${week} — ${addDays(week, 6)}`,
-          ...items.map(
-            (item) =>
-              `${isChecked(item.ingredient.id) ? "[x]" : "[ ]"} ${name(item.ingredient)} : ${item.estimated ? "≈ " : ""}${quantityLabel(item.quantity, units, locale)}${pantryForIngredient(pantry, item.ingredient.id).length ? t(" · Dans mes réserves", " · In my pantry") : ""}`,
-          ),
+          ...items
+            .filter((item) => !isReady(item))
+            .map(
+              (item) =>
+                `[ ] ${name(item.ingredient)} : ${item.estimated ? "≈ " : ""}${quantityLabel(item.quantity, units, locale)}${item.needsStockCheck ? t(" · Réserve à vérifier", " · Check pantry quantity") : ""}`,
+            ),
           ...(hasEstimates
             ? [
                 t(
@@ -150,6 +155,14 @@ export function GroceryList({
         }}
       />
       <div className="grocery-toolbar">
+        <label className="grocery-optional">
+          <input
+            type="checkbox"
+            checked={showReady}
+            onChange={(e) => setShowReady(e.target.checked)}
+          />
+          {t("Afficher les aliments déjà prêts", "Show foods already ready")}
+        </label>
         <button className="text-button" onClick={onPantry}>
           {t("Voir mes réserves", "View my pantry")}
         </button>
@@ -201,7 +214,7 @@ export function GroceryList({
           <header className="grocery-summary">
             <ShoppingBasket size={24} />
             <div>
-              <h2>{t("À prévoir cette semaine", "For this week")}</h2>
+              <h2>{t("Ce qu’il me manque", "What I still need")}</h2>
               <p>
                 {meals}{" "}
                 {t(
@@ -234,16 +247,24 @@ export function GroceryList({
             />
             <p>
               {t(
-                "Cochez ce que vous avez en quantité suffisante. Vos coches sont conservées pour cette semaine. Les réserves vous servent de repère; elles ne sont pas déduites automatiquement.",
-                "Check off what you have enough of. Your checks are saved for this week. Pantry items are a reminder; they are not subtracted automatically.",
+                "Vos réserves sont déduites des quantités à cuisiner. Cochez vos achats : ils seront gardés pour cette semaine. Une réserve sans quantité ou mesurée autrement reste à vérifier. Vos réserves ne sont pas modifiées par ce calcul.",
+                "Pantry quantities are deducted from what you need to cook. Check off your purchases: they are saved for this week. Stock without a quantity or with a different measure needs checking. This calculation does not change your pantry.",
               )}
             </p>
           </div>
+          {!visibleItems.length && (
+            <p className="grocery-all-ready" role="status">
+              {t(
+                "Tout est prêt pour les repas prévus cette semaine.",
+                "Everything is ready for this week’s planned meals.",
+              )}
+            </p>
+          )}
           <ul
             className="grocery-items"
             aria-label={t("Ingrédients à acheter", "Ingredients to buy")}
           >
-            {items.map((item) => (
+            {visibleItems.map((item) => (
               <li
                 className={`grocery-item ${isChecked(item.ingredient.id) ? "grocery-checked" : ""}`}
                 key={item.ingredient.id}
@@ -270,6 +291,26 @@ export function GroceryList({
                       {p.note ? ` · ${p.note}` : ""}
                     </p>
                   ))}
+                  {item.deducted > 0 && (
+                    <p className="grocery-calculation">
+                      {t("Pour cuisiner", "To cook")} :{" "}
+                      {quantityLabel(item.required, units, locale)} ·{" "}
+                      {t("Déduit des réserves", "Deducted from pantry")} :{" "}
+                      {quantityLabel(
+                        { ...item.required, value: item.deducted },
+                        units,
+                        locale,
+                      )}
+                    </p>
+                  )}
+                  {item.needsStockCheck && (
+                    <p className="grocery-stock-warning">
+                      {t(
+                        "À vérifier dans vos réserves : indiquez une quantité avec la même mesure pour la déduire.",
+                        "Check your pantry: enter a quantity using the same measure to deduct it.",
+                      )}
+                    </p>
+                  )}
                   <details>
                     <summary>
                       {t("Voir les recettes", "View recipes")} (
@@ -293,7 +334,9 @@ export function GroceryList({
                 <div className="grocery-quantity">
                   <strong>
                     {item.estimated ? "≈ " : ""}
-                    {quantityLabel(item.quantity, units, locale)}
+                    {item.quantity.value === 0
+                      ? t("Déjà à la maison", "Already at home")
+                      : quantityLabel(item.quantity, units, locale)}
                   </strong>
                   {item.estimated && (
                     <small>{t("Poids estimé", "Estimated weight")}</small>

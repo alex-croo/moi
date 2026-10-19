@@ -318,6 +318,7 @@ export function Dashboard({
         recipes={data.recipes}
         ingredients={data.ingredients}
         slots={data.slots}
+        units={data.preferences}
         locale={locale}
         onOpen={setSelectedRecipe}
         onSave={async (value) => {
@@ -886,6 +887,8 @@ export function Dashboard({
               </div>
               <RecipeLibrary
                 recipes={data.recipes}
+                ingredients={data.ingredients}
+                units={data.preferences}
                 locale={locale}
                 onOpen={setSelectedRecipe}
               />

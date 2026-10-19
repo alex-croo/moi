@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Plate } from "./plate";
 import { WeekNavigation } from "./week-navigation";
+import { RecipeExport } from "./recipe-export";
 import type {
   Ingredient,
   MealSlot,
@@ -49,13 +50,18 @@ export function RecipeLibrary({
   locale,
   onOpen,
   onChoose,
+  ingredients,
+  units,
 }: {
   recipes: Recipe[];
   locale: Locale;
   onOpen: (r: Recipe) => void;
   onChoose?: (r: Recipe) => void;
+  ingredients?: Ingredient[];
+  units?: UnitPreferences;
 }) {
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
   const filtered = recipes.filter((r) =>
     `${r.title} ${r.titleEn} ${r.subtitle}`
@@ -71,6 +77,35 @@ export function RecipeLibrary({
   );
   return (
     <>
+      {!onChoose && ingredients && units && (
+        <div className="recipe-export-toolbar">
+          <button
+            className="text-button"
+            onClick={() =>
+              setSelected(
+                filtered.every((r) => selected.includes(r.id))
+                  ? selected.filter((id) => !filtered.some((r) => r.id === id))
+                  : [...new Set([...selected, ...filtered.map((r) => r.id)])],
+              )
+            }
+          >
+            {filtered.length > 0 &&
+            filtered.every((r) => selected.includes(r.id))
+              ? t("Désélectionner", "Clear selection")
+              : t("Tout sélectionner", "Select all")}
+          </button>
+          <span>
+            {selected.length} {t("recette(s) choisie(s)", "recipe(s) selected")}
+          </span>
+          <RecipeExport
+            recipes={recipes.filter((r) => selected.includes(r.id))}
+            ingredients={ingredients}
+            units={units}
+            locale={locale}
+            label={t("Exporter la sélection en PDF", "Export selection as PDF")}
+          />
+        </div>
+      )}
       <label className="recipe-search">
         <Search size={18} />
         <input
@@ -108,6 +143,23 @@ export function RecipeLibrary({
       <div className="recipe-grid">
         {filtered.map((recipe) => (
           <article className="recipe-card" key={recipe.id}>
+            {!onChoose && ingredients && units && (
+              <label className="recipe-select">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(recipe.id)}
+                  onChange={(e) =>
+                    setSelected(
+                      e.target.checked
+                        ? [...selected, recipe.id]
+                        : selected.filter((id) => id !== recipe.id),
+                    )
+                  }
+                  aria-label={`${t("Sélectionner", "Select")} ${locale === "fr" ? recipe.title : recipe.titleEn}`}
+                />
+                {t("Garder pour mon PDF", "Include in my PDF")}
+              </label>
+            )}
             <button className="recipe-open" onClick={() => onOpen(recipe)}>
               <div className="recipe-cover">
                 <RecipeImage recipe={recipe} />
@@ -167,6 +219,12 @@ export function RecipeSheet({
         <span>
           <BookOpen size={17} /> {t("MON LIVRE DE RECETTES", "MY RECIPE BOOK")}
         </span>
+        <RecipeExport
+          recipes={[recipe]}
+          ingredients={ingredients}
+          units={units}
+          locale={locale}
+        />
         <button
           className="icon-button"
           onClick={onClose}
@@ -341,8 +399,8 @@ export function RecipeSheet({
         </section>
         <footer className="recipe-source">
           {t(
-            "Adaptation indépendante de vos fiches DIY. Photos de la recette source HelloFresh.",
-            "Independent adaptation of your DIY recipe cards. Photos from the original HelloFresh recipe.",
+            "i am able. · Mon livre de recettes.",
+            "i am able. · My recipe book.",
           )}{" "}
           <a href={recipe.source} target="_blank" rel="noopener noreferrer">
             {t("Fiche d’origine dans Drive", "Original card in Drive")}
@@ -359,6 +417,7 @@ export function WeeklyPlanner({
   recipes,
   ingredients,
   slots,
+  units,
   locale,
   onSave,
   onOpen,
@@ -370,6 +429,7 @@ export function WeeklyPlanner({
   recipes: Recipe[];
   ingredients: Ingredient[];
   slots: MealSlot[];
+  units: UnitPreferences;
   locale: Locale;
   onSave: (value: {
     date: string;
@@ -472,6 +532,21 @@ export function WeeklyPlanner({
         </div>
         {full && (
           <div className="planner-actions">
+            <RecipeExport
+              recipes={Array.from(
+                new Set(
+                  slots
+                    .filter((s) => s.date >= week && s.date <= addDays(week, 6))
+                    .map((s) => s.recipeId),
+                ),
+              )
+                .map((id) => recipes.find((r) => r.id === id))
+                .filter((r): r is Recipe => !!r)}
+              ingredients={ingredients}
+              units={units}
+              locale={locale}
+              label={t("Les recettes en PDF", "Recipes as PDF")}
+            />
             <button className="text-button" onClick={onGroceries}>
               <ShoppingBasket size={16} />
               {t("Liste d’épicerie", "Grocery list")}

@@ -129,6 +129,12 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();
+  await page
+    .getByRole("checkbox", {
+      name: "Afficher les aliments déjà prêts",
+      exact: true,
+    })
+    .check();
   const beef = page
     .locator(".grocery-item")
     .filter({ hasText: "Bœuf haché extra maigre" });
@@ -136,6 +142,7 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
     "Dans vos réserves · Congélateur · 500 g · Deux portions",
   );
   await expect(beef.getByRole("checkbox")).not.toBeChecked();
+  await expect(beef.locator(".grocery-quantity")).toHaveText(/1\s?000 g/);
   await beef.getByRole("checkbox").check();
   await expect(page.getByRole("status")).toContainText(
     "enregistrée pour cette semaine",
@@ -144,6 +151,12 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();
+  await page
+    .getByRole("checkbox", {
+      name: "Afficher les aliments déjà prêts",
+      exact: true,
+    })
+    .check();
   await expect(beef.getByRole("checkbox")).toBeChecked();
   await page
     .getByRole("button", { name: "Semaine suivante", exact: true })
@@ -158,6 +171,12 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();
+  await page
+    .getByRole("checkbox", {
+      name: "Afficher les aliments déjà prêts",
+      exact: true,
+    })
+    .check();
   await expect(beef.getByRole("checkbox")).not.toBeChecked();
   await page
     .getByRole("button", { name: "Semaine précédente", exact: true })
@@ -176,6 +195,12 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();
+  await page
+    .getByRole("checkbox", {
+      name: "Afficher les aliments déjà prêts",
+      exact: true,
+    })
+    .check();
   await expect(beef.locator(".pantry-badge")).toHaveCount(0);
   await expect(beef.getByRole("checkbox")).toBeChecked(); // Independent from stock status.
   await beef.getByRole("checkbox").uncheck();
