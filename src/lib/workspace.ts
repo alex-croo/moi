@@ -26,6 +26,11 @@ export async function loadWorkspace(
       .order("position"),
     db.from("meal_slots").select("date,slot,recipe_id").order("date"),
     db.from("unit_preferences").select("units").maybeSingle(),
+    db.from("grocery_checks").select("week_start,ingredient_id,checked"),
+    db
+      .from("pantry_items")
+      .select("id,ingredient_id,name,location,quantity,note,in_stock")
+      .order("name"),
   ] as const);
   if (results.some((r) => r.error))
     throw new Error("Unable to load private workspace");
@@ -63,5 +68,19 @@ export async function loadWorkspace(
       recipeId: r.recipe_id,
     })),
     preferences: { ...defaultUnits, ...results[8].data?.units },
+    groceryChecks: (results[9].data || []).map((r) => ({
+      week: r.week_start,
+      ingredientId: r.ingredient_id,
+      checked: r.checked,
+    })),
+    pantry: (results[10].data || []).map((r) => ({
+      id: r.id,
+      ingredientId: r.ingredient_id,
+      name: r.name,
+      location: r.location,
+      quantity: r.quantity,
+      note: r.note,
+      inStock: r.in_stock,
+    })),
   };
 }

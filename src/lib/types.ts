@@ -4,8 +4,13 @@ export type Meal = {
   minutes: number;
   portions: number;
   kind: "bowl" | "salmon" | "pasta" | "taco";
+  kcal?: number | null;
 };
-export type MenuDay = { date: string; lunch: Meal | null; dinner: Meal | null };
+export type MenuDay = {
+  date: string;
+  lunch: Meal | null;
+  dinner: Meal | null;
+} & Partial<Record<MealTime, Meal | null>>;
 export type MenuPlan = {
   id: string;
   title: string;
@@ -42,6 +47,8 @@ export type WorkspaceData = {
   ingredients: Ingredient[];
   slots: MealSlot[];
   preferences: UnitPreferences;
+  groceryChecks: GroceryCheck[];
+  pantry: PantryItem[];
 };
 
 export type UnitPreferences = {
@@ -105,6 +112,28 @@ export type Recipe = {
 };
 export type MealSlot = {
   date: string;
-  slot: "lunch" | "dinner";
+  slot: MealTime;
   recipeId: string;
+};
+export type MealTime =
+  | "breakfast"
+  | "morning_snack"
+  | "lunch"
+  | "afternoon_snack"
+  | "dinner"
+  | "evening_snack";
+export type GroceryCheck = {
+  week: string;
+  ingredientId: string;
+  checked: boolean;
+};
+export type PantryLocation = "cupboard" | "fridge" | "freezer" | "spices";
+export type PantryItem = {
+  id: string;
+  ingredientId: string | null;
+  name: string;
+  location: PantryLocation;
+  quantity: Quantity | null;
+  note: string;
+  inStock: boolean;
 };

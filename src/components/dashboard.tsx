@@ -5,6 +5,7 @@ import {
   ArrowDownToLine,
   ArrowRight,
   BookOpen,
+  Archive,
   CalendarDays,
   Check,
   ChevronRight,
@@ -32,12 +33,15 @@ import { WeeklyPlanner, RecipeLibrary, RecipeSheet } from "./recipes";
 import { JournalEditor } from "./journal-editor";
 import { UnitSettings } from "./unit-settings";
 import { GroceryList } from "./groceries";
+import { Pantry } from "./pantry";
 import { bodyWeight, monday, addDays } from "@/lib/units";
 import type {
   Recipe,
   UnitPreferences,
   MealSlot,
   JournalEntry,
+  PantryItem,
+  GroceryCheck,
 } from "@/lib/types";
 import { Brand } from "./brand";
 import { Plate } from "./plate";
@@ -50,6 +54,7 @@ type View =
   | "recipes"
   | "menus"
   | "groceries"
+  | "pantry"
   | "weight"
   | "journal"
   | "library"
@@ -118,6 +123,7 @@ export function Dashboard({
       icon: ShoppingBasket,
       label: t("Liste d’épicerie", "Grocery list"),
     },
+    { id: "pantry", icon: Archive, label: t("Mes réserves", "My pantry") },
     { id: "weight", icon: Scale, label: t("Mon parcours", "My progress") },
     { id: "journal", icon: BookOpen, label: t("Mon journal", "My journal") },
     {
@@ -235,12 +241,36 @@ export function Dashboard({
     }
   }
   async function mutate(
-    type: "slot" | "preferences" | "journal",
+    type:
+      | "slot"
+      | "preferences"
+      | "journal"
+      | "groceryCheck"
+      | "pantry"
+      | "pantryDelete",
     value: object,
   ): Promise<WorkspaceData> {
     let next: WorkspaceData;
     if (demo) {
       next = { ...data };
+      if (type === "groceryCheck") {
+        const check = value as GroceryCheck;
+        next.groceryChecks = [
+          ...data.groceryChecks.filter(
+            (c) =>
+              c.week !== check.week || c.ingredientId !== check.ingredientId,
+          ),
+          check,
+        ];
+      }
+      if (type === "pantry") {
+        const item = value as PantryItem;
+        next.pantry = [...data.pantry.filter((p) => p.id !== item.id), item];
+      }
+      if (type === "pantryDelete")
+        next.pantry = data.pantry.filter(
+          (p) => p.id !== (value as { id: string }).id,
+        );
       if (type === "preferences") next.preferences = value as UnitPreferences;
       if (type === "slot") {
         const slot = value as MealSlot;
@@ -632,7 +662,7 @@ export function Dashboard({
                   <span>
                     <strong>
                       {recipes > 0
-                        ? t("Ma semaine est prête", "My week is ready")
+                        ? t("Ma semaine prend forme", "My week is taking shape")
                         : t("Ma semaine à préparer", "My week to plan")}
                     </strong>
                     <small>
@@ -772,6 +802,27 @@ export function Dashboard({
               onWeekChange={setSelectedWeek}
               onPlan={() => go("menus")}
               onOpen={setSelectedRecipe}
+              checks={data.groceryChecks}
+              pantry={data.pantry}
+              onCheck={async (value) => {
+                await mutate("groceryCheck", value);
+              }}
+              onPantry={() => go("pantry")}
+            />
+          )}
+          {view === "pantry" && (
+            <Pantry
+              items={data.pantry}
+              ingredients={data.ingredients}
+              units={data.preferences}
+              locale={locale}
+              onSave={async (item) => {
+                await mutate("pantry", item);
+              }}
+              onDelete={async (id) => {
+                await mutate("pantryDelete", { id });
+              }}
+              onGroceries={() => go("groceries")}
             />
           )}
           {view === "weight" && (

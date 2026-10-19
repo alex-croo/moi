@@ -9,8 +9,9 @@ pour **iamable.space**, workspace Vercel **moi**.
 - Next.js App Router + TypeScript, interface responsive vert forêt et crème.
 - Démonstration explicite et éphémère : aucune donnée de santé réelle, aucun
   stockage local du journal ou du poids. Le rechargement efface les essais.
-- Semainier dîner/souper avec choix dans la bibliothèque et export PDF Lettre de quatre pages.
-- Liste d’épicerie hebdomadaire dans la navigation : ingrédients regroupés, quantités additionnées et unités personnelles appliquées, avec copie de la liste.
+- Semainier aligné sur sept jours : déjeuner, dîner, souper et trois collations. Calories quotidiennes estimées pour une portion de chaque recette; export PDF Lettre complet, une journée par page.
+- Liste d’épicerie créée au fil des choix du semainier : ingrédients regroupés, quantités additionnées et unités personnelles appliquées. Les cases « déjà à la maison ou acheté » sont enregistrées par semaine dans l’espace privé.
+- Mes réserves : garde-manger, réfrigérateur, congélateur, épices et condiments. Quantités facultatives converties selon les préférences, aliments libres ou liés au catalogue, état « À renouveler ». Les réserves du catalogue sont signalées dans l’épicerie sans déduction automatique.
 - Fiches de recettes illustrées; ingrédients canoniques réutilisés et macros calculées.
 - Journal pleine page, paragraphes libres, propositions IA à accepter et protection contre les écritures concurrentes.
 - Unités indépendantes : poids corporel, ingrédients, liquides, cuillères, températures et dimensions. Les préférences sont privées et persistantes.

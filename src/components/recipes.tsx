@@ -14,6 +14,7 @@ import { WeekNavigation } from "./week-navigation";
 import type {
   Ingredient,
   MealSlot,
+  MealTime,
   Recipe,
   UnitPreferences,
 } from "@/lib/types";
@@ -25,6 +26,7 @@ import {
   quantityLabel,
   recipeNutrition,
 } from "@/lib/units";
+import { mealTimes, mealLabel, dailyCalories } from "@/lib/planner";
 
 export function RecipeImage({
   recipe,
@@ -371,7 +373,7 @@ export function WeeklyPlanner({
   locale: Locale;
   onSave: (value: {
     date: string;
-    slot: "lunch" | "dinner";
+    slot: MealTime;
     recipeId: string | null;
   }) => Promise<void>;
   onOpen: (r: Recipe) => void;
@@ -379,7 +381,7 @@ export function WeeklyPlanner({
 }) {
   const [pick, setPick] = useState<{
     date: string;
-    slot: "lunch" | "dinner";
+    slot: MealTime;
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -422,7 +424,7 @@ export function WeeklyPlanner({
         startDate: week,
         days: Array.from({ length: 7 }, (_, i) => {
           const d = addDays(week, i);
-          const meal = (slot: "lunch" | "dinner") => {
+          const meal = (slot: MealTime) => {
             const r = recipes.find(
               (r) =>
                 r.id ===
@@ -435,10 +437,19 @@ export function WeeklyPlanner({
                   minutes: r.minutes,
                   portions: r.servings,
                   kind: "bowl" as const,
+                  kcal: recipeNutrition(r, ingredients)?.kcal ?? null,
                 }
               : null;
           };
-          return { date: d, lunch: meal("lunch"), dinner: meal("dinner") };
+          return {
+            date: d,
+            breakfast: meal("breakfast"),
+            morning_snack: meal("morning_snack"),
+            lunch: meal("lunch"),
+            afternoon_snack: meal("afternoon_snack"),
+            dinner: meal("dinner"),
+            evening_snack: meal("evening_snack"),
+          };
         }),
       },
       locale,
@@ -477,16 +488,22 @@ export function WeeklyPlanner({
       <div className="week-grid">
         {Array.from({ length: 7 }, (_, i) => {
           const d = addDays(week, i);
+          const total = dailyCalories(d, slots, recipes, ingredients);
           return (
             <article
               className={`week-day ${d === localToday() ? "is-today" : ""}`}
               key={d}
+              aria-label={date(d, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
             >
               <header>
                 <span>{date(d, { weekday: "long" })}</span>
                 <strong>{date(d, { day: "numeric" })}</strong>
               </header>
-              {(["lunch", "dinner"] as const).map((slot) => {
+              {mealTimes.map((slot) => {
                 const r = recipes.find(
                   (r) =>
                     r.id ===
@@ -494,12 +511,14 @@ export function WeeklyPlanner({
                       ?.recipeId,
                 );
                 const macros = r && recipeNutrition(r, ingredients);
-                const label = t(
-                  slot === "lunch" ? "Dîner" : "Souper",
-                  slot === "lunch" ? "Lunch" : "Dinner",
-                );
+                const label = mealLabel(slot, locale);
+                const snack = slot.endsWith("snack");
                 return (
-                  <div className="planner-slot" key={slot}>
+                  <div
+                    className={`planner-slot ${snack ? "snack-slot" : ""}`}
+                    key={slot}
+                    data-meal={slot}
+                  >
                     <span className="eyebrow">{label}</span>
                     {r ? (
                       <>
@@ -520,6 +539,7 @@ export function WeeklyPlanner({
                         </button>
                         <div className="slot-actions">
                           <button
+                            disabled={busy}
                             onClick={() => {
                               setError("");
                               setPick({ date: d, slot });
@@ -539,6 +559,7 @@ export function WeeklyPlanner({
                     ) : (
                       <button
                         className="empty-slot"
+                        disabled={busy}
                         onClick={() => {
                           setError("");
                           setPick({ date: d, slot });
@@ -546,20 +567,44 @@ export function WeeklyPlanner({
                         aria-label={`${t("Choisir", "Choose")} ${label} ${d}`}
                       >
                         <Plus size={20} />
-                        <span>{t("Choisir un repas", "Choose a meal")}</span>
+                        <span>
+                          {snack
+                            ? t("Une petite pause", "A little break")
+                            : t("Choisir un repas", "Choose a meal")}
+                        </span>
                       </button>
                     )}
                   </div>
                 );
               })}
+              <footer className="day-total" aria-live="polite">
+                <span>{t("Total de la journée", "Daily total")}</span>
+                <strong>
+                  {!total.meals
+                    ? "—"
+                    : total.missing
+                      ? t("À compléter", "Incomplete")
+                      : `≈ ${Math.round(total.kcal).toLocaleString(locale)} kcal`}
+                </strong>
+                <small>
+                  {!total.meals
+                    ? t("Selon vos choix", "Based on your choices")
+                    : total.missing
+                      ? t(
+                          "Certaines valeurs manquent",
+                          "Some values are missing",
+                        )
+                      : t("Une portion par recette", "One serving per recipe")}
+                </small>
+              </footer>
             </article>
           );
         })}
       </div>
       <p className="planner-footnote">
         {t(
-          "Deux repas à composer, sept jours à votre rythme. Les calories sont estimées pour une portion.",
-          "Two meals to plan, seven days at your pace. Calories are estimated per serving.",
+          "Du déjeuner à la collation du soir, composez votre journée à votre rythme. Les totaux sont estimés pour une portion de chaque recette choisie; les moments laissés libres ne sont pas comptés. Votre liste d’épicerie se met à jour au fil de vos choix.",
+          "From breakfast to an evening snack, plan your day at your own pace. Totals estimate one serving of each chosen recipe; empty moments are not counted. Your grocery list updates as you choose.",
         )}
       </p>
       <dialog
@@ -572,6 +617,16 @@ export function WeeklyPlanner({
           <h2 id="picker-title">
             {t("Qu’est-ce qui vous ferait plaisir?", "What would you enjoy?")}
           </h2>
+          {pick && (
+            <p>
+              {mealLabel(pick.slot, locale)} ·{" "}
+              {date(pick.date, {
+                weekday: "long",
+                day: "numeric",
+                month: "short",
+              })}
+            </p>
+          )}
           <button
             className="icon-button"
             onClick={() => setPick(null)}

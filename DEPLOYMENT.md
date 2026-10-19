@@ -24,7 +24,8 @@ ressources dans le compte du propriétaire lorsque l’intégration devient disp
 2. Framework Next.js, répertoire racine du projet = racine du dépôt, Node.js 24.
    `vercel.json` définit `npm ci`, `npm run build` et la région `iad1`.
 3. Créer/rattacher un projet Supabase dédié. Appliquer une fois
-   `supabase/migrations/001_private_workspace.sql` dans son éditeur SQL.
+   les migrations de `supabase/migrations/` dans l’ordre dans son éditeur SQL.
+   La migration `20261019171205_pantry_weekly_checks_and_full_day.sql` ajoute les réserves et les coches hebdomadaires avec RLS, et étend les repas à six moments sans réécrire les choix existants. Appliquer cette migration avant de déployer l’interface correspondante.
    Activer les sauvegardes adaptées au projet et vérifier une restauration avant
    d’y conserver durablement un journal réel.
 4. Ajouter dans les paramètres Vercel (pas dans Git) :

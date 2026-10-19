@@ -227,7 +227,7 @@ test("sidebar grocery list follows planner weeks, meal edits, units and language
   await page
     .getByRole("button", { name: "Semaine précédente", exact: true })
     .click();
-  await page.getByRole("button", { name: /Retirer Dîner/ }).click();
+  await page.getByRole("button", { name: /Retirer Déjeuner/ }).click();
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();

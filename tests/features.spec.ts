@@ -43,12 +43,12 @@ test("canonical ingredient quantities drive nutrition; conversions preserve stor
   expect(JSON.stringify(demoRecipes[0])).toBe(original);
 });
 
-test("seven days, recipe selection, removal, week navigation and four-page export", async ({
+test("seven days, recipe selection, removal, week navigation and complete seven-page export", async ({
   page,
 }) => {
   await page.goto("/fr/demo");
   await expect(page.locator(".week-day")).toHaveCount(7);
-  await expect(page.locator(".empty-slot")).toHaveCount(14);
+  await expect(page.locator(".empty-slot")).toHaveCount(42);
   await page.locator(".empty-slot").first().click();
   await page.getByRole("button", { name: "Choisir cette recette" }).click();
   await expect(page.locator(".planned-recipe")).toHaveCount(1);
@@ -71,9 +71,9 @@ test("seven days, recipe selection, removal, week navigation and four-page expor
   const pdf = await PDFDocument.load(
     await readFile((await (await download).path())!),
   );
-  expect(pdf.getPageCount()).toBe(4);
+  expect(pdf.getPageCount()).toBe(7);
   expect(pdf.getPage(0).getSize()).toEqual({ width: 612, height: 792 });
-  await page.getByRole("button", { name: /Retirer Dîner/ }).click();
+  await page.getByRole("button", { name: /Retirer Déjeuner/ }).click();
   await expect(page.locator(".planned-recipe")).toHaveCount(0);
 });
 
@@ -226,6 +226,8 @@ test("a stale AI proposal cannot replace newer writing and errors preserve the d
     r.fulfill({ status: 503, json: { error: "ai_unavailable" } }),
   );
   await page.getByRole("button", { name: "Améliorer le texte" }).click();
-  await expect(page.locator(".journal-paper").getByRole("alert")).toContainText("n’est pas disponible");
+  await expect(page.locator(".journal-paper").getByRole("alert")).toContainText(
+    "n’est pas disponible",
+  );
   await expect(editor).toHaveValue("Nouvelle pensée.");
 });

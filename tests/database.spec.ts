@@ -161,6 +161,125 @@ test("catalog isolation, canonical references, journal concurrency, preferences 
     await db.exec(
       "insert into meal_slots(date,slot,recipe_id) values('2026-10-25','dinner','chili')",
     );
+    await db.exec("reset role");
+    await db.exec(
+      await readFile(
+        "supabase/migrations/20261019171205_pantry_weekly_checks_and_full_day.sql",
+        "utf8",
+      ),
+    );
+    await asUser(a);
+    expect((await db.query("select * from meal_slots")).rows).toHaveLength(1);
+    for (const slot of [
+      "breakfast",
+      "morning_snack",
+      "lunch",
+      "afternoon_snack",
+      "dinner",
+      "evening_snack",
+    ])
+      await db.query(
+        "insert into meal_slots(date,slot,recipe_id) values('2026-10-19',$1,'chili')",
+        [slot],
+      );
+    await db.exec(`insert into grocery_checks(week_start,ingredient_id,checked) values('2026-10-19','beef',true),('2026-10-26','beef',false);
+      insert into pantry_items(ingredient_id,name,location,quantity,note) values('beef','Beef','freezer','{"kind":"mass","value":500}','Two portions');`);
+    const saved = (
+      await db.query<{ id: string }>("select id from pantry_items")
+    ).rows[0].id;
+    await db.exec(
+      "update pantry_items set in_stock=false; update grocery_checks set checked=false where week_start='2026-10-19'",
+    );
+    expect(
+      (
+        await db.query<{ in_stock: boolean }>(
+          "select in_stock from pantry_items",
+        )
+      ).rows[0].in_stock,
+    ).toBe(false);
+    await asUser(a); // New transaction/role context must read the saved states.
+    expect(
+      (
+        await db.query<{ checked: boolean }>(
+          "select checked from grocery_checks",
+        )
+      ).rows.map((r) => r.checked),
+    ).toEqual([false, false]);
+    await db.exec(
+      "update pantry_items set in_stock=true; update grocery_checks set checked=true where week_start='2026-10-19'",
+    );
+    await expect(
+      db.exec(
+        "insert into grocery_checks(week_start,ingredient_id) values('2026-10-20','beef')",
+      ),
+    ).rejects.toThrow(/check constraint/);
+    await expect(
+      db.exec(
+        'update pantry_items set quantity=\'{"kind":"mass","value":-1}\'',
+      ),
+    ).rejects.toThrow(/check constraint/);
+    await expect(
+      db.exec(`update pantry_items set owner_id='${b}'`),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      db.exec(`update grocery_checks set owner_id='${b}'`),
+    ).rejects.toThrow(/row-level security/);
+    await asUser(b);
+    for (const table of ["pantry_items", "grocery_checks"]) {
+      expect((await db.query(`select * from ${table}`)).rows).toHaveLength(0);
+      expect(
+        (await db.query(`delete from ${table} returning *`)).rows,
+      ).toHaveLength(0);
+      expect(
+        (await db.query(`update ${table} set owner_id='${b}' returning *`))
+          .rows,
+      ).toHaveLength(0);
+    }
+    await expect(
+      db.exec(
+        `insert into grocery_checks(owner_id,week_start,ingredient_id) values('${a}','2026-11-02','beef')`,
+      ),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      db.exec(
+        "insert into pantry_items(ingredient_id,name,location) values('beef','Beef','freezer')",
+      ),
+    ).rejects.toThrow(/foreign key/);
+    await asUser(c);
+    await expect(
+      db.exec(
+        "insert into pantry_items(name,location) values('Own food','cupboard')",
+      ),
+    ).rejects.toThrow(/row-level security/);
+    await db.exec("reset role;set role anon");
+    for (const table of ["grocery_checks", "pantry_items"]) {
+      await expect(db.query(`select * from ${table}`)).rejects.toThrow(
+        /permission denied/,
+      );
+      await expect(db.query(`delete from ${table}`)).rejects.toThrow(
+        /permission denied/,
+      );
+      await expect(
+        db.query(`update ${table} set owner_id='${a}'`),
+      ).rejects.toThrow(/permission denied/);
+    }
+    await expect(
+      db.exec(
+        "insert into pantry_items(name,location) values('Food','cupboard')",
+      ),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      db.exec(
+        "insert into grocery_checks(week_start,ingredient_id) values('2026-10-19','beef')",
+      ),
+    ).rejects.toThrow(/permission denied/);
+    await asUser(a);
+    await db.query("delete from pantry_items where id=$1", [saved]);
+    expect((await db.query("select * from pantry_items")).rows).toHaveLength(0);
+    await db.exec("delete from grocery_checks where week_start='2026-10-19'");
+    expect((await db.query("select * from grocery_checks")).rows).toHaveLength(
+      1,
+    );
     await expect(
       db.exec(
         "insert into meal_slots(date,slot,recipe_id) values('2026-10-26','lunch','foreign')",

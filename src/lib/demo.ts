@@ -89,6 +89,8 @@ export const demoData: WorkspaceData = {
   ingredients: demoIngredients,
   slots: [],
   preferences: defaultUnits,
+  groceryChecks: [],
+  pantry: [],
 };
 export const emptyData: WorkspaceData = {
   plans: [],
@@ -99,4 +101,6 @@ export const emptyData: WorkspaceData = {
   ingredients: [],
   slots: [],
   preferences: defaultUnits,
+  groceryChecks: [],
+  pantry: [],
 };

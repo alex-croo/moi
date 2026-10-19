@@ -1,6 +1,21 @@
 import { z } from "zod";
 const date = z.iso.date();
 const title = z.string().trim().min(1).max(160);
+const ingredientId = z.string().regex(/^[a-z0-9-]{1,100}$/);
+export const pantrySchema = z.object({
+  id: z.uuid(),
+  ingredientId: ingredientId.nullable(),
+  name: title,
+  location: z.enum(["cupboard", "fridge", "freezer", "spices"]),
+  quantity: z
+    .object({
+      kind: z.enum(["mass", "volume", "spoon", "count"]),
+      value: z.number().positive().max(1000000),
+    })
+    .nullable(),
+  note: z.string().trim().max(160),
+  inStock: z.boolean(),
+});
 const meal = z.object({
   title,
   titleEn: title,
@@ -84,12 +99,32 @@ export const mutationSchema = z.discriminatedUnion("type", [
     type: z.literal("slot"),
     data: z.object({
       date,
-      slot: z.enum(["lunch", "dinner"]),
+      slot: z.enum([
+        "breakfast",
+        "morning_snack",
+        "lunch",
+        "afternoon_snack",
+        "dinner",
+        "evening_snack",
+      ]),
       recipeId: z
         .string()
         .regex(/^[a-z0-9-]{1,100}$/)
         .nullable(),
     }),
+  }),
+  z.object({
+    type: z.literal("groceryCheck"),
+    data: z.object({
+      week: date.refine((d) => new Date(`${d}T12:00:00Z`).getUTCDay() === 1),
+      ingredientId,
+      checked: z.boolean(),
+    }),
+  }),
+  z.object({ type: z.literal("pantry"), data: pantrySchema }),
+  z.object({
+    type: z.literal("pantryDelete"),
+    data: z.object({ id: z.uuid() }),
   }),
   z.object({ type: z.literal("document"), data: documentSchema }),
   z.object({ type: z.literal("menu"), data: menuSchema }),

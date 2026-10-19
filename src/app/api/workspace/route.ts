@@ -49,6 +49,40 @@ export async function POST(request: Request) {
   const { type, data } = parsed.data;
   const owner_id = auth.user.id;
   let error;
+  if (type === "groceryCheck")
+    ({ error } = await auth.db
+      .from("grocery_checks")
+      .upsert(
+        {
+          owner_id,
+          week_start: data.week,
+          ingredient_id: data.ingredientId,
+          checked: data.checked,
+        },
+        { onConflict: "owner_id,week_start,ingredient_id" },
+      ));
+  if (type === "pantry")
+    ({ error } = await auth.db
+      .from("pantry_items")
+      .upsert(
+        {
+          owner_id,
+          id: data.id,
+          ingredient_id: data.ingredientId,
+          name: data.name,
+          location: data.location,
+          quantity: data.quantity,
+          note: data.note,
+          in_stock: data.inStock,
+        },
+        { onConflict: "owner_id,id" },
+      ));
+  if (type === "pantryDelete")
+    ({ error } = await auth.db
+      .from("pantry_items")
+      .delete()
+      .eq("owner_id", owner_id)
+      .eq("id", data.id));
   if (type === "weight")
     ({ error } = await auth.db
       .from("weight_entries")
@@ -67,17 +101,15 @@ export async function POST(request: Request) {
       .upsert({ owner_id, units: data }));
   if (type === "slot") {
     if (data.recipeId)
-      ({ error } = await auth.db
-        .from("meal_slots")
-        .upsert(
-          {
-            owner_id,
-            date: data.date,
-            slot: data.slot,
-            recipe_id: data.recipeId,
-          },
-          { onConflict: "owner_id,date,slot" },
-        ));
+      ({ error } = await auth.db.from("meal_slots").upsert(
+        {
+          owner_id,
+          date: data.date,
+          slot: data.slot,
+          recipe_id: data.recipeId,
+        },
+        { onConflict: "owner_id,date,slot" },
+      ));
     else
       ({ error } = await auth.db
         .from("meal_slots")
