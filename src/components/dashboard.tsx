@@ -7,7 +7,6 @@ import {
   BookOpen,
   CalendarDays,
   Check,
-  ChevronLeft,
   ChevronRight,
   CircleHelp,
   Cloud,
@@ -23,23 +22,36 @@ import {
   Scale,
   Settings2,
   Sprout,
-  Upload,
   X,
   ExternalLink,
-  Clock3,
-  Users,
   PenLine,
   type LucideIcon,
 } from "lucide-react";
+import { WeeklyPlanner, RecipeLibrary, RecipeSheet } from "./recipes";
+import { JournalEditor } from "./journal-editor";
+import { UnitSettings } from "./unit-settings";
+import { bodyWeight, monday, addDays } from "@/lib/units";
+import type {
+  Recipe,
+  UnitPreferences,
+  MealSlot,
+  JournalEntry,
+} from "@/lib/types";
 import { Brand } from "./brand";
 import { Plate } from "./plate";
 import { tr, type Locale } from "@/lib/locale";
-import { menuSchema, documentSchema } from "@/lib/validation";
-import type { WorkspaceData, MenuPlan, Meal } from "@/lib/types";
+import { documentSchema } from "@/lib/validation";
+import type { WorkspaceData, MenuPlan } from "@/lib/types";
 
 type View =
-  "overview" | "menus" | "weight" | "journal" | "library" | "settings";
-type Modal = "weight" | "journal" | "import" | "document" | null;
+  | "overview"
+  | "recipes"
+  | "menus"
+  | "weight"
+  | "journal"
+  | "library"
+  | "settings";
+type Modal = "weight" | "document" | null;
 const today = () =>
   new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Toronto",
@@ -58,30 +70,25 @@ export function Dashboard({
   initialData: WorkspaceData;
 }) {
   const [locale, setLocale] = useState(initialLocale);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [view, setView] = useState<View>("overview");
   const [data, setData] = useState(initialData);
   const [modal, setModal] = useState<Modal>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dayIndex, setDayIndex] = useState(0);
-  const [planIndex, setPlanIndex] = useState(0);
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
-  const [entryDate, setEntryDate] = useState(today);
-  const [journalText, setJournalText] = useState("");
-  const [mood, setMood] = useState(3);
   const dialog = useRef<HTMLDialogElement>(null);
   const t = (fr: string, en: string) => tr(locale, fr, en);
   const demo = mode === "demo";
-  const plan = data.plans[planIndex];
-  const day = plan?.days[dayIndex];
   const weights = [...data.weights].sort((a, b) =>
     a.date.localeCompare(b.date),
   );
   const latestWeight = weights.at(-1);
-  const recipes = plan
-    ? plan.days.flatMap((d) => [d.lunch, d.dinner]).filter(Boolean).length
-    : 0;
+  const weekStart = monday(today());
+  const recipes = data.slots.filter(
+    (s) => s.date >= weekStart && s.date <= addDays(weekStart, 6),
+  ).length;
   const dateLabel = (
     date: string,
     options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" },
@@ -101,6 +108,7 @@ export function Dashboard({
       label: t("Vue d’ensemble", "Overview"),
     },
     { id: "menus", icon: CalendarDays, label: t("Mes menus", "My menus") },
+    { id: "recipes", icon: BookOpen, label: t("Mes recettes", "My recipes") },
     { id: "weight", icon: Scale, label: t("Mon parcours", "My progress") },
     { id: "journal", icon: BookOpen, label: t("Mon journal", "My journal") },
     {
@@ -133,12 +141,12 @@ export function Dashboard({
     setView(value);
     setMenuOpen(false);
   }
-  function open(value: Modal) {
+  function open(value: Modal | "journal") {
+    if (value === "journal") {
+      go("journal");
+      return;
+    }
     setFormError("");
-    setEntryDate(today());
-    const entry = data.journal.find((e) => e.date === today());
-    setJournalText(entry?.text || "");
-    setMood(entry?.mood || 3);
     setModal(value);
   }
   async function save(type: string, value: object) {
@@ -158,21 +166,6 @@ export function Dashboard({
               ],
             };
           }
-          if (type === "journal") {
-            const row = record as WorkspaceData["journal"][number];
-            return {
-              ...current,
-              journal: [
-                row,
-                ...current.journal.filter((j) => j.date !== row.date),
-              ],
-            };
-          }
-          if (type === "menu")
-            return {
-              ...current,
-              plans: [record as MenuPlan, ...current.plans],
-            };
           return {
             ...current,
             documents: [
@@ -191,11 +184,6 @@ export function Dashboard({
         const refresh = await fetch("/api/workspace", { cache: "no-store" });
         if (!refresh.ok) throw new Error("refresh");
         setData(await refresh.json());
-      }
-      if (type === "menu") {
-        setPlanIndex(0);
-        setDayIndex(0);
-        setView("menus");
       }
       setModal(null);
       setNotice(
@@ -220,8 +208,8 @@ export function Dashboard({
       setBusy(false);
     }
   }
-  async function download() {
-    if (!plan || busy) return;
+  async function download(plan: MenuPlan) {
+    if (busy) return;
     setBusy(true);
     try {
       const { exportMenu } = await import("@/lib/pdf");
@@ -237,173 +225,63 @@ export function Dashboard({
       setBusy(false);
     }
   }
-  function mealCard(meal: Meal | null, label: string) {
-    return (
-      <article className={`meal-card ${!meal ? "empty-meal" : ""}`}>
-        <div className={`meal-visual ${meal?.kind || ""}`}>
-          {meal ? <Plate kind={meal.kind} /> : <Plus size={26} />}
-        </div>
-        <div className="meal-body">
-          <span className="eyebrow">{label}</span>
-          <h3>
-            {meal
-              ? locale === "fr"
-                ? meal.title
-                : meal.titleEn
-              : t("À votre choix", "Your choice")}
-          </h3>
-          {meal ? (
-            <p className="meal-meta">
-              <span>
-                <Clock3 size={13} />
-                {meal.minutes} min
-              </span>
-              <span>
-                <Users size={13} />
-                {meal.portions} portions
-              </span>
-            </p>
-          ) : (
-            <p className="muted">
-              {t("Ce repas reste libre.", "This meal stays open.")}
-            </p>
-          )}
-        </div>
-      </article>
-    );
+  async function mutate(
+    type: "slot" | "preferences" | "journal",
+    value: object,
+  ): Promise<WorkspaceData> {
+    let next: WorkspaceData;
+    if (demo) {
+      next = { ...data };
+      if (type === "preferences") next.preferences = value as UnitPreferences;
+      if (type === "slot") {
+        const slot = value as MealSlot;
+        next.slots = data.slots.filter(
+          (s) => s.date !== slot.date || s.slot !== slot.slot,
+        );
+        if (slot.recipeId) next.slots.push(slot);
+      }
+      if (type === "journal") {
+        const row = value as JournalEntry & { expectedRevision: number };
+        next.journal = [
+          {
+            ...row,
+            id:
+              data.journal.find((e) => e.date === row.date)?.id ||
+              crypto.randomUUID(),
+            revision: row.expectedRevision + 1,
+          },
+          ...data.journal.filter((e) => e.date !== row.date),
+        ];
+      }
+    } else {
+      const response = await fetch("/api/workspace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, data: value }),
+      });
+      if (!response.ok)
+        throw new Error(response.status === 409 ? "conflict" : "save");
+      const refresh = await fetch("/api/workspace", { cache: "no-store" });
+      if (!refresh.ok) throw new Error("refresh");
+      next = await refresh.json();
+    }
+    setData(next);
+    return next;
   }
   function menuSection(full = false) {
     return (
-      <section className="menu-section">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">
-              {t("BIEN MANGER, SIMPLEMENT", "GOOD FOOD, SIMPLY")}
-            </span>
-            <h2>
-              {full
-                ? t("Mes menus de la semaine", "My weekly menus")
-                : t(
-                    "Cette semaine, à votre rythme.",
-                    "This week, at your own pace.",
-                  )}
-            </h2>
-          </div>
-          {!full ? (
-            <button className="text-button" onClick={() => go("menus")}>
-              {t("Tout le menu", "Full menu")}
-              <ArrowRight size={15} />
-            </button>
-          ) : (
-            <button className="secondary" onClick={() => open("import")}>
-              <Upload size={15} />
-              {t("Importer un menu", "Import a menu")}
-            </button>
-          )}
-        </div>
-        {plan ? (
-          <>
-            <div className="week-toolbar">
-              <span>
-                <CalendarDays size={16} />
-                {dateLabel(plan.startDate)} —{" "}
-                {dateLabel(plan.days.at(-1)!.date)}
-              </span>
-              <div className="week-actions">
-                {data.plans.length > 1 && (
-                  <>
-                    <button
-                      className="icon-button"
-                      disabled={planIndex === data.plans.length - 1}
-                      onClick={() => {
-                        setPlanIndex(planIndex + 1);
-                        setDayIndex(0);
-                      }}
-                      aria-label={t("Menu précédent", "Previous menu")}
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button
-                      className="icon-button"
-                      disabled={planIndex === 0}
-                      onClick={() => {
-                        setPlanIndex(planIndex - 1);
-                        setDayIndex(0);
-                      }}
-                      aria-label={t("Menu suivant", "Next menu")}
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </>
-                )}
-                <button
-                  className="text-button"
-                  disabled={busy}
-                  onClick={download}
-                >
-                  <ArrowDownToLine size={15} />
-                  {t("Exporter en PDF", "Export PDF")}
-                </button>
-              </div>
-            </div>
-            <div
-              className="days"
-              aria-label={t("Choisir une journée", "Choose a day")}
-            >
-              {plan.days.map((d, i) => (
-                <button
-                  key={d.date}
-                  className={i === dayIndex ? "selected" : ""}
-                  aria-pressed={i === dayIndex}
-                  onClick={() => setDayIndex(i)}
-                >
-                  <span>
-                    {dateLabel(d.date, { weekday: "short" }).replace(".", "")}
-                  </span>
-                  <strong>{dateLabel(d.date, { day: "numeric" })}</strong>
-                  <i className={d.lunch || d.dinner ? "filled" : ""} />
-                </button>
-              ))}
-              <div className="free-day">
-                <Leaf size={17} />
-                <span>{t("7e jour", "Day 7")}</span>
-                <strong>{t("Libre", "Open")}</strong>
-              </div>
-            </div>
-            <div className="meals-grid">
-              {mealCard(day?.lunch || null, t("DÎNER", "LUNCH"))}
-              {mealCard(day?.dinner || null, t("SOUPER", "DINNER"))}
-            </div>
-            <p className="gentle-note">
-              <Leaf size={13} />
-              {t(
-                "Deux portions. Les repas non choisis restent libres.",
-                "Two portions. Unchosen meals stay open.",
-              )}
-            </p>
-          </>
-        ) : (
-          <div className="empty-state">
-            <CalendarDays />
-            <h3>
-              {t(
-                "Votre prochaine semaine commence ici.",
-                "Your next week starts here.",
-              )}
-            </h3>
-            <p>
-              {t(
-                "Ajoutez votre premier plan de six jours.",
-                "Add your first six-day plan.",
-              )}
-            </p>
-            <button className="primary" onClick={() => open("import")}>
-              <Plus size={16} />
-              {t("Ajouter un menu", "Add a menu")}
-            </button>
-          </div>
-        )}
-      </section>
+      <WeeklyPlanner
+        key={full ? "full" : "overview"}
+        full={full}
+        recipes={data.recipes}
+        ingredients={data.ingredients}
+        slots={data.slots}
+        locale={locale}
+        onOpen={setSelectedRecipe}
+        onSave={async (value) => {
+          await mutate("slot", value);
+        }}
+      />
     );
   }
   function chart() {
@@ -416,7 +294,7 @@ export function Dashboard({
           )}
         </p>
       );
-    const unit = latestWeight!.unit;
+    const unit = data.preferences.bodyMass;
     const values = weights.map((w) =>
       w.unit === unit
         ? w.value
@@ -487,8 +365,14 @@ export function Dashboard({
         <div className="weight-value">
           {latestWeight ? (
             <>
-              {number(latestWeight.value)}
-              <small>{latestWeight.unit}</small>
+              {number(
+                bodyWeight(
+                  latestWeight.value,
+                  latestWeight.unit,
+                  data.preferences.bodyMass,
+                ),
+              )}
+              <small>{data.preferences.bodyMass}</small>
             </>
           ) : (
             <span className="no-weight">
@@ -524,7 +408,10 @@ export function Dashboard({
                   })}
                 </span>
                 <strong>
-                  {number(w.value)} {w.unit}
+                  {number(
+                    bodyWeight(w.value, w.unit, data.preferences.bodyMass),
+                  )}{" "}
+                  {data.preferences.bodyMass}
                 </strong>
               </div>
             ))}
@@ -732,13 +619,13 @@ export function Dashboard({
                   </span>
                   <span>
                     <strong>
-                      {plan
+                      {recipes > 0
                         ? t("Ma semaine est prête", "My week is ready")
                         : t("Ma semaine à préparer", "My week to plan")}
                     </strong>
                     <small>
-                      {plan
-                        ? `6 ${t("jours", "days")} · ${recipes} ${t("repas prévus", "planned meals")}`
+                      {recipes > 0
+                        ? `7 ${t("jours", "days")} · ${recipes} ${t("repas prévus", "planned meals")}`
                         : t(
                             "Un menu, à votre goût",
                             "A menu that feels like you",
@@ -855,8 +742,8 @@ export function Dashboard({
                 <FileText size={20} />
                 <p>
                   {t(
-                    "Retrouvez vos plans ici et téléchargez-les en PDF au format Lettre. Le septième jour reste à vous.",
-                    "Find your plans here and download them as Letter-size PDFs. The seventh day is yours.",
+                    "Retrouvez vos plans ici et téléchargez-les en PDF au format Lettre. Les sept jours sont disponibles.",
+                    "Find your plans here and download them as Letter-size PDFs. All seven days are available.",
                   )}
                 </p>
               </div>
@@ -897,83 +784,35 @@ export function Dashboard({
               </div>
             </>
           )}
-          {view === "journal" && (
+          <div hidden={view !== "journal"}>
+            <JournalEditor
+              entries={data.journal}
+              locale={locale}
+              onSave={async (value) => {
+                const result = await mutate("journal", value);
+                return result.journal.find((e) => e.date === value.date)!;
+              }}
+            />
+          </div>
+          {view === "recipes" && (
             <>
-              <div className="page-heading row-heading">
-                <div>
-                  <span className="eyebrow">
-                    {t(
-                      "UN PEU DE PLACE POUR SOI",
-                      "A LITTLE ROOM FOR YOURSELF",
-                    )}
-                  </span>
-                  <h1>{t("Mon journal de bord.", "My everyday journal.")}</h1>
-                  <p>
-                    {t(
-                      "Les bons jours, les jours ordinaires. Tout a sa place ici.",
-                      "The good days, the ordinary days. There’s room for all of it here.",
-                    )}
-                  </p>
-                </div>
-                <button className="primary" onClick={() => open("journal")}>
-                  <Plus size={16} />
-                  {t("Écrire aujourd’hui", "Write today")}
-                </button>
+              <div className="page-heading">
+                <span className="eyebrow">
+                  {t("AU FIL DES SEMAINES", "OVER THE WEEKS")}
+                </span>
+                <h1>{t("Mon livre de recettes.", "My recipe book.")}</h1>
+                <p>
+                  {t(
+                    "Des plats choisis ensemble, à retrouver et à cuisiner à votre rythme.",
+                    "Meals chosen together, ready to enjoy at your own pace.",
+                  )}
+                </p>
               </div>
-              {data.journal.length ? (
-                <div className="journal-grid">
-                  {[...data.journal]
-                    .sort((a, b) => b.date.localeCompare(a.date))
-                    .map((entry) => (
-                      <article className="card journal-entry" key={entry.id}>
-                        <span className="eyebrow">
-                          {dateLabel(entry.date, {
-                            weekday: "long",
-                            day: "numeric",
-                            month: "long",
-                          })}
-                        </span>
-                        <span className="entry-mood">
-                          {["☁", "◔", "◑", "◕", "☀"][entry.mood - 1]}
-                        </span>
-                        <p>{entry.text}</p>
-                        <button
-                          className="text-button"
-                          onClick={() => {
-                            setEntryDate(entry.date);
-                            setJournalText(entry.text);
-                            setMood(entry.mood);
-                            setFormError("");
-                            setModal("journal");
-                          }}
-                        >
-                          {t("Relire et modifier", "Read and edit")}
-                          <PenLine size={14} />
-                        </button>
-                      </article>
-                    ))}
-                </div>
-              ) : (
-                <div className="empty-state journal-empty">
-                  <BookOpen size={38} strokeWidth={1.2} />
-                  <h2>
-                    {t(
-                      "Pas besoin de trouver les mots parfaits.",
-                      "You don’t need the perfect words.",
-                    )}
-                  </h2>
-                  <p>
-                    {t(
-                      "Qu’est-ce qui vous a fait du bien aujourd’hui?",
-                      "What felt good today?",
-                    )}
-                  </p>
-                  <button className="primary" onClick={() => open("journal")}>
-                    {t("Commencer mon journal", "Start my journal")}
-                    <PenLine size={16} />
-                  </button>
-                </div>
-              )}
+              <RecipeLibrary
+                recipes={data.recipes}
+                locale={locale}
+                onOpen={setSelectedRecipe}
+              />
             </>
           )}
           {view === "library" && (
@@ -1014,15 +853,11 @@ export function Dashboard({
                 </span>
               </div>
               <div className="document-grid">
-                {data.plans.map((p, i) => (
+                {data.plans.map((p) => (
                   <button
                     className="document-card"
                     key={p.id}
-                    onClick={() => {
-                      setPlanIndex(i);
-                      setDayIndex(0);
-                      go("menus");
-                    }}
+                    onClick={() => void download(p)}
                   >
                     <span className="document-cover">
                       <Brand />
@@ -1099,6 +934,13 @@ export function Dashboard({
                     <option value="en">English</option>
                   </select>
                 </div>
+                <UnitSettings
+                  units={data.preferences}
+                  locale={locale}
+                  onSave={async (units) => {
+                    await mutate("preferences", units);
+                  }}
+                />
                 <div>
                   <div>
                     <h3>{t("Vos données", "Your data")}</h3>
@@ -1155,6 +997,16 @@ export function Dashboard({
           </button>
         </div>
       )}
+      {selectedRecipe && (
+        <RecipeSheet
+          key={selectedRecipe.id}
+          recipe={selectedRecipe}
+          ingredients={data.ingredients}
+          units={data.preferences}
+          locale={locale}
+          onClose={() => setSelectedRecipe(null)}
+        />
+      )}
       <dialog
         ref={dialog}
         onCancel={(e) => {
@@ -1182,14 +1034,7 @@ export function Dashboard({
                 "Un repère pour aujourd’hui.",
                 "A little perspective for today.",
               )
-            : modal === "journal"
-              ? t("Un moment pour vous.", "A moment for you.")
-              : modal === "import"
-                ? t("Votre prochain menu.", "Your next menu.")
-                : t(
-                    "Tout garder à portée de main.",
-                    "Keep it all close at hand.",
-                  )}
+            : t("Tout garder à portée de main.", "Keep it all close at hand.")}
         </h2>
         {modal === "weight" && (
           <form
@@ -1234,7 +1079,11 @@ export function Dashboard({
               </label>
               <label>
                 {t("Unité", "Unit")}
-                <select name="unit" defaultValue={latestWeight?.unit || "lb"}>
+                <select
+                  name="unit"
+                  aria-label={t("Unité", "Unit")}
+                  defaultValue={data.preferences.bodyMass}
+                >
                   <option value="lb">lb</option>
                   <option value="kg">kg</option>
                 </select>
@@ -1243,122 +1092,6 @@ export function Dashboard({
             <button className="primary full-width" disabled={busy}>
               {t("Enregistrer la mesure", "Save measurement")}
               <Check size={16} />
-            </button>
-          </form>
-        )}
-        {modal === "journal" && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void save("journal", {
-                date: entryDate,
-                text: journalText,
-                mood,
-              });
-            }}
-          >
-            <label>
-              {t("Date", "Date")}
-              <input
-                name="date"
-                type="date"
-                required
-                max={today()}
-                value={entryDate}
-                onChange={(e) => {
-                  setEntryDate(e.target.value);
-                  const entry = data.journal.find(
-                    (j) => j.date === e.target.value,
-                  );
-                  setJournalText(entry?.text || "");
-                  setMood(entry?.mood || 3);
-                }}
-              />
-            </label>
-            <fieldset className="mood-field">
-              <legend>
-                {t("Comment vous sentez-vous?", "How are you feeling?")}
-              </legend>
-              <div className="mood-options">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    type="button"
-                    key={n}
-                    aria-label={`${t("Humeur", "Mood")} ${n}/5`}
-                    aria-pressed={mood === n}
-                    className={mood === n ? "chosen" : ""}
-                    onClick={() => setMood(n)}
-                  >
-                    {["☁", "◔", "◑", "◕", "☀"][n - 1]}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-            <label>
-              {t("Mes quelques lignes", "A few words")}
-              <textarea
-                required
-                maxLength={20000}
-                value={journalText}
-                onChange={(e) => setJournalText(e.target.value)}
-                placeholder={t(
-                  "Aujourd’hui, ce qui m’a fait du bien…",
-                  "Today, something that felt good…",
-                )}
-                rows={6}
-              />
-            </label>
-            <button className="primary full-width" disabled={busy}>
-              {t("Enregistrer mon entrée", "Save my entry")}
-              <Check size={16} />
-            </button>
-          </form>
-        )}
-        {modal === "import" && (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const file = new FormData(e.currentTarget).get("menu") as File;
-              if (file.size > 60000) {
-                setFormError(
-                  t(
-                    "Le fichier est trop volumineux (60 Ko maximum).",
-                    "The file is too large (60 KB maximum).",
-                  ),
-                );
-                return;
-              }
-              try {
-                const parsed = menuSchema.parse(JSON.parse(await file.text()));
-                await save("menu", parsed);
-              } catch {
-                setFormError(
-                  t(
-                    "Le fichier doit contenir un menu valide de six jours consécutifs, avec les titres français et anglais.",
-                    "The file must contain a valid six-day menu with consecutive dates and French and English titles.",
-                  ),
-                );
-              }
-            }}
-          >
-            <p className="muted">
-              {t(
-                "Importez un fichier de menu préparé pour cet espace. Les repas laissés vides le resteront.",
-                "Import a menu file prepared for this space. Empty meals will stay open.",
-              )}
-            </p>
-            <label>
-              {t("Fichier de menu (.json)", "Menu file (.json)")}
-              <input
-                type="file"
-                name="menu"
-                accept="application/json,.json"
-                required
-              />
-            </label>
-            <button className="primary full-width" disabled={busy}>
-              <Upload size={16} />
-              {t("Ajouter à mes menus", "Add to my menus")}
             </button>
           </form>
         )}

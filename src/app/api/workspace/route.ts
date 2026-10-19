@@ -54,23 +54,52 @@ export async function POST(request: Request) {
       .from("weight_entries")
       .upsert({ ...data, owner_id }, { onConflict: "owner_id,date" }));
   if (type === "journal")
+    ({ error } = await auth.db.rpc("save_journal", {
+      entry_date: data.date,
+      entry_text: data.text,
+      entry_title: data.title,
+      entry_mood: data.mood,
+      expected_revision: data.expectedRevision,
+    }));
+  if (type === "preferences")
     ({ error } = await auth.db
-      .from("journal_entries")
-      .upsert({ ...data, owner_id }, { onConflict: "owner_id,date" }));
+      .from("unit_preferences")
+      .upsert({ owner_id, units: data }));
+  if (type === "slot") {
+    if (data.recipeId)
+      ({ error } = await auth.db
+        .from("meal_slots")
+        .upsert(
+          {
+            owner_id,
+            date: data.date,
+            slot: data.slot,
+            recipe_id: data.recipeId,
+          },
+          { onConflict: "owner_id,date,slot" },
+        ));
+    else
+      ({ error } = await auth.db
+        .from("meal_slots")
+        .delete()
+        .eq("owner_id", owner_id)
+        .eq("date", data.date)
+        .eq("slot", data.slot));
+  }
   if (type === "document")
     ({ error } = await auth.db
       .from("document_links")
       .insert({ ...data, owner_id }));
   if (type === "menu")
-    ({ error } = await auth.db
-      .from("menu_plans")
-      .insert({
-        owner_id,
-        title: data.title,
-        title_en: data.titleEn,
-        start_date: data.startDate,
-        days: data.days,
-      }));
+    ({ error } = await auth.db.from("menu_plans").insert({
+      owner_id,
+      title: data.title,
+      title_en: data.titleEn,
+      start_date: data.startDate,
+      days: data.days,
+    }));
+  if (error && ["40001", "23505"].includes(error.code))
+    return reply({ error: "conflict" }, 409);
   if (error) return reply({ error: "save_failed" }, 503);
   return reply({ ok: true });
 }

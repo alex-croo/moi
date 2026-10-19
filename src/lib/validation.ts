@@ -48,6 +48,14 @@ export const documentSchema = z.object({
       );
     }, "Use an HTTPS Google Drive or Google Docs link"),
 });
+export const unitSchema = z.object({
+  bodyMass: z.enum(["lb", "kg"]),
+  ingredientMass: z.enum(["g", "oz"]),
+  volume: z.enum(["ml", "cup", "fl_oz"]),
+  spoons: z.enum(["spoon", "ml"]),
+  temperature: z.enum(["C", "F"]),
+  length: z.enum(["cm", "in"]),
+});
 export const mutationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("weight"),
@@ -61,8 +69,26 @@ export const mutationSchema = z.discriminatedUnion("type", [
     type: z.literal("journal"),
     data: z.object({
       date,
-      text: z.string().trim().min(1).max(20000),
+      text: z
+        .string()
+        .min(1)
+        .max(20000)
+        .refine((v) => v.trim().length > 0),
+      title: z.string().max(160).default(""),
+      expectedRevision: z.number().int().min(0),
       mood: z.number().int().min(1).max(5),
+    }),
+  }),
+  z.object({ type: z.literal("preferences"), data: unitSchema }),
+  z.object({
+    type: z.literal("slot"),
+    data: z.object({
+      date,
+      slot: z.enum(["lunch", "dinner"]),
+      recipeId: z
+        .string()
+        .regex(/^[a-z0-9-]{1,100}$/)
+        .nullable(),
     }),
   }),
   z.object({ type: z.literal("document"), data: documentSchema }),

@@ -1,3 +1,5 @@
+import { demoIngredients, demoRecipes } from "./demo-recipes";
+import { defaultUnits } from "./units";
 import type { Meal, WorkspaceData } from "./types";
 
 const meals: Meal[] = [
@@ -83,10 +85,18 @@ export const demoData: WorkspaceData = {
   ],
   journal: [],
   documents: [],
+  recipes: demoRecipes,
+  ingredients: demoIngredients,
+  slots: [],
+  preferences: defaultUnits,
 };
 export const emptyData: WorkspaceData = {
   plans: [],
   weights: [],
   journal: [],
   documents: [],
+  recipes: [],
+  ingredients: [],
+  slots: [],
+  preferences: defaultUnits,
 };

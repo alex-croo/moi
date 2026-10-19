@@ -29,7 +29,7 @@ export async function exportMenu(
     }
     return lines;
   };
-  for (let sheet = 0; sheet < 3; sheet++) {
+  for (let sheet = 0; sheet < Math.ceil(plan.days.length / 2); sheet++) {
     const page = pdf.addPage([612, 792]); // US Letter, matching the existing recipe sheets.
     page.drawRectangle({
       x: 0,
@@ -70,7 +70,7 @@ export async function exportMenu(
       color: green,
     });
     page.drawText(
-      `${plan.startDate} · ${tr(locale, "Menu de six jours", "Six-day menu")}`,
+      `${plan.startDate} · ${tr(locale, "Menu de la semaine", "Weekly menu")}`,
       { x: 44, y: 649, size: 11, font: sans, color: muted },
     );
     plan.days.slice(sheet * 2, sheet * 2 + 2).forEach((day, index) => {
@@ -125,8 +125,8 @@ export async function exportMenu(
     page.drawText(
       tr(
         locale,
-        "Le septième jour est libre. Aucune répétition de repas imposée.",
-        "The seventh day is open. No automatically repeated meals.",
+        "Des repas choisis à votre rythme.",
+        "Meals chosen at your own pace.",
       ),
       { x: 44, y: 89, size: 10, font: sans, color: muted },
     );
@@ -140,7 +140,7 @@ export async function exportMenu(
         : tr(locale, "Document personnel", "Personal document"),
       { x: 44, y: 58, size: 9, font: sans, color: muted },
     );
-    page.drawText(`${sheet + 1} / 3`, {
+    page.drawText(`${sheet + 1} / ${Math.ceil(plan.days.length / 2)}`, {
       x: 540,
       y: 58,
       size: 10,

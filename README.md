@@ -1,7 +1,7 @@
 # I am able
 
-Espace personnel bilingue français–anglais : menus de six jours, export PDF Lettre,
-suivi du poids, journal et bibliothèque de liens Google Drive. Première maquette
+Espace personnel bilingue français–anglais : planificateur de sept jours, recettes illustrées,
+export PDF Lettre, suivi du poids, journal et bibliothèque de liens Google Drive. Application
 pour **iamable.space**, workspace Vercel **moi**.
 
 ## Ce qui existe
@@ -9,15 +9,17 @@ pour **iamable.space**, workspace Vercel **moi**.
 - Next.js App Router + TypeScript, interface responsive vert forêt et crème.
 - Démonstration explicite et éphémère : aucune donnée de santé réelle, aucun
   stockage local du journal ou du poids. Le rechargement efface les essais.
-- Export de menus en vrais PDF de trois pages au format Lettre, en français ou anglais.
-- Import de menus JSON validés : six dates consécutives, repas manquants conservés vides.
+- Semainier dîner/souper avec choix dans la bibliothèque et export PDF Lettre de quatre pages.
+- Fiches de recettes illustrées; ingrédients canoniques réutilisés et macros calculées.
+- Journal pleine page, paragraphes libres, propositions IA à accepter et protection contre les écritures concurrentes.
+- Unités indépendantes : poids corporel, ingrédients, liquides, cuillères, températures et dimensions. Les préférences sont privées et persistantes.
 - Routes Google OAuth/Supabase, contrôle d’accès côté serveur et API authentifiée.
 - Migration PostgreSQL : tables privées par utilisateur, RLS et liste d’accès explicite.
 - Aucun traceur, police distante, image distante ou secret dans le navigateur.
 
-**Non activé :** projet Vercel distant, base Supabase distante, vrai parcours OAuth,
-DNS/TLS du domaine, import des documents existants et synchronisation Google Drive.
-Le code d’authentification et de persistance exige cette configuration avant un usage réel.
+Le déploiement privé utilise Vercel, Supabase et Google OAuth avec une liste d'accès explicite.
+La synchronisation automatique Google Drive n'est pas activée; les recettes sont publiées par Codex.
+L'IA utilise Vercel AI Gateway avec l'identité OIDC du projet et requiert son activation dans le workspace.
 La démo n’est jamais accessible lorsque `VERCEL=1`, même avec `ENABLE_DEMO=true`.
 
 ## Développement
@@ -53,34 +55,30 @@ puis lancer `npm test` sans `CHROMIUM_PATH`.
 
 La suite vérifie le refus d’accès anonyme, l’origine des mutations, la fermeture
 de la démo sur Vercel, les règles RLS en PostgreSQL embarqué, les formulaires,
-les liens Drive, l’import, les langues, le PDF et les mises en page. Les captures
+les liens Drive, les langues, le PDF, le semainier, les conversions, la concurrence du journal et l’acceptation des propositions IA. Les captures
 et un PDF d’exemple sont générés dans `artifacts/` (ignoré par Git).
 Cela ne remplace pas un essai Google/Supabase dans le projet distant configuré.
 
 ## Menus et publication de contenu
 
-Le format attendu est illustré dans `examples/menu.json`. L’import dans l’espace
-authentifié crée un plan privé et ne remplace aucun plan existant. Le journal et le
-poids ont une entrée par date et par utilisateur; enregistrer de nouveau la même date
-met à jour cette entrée. Les unités lb/kg sont conservées; seul le graphique les
-convertit pour comparer les mesures.
+Voir [RECIPES.md](RECIPES.md) pour le contrat de publication privée, les sources nutritionnelles,
+les jetons de conversion et le validateur de catalogue. Aucun fichier personnel ni photo de recette
+n'est inclus dans Git. Les anciennes tables de menus et leurs exports sont préservés.
 
-L’API `POST /api/workspace` accepte `{ "type": "menu", "data": <menu> }`, ou les types
-`weight`, `journal` et `document`, avec une session autorisée et l’en-tête `Origin`
-du site. Aucun point d’écriture public, clé d’agent ou tâche automatique n’est créé.
-Un futur outil de publication pour l’assistant devra utiliser un accès délégué,
-limité aux menus/documents, distinct du journal et des données de santé.
+Le journal et le poids ont une entrée par date et utilisateur. Le poids conserve sa mesure d'origine;
+les écrans et le graphique suivent les préférences, sans réécrire l'historique. Les macros restent en grammes.
+L'API privée accepte `weight`, `journal`, `document`, `slot` et `preferences`; le type historique `menu`
+reste compatible. Les écritures exigent une session invitée et une origine identique au site.
 
 ## Drive
 
 La bibliothèque permet d’enregistrer un lien HTTPS vers `drive.google.com` ou
 `docs.google.com` et de l’ouvrir avec les permissions Google existantes. Elle ne lit
-pas le contenu du fichier et ne le rend pas public. Les PDF existants ne sont pas
-encore migrés. La connexion Google utilisée pour se connecter ne demande aucun
+pas le contenu du fichier et ne le rend pas public. Les fiches choisies peuvent être publiées dans le catalogue privé par Codex. La connexion Google utilisée pour se connecter ne demande aucun
 scope Drive. Une intégration Drive avec sélection explicite des fichiers est une
 étape distincte; voir le plan dans `DEPLOYMENT.md`.
 
 Les références du projet ChatGPT « Recettes » ont guidé la palette vert forêt/crème,
-les deux portions et le septième jour libre. Le nom de marque est désormais
+les deux portions et les fiches illustrées. Le nom de marque est désormais
 **I am able**. Aucune donnée de santé ni aucun identifiant de document privé du
 projet ChatGPT n’a été intégré aux exemples ou au code.
