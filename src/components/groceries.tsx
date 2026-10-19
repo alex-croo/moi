@@ -1,6 +1,12 @@
 "use client";
 import { useState } from "react";
-import { ArrowRight, Copy, ShoppingBasket } from "lucide-react";
+import {
+  ArrowRight,
+  Copy,
+  ShoppingBasket,
+  PackageCheck,
+  Check,
+} from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type {
   Ingredient,
@@ -133,63 +139,100 @@ export function GroceryList({
   }
   return (
     <section className="grocery-page">
-      <div className="page-heading">
-        <span className="eyebrow">
-          {t("AVANT DE PASSER À TABLE", "BEFORE SITTING DOWN TO EAT")}
-        </span>
-        <h1>{t("Ma liste d’épicerie.", "My grocery list.")}</h1>
-        <p>
-          {t(
-            "Tout ce qu’il faut pour les repas de votre semaine, rassemblé au même endroit.",
-            "Everything you need for this week’s meals, gathered in one place.",
-          )}
-        </p>
+      <div className="grocery-heading">
+        <div className="page-heading">
+          <span className="eyebrow">
+            {t("AVANT DE PASSER À TABLE", "BEFORE SITTING DOWN TO EAT")}
+          </span>
+          <h1>{t("Ma liste d’épicerie.", "My grocery list.")}</h1>
+          <p>
+            {t(
+              "Tout ce qu’il faut pour les repas de votre semaine, rassemblé au même endroit.",
+              "Everything you need for this week’s meals, gathered in one place.",
+            )}
+          </p>
+        </div>
+        <div className="grocery-actions">
+          <button className="secondary" onClick={onPantry}>
+            <PackageCheck size={17} />
+            {t("Voir mes réserves", "View my pantry")}
+          </button>
+          <button className="text-button" onClick={onPlan}>
+            {t("Voir les repas", "View meals")}
+            <ArrowRight size={16} />
+          </button>
+        </div>
       </div>
-      <WeekNavigation
-        week={week}
-        locale={locale}
-        onChange={(value) => {
-          setStatus("");
-          setError("");
-          onWeekChange(value);
-        }}
-      />
-      <div className="grocery-toolbar">
-        <label className="grocery-optional">
-          <input
-            type="checkbox"
-            checked={showReady}
-            onChange={(e) => setShowReady(e.target.checked)}
-          />
-          {t("Afficher les aliments déjà prêts", "Show foods already ready")}
-        </label>
-        <button className="text-button" onClick={onPantry}>
-          {t("Voir mes réserves", "View my pantry")}
-        </button>
-        <label className="grocery-optional">
-          <input
-            type="checkbox"
-            checked={includeOptional}
-            onChange={(e) => {
-              setIncludeOptional(e.target.checked);
+      <div className="grocery-controls">
+        <div className="grocery-week">
+          <span className="eyebrow">{t("MA SEMAINE", "MY WEEK")}</span>
+          <WeekNavigation
+            week={week}
+            locale={locale}
+            onChange={(value) => {
               setStatus("");
+              setError("");
+              onWeekChange(value);
             }}
           />
-          {t(
-            "Inclure les ingrédients facultatifs",
-            "Include optional ingredients",
-          )}
-        </label>
-        <button className="text-button" onClick={onPlan}>
-          {t("Voir les repas", "View meals")}
-          <ArrowRight size={16} />
-        </button>
-        {items.length > 0 && (
-          <button className="text-button" onClick={() => void copy()}>
-            <Copy size={16} />
-            {t("Copier la liste", "Copy list")}
-          </button>
-        )}
+        </div>
+        <div className="grocery-toolbar">
+          <label className="grocery-optional">
+            <input
+              type="checkbox"
+              aria-label={t(
+                "Afficher les aliments déjà prêts",
+                "Show foods already ready",
+              )}
+              aria-describedby="grocery-ready-help"
+              checked={showReady}
+              onChange={(e) => setShowReady(e.target.checked)}
+            />
+            <span>
+              <strong>
+                {t(
+                  "Afficher les aliments déjà prêts",
+                  "Show foods already ready",
+                )}
+              </strong>
+              <small id="grocery-ready-help">
+                {t(
+                  "Ce que vous avez à la maison ou déjà acheté.",
+                  "What you have at home or have already bought.",
+                )}
+              </small>
+            </span>
+          </label>
+          <label className="grocery-optional">
+            <input
+              type="checkbox"
+              aria-label={t(
+                "Inclure les ingrédients facultatifs",
+                "Include optional ingredients",
+              )}
+              aria-describedby="grocery-optional-help"
+              checked={includeOptional}
+              onChange={(e) => {
+                setIncludeOptional(e.target.checked);
+                setStatus("");
+              }}
+            />
+            <span>
+              <strong>
+                {t(
+                  "Inclure les ingrédients facultatifs",
+                  "Include optional ingredients",
+                )}
+              </strong>
+              <small id="grocery-optional-help">
+                {t(
+                  "Les petits extras proposés dans vos recettes.",
+                  "The little extras suggested in your recipes.",
+                )}
+              </small>
+            </span>
+          </label>
+        </div>
       </div>
       {status && (
         <p className="grocery-status" role="status">
@@ -212,46 +255,48 @@ export function GroceryList({
       {items.length ? (
         <div className="grocery-paper">
           <header className="grocery-summary">
-            <ShoppingBasket size={24} />
-            <div>
-              <h2>{t("Ce qu’il me manque", "What I still need")}</h2>
-              <p>
-                {meals}{" "}
-                {t(
-                  meals === 1 ? "repas prévu" : "repas prévus",
-                  meals === 1 ? "planned meal" : "planned meals",
-                )}{" "}
-                · {items.length}{" "}
-                {t(
-                  items.length === 1 ? "ingrédient" : "ingrédients",
-                  items.length === 1 ? "ingredient" : "ingredients",
-                )}
-              </p>
+            <div className="grocery-summary-title">
+              <ShoppingBasket size={24} />
+              <div>
+                <h2>{t("Ce qu’il me manque", "What I still need")}</h2>
+                <p>
+                  {meals}{" "}
+                  {t(
+                    meals === 1 ? "repas prévu" : "repas prévus",
+                    meals === 1 ? "planned meal" : "planned meals",
+                  )}{" "}
+                  · {items.length}{" "}
+                  {t(
+                    items.length === 1 ? "ingrédient" : "ingrédients",
+                    items.length === 1 ? "ingredient" : "ingredients",
+                  )}
+                </p>
+              </div>
             </div>
+            <button className="secondary" onClick={() => void copy()}>
+              <Copy size={16} />
+              {t("Copier la liste", "Copy list")}
+            </button>
           </header>
-          <p className="grocery-explanation">
-            {t(
-              "Pour les portions prévues dans chaque recette. Chaque repas répété est compté à nouveau.",
-              "For the servings specified in each recipe. Each repeated meal is counted again.",
-            )}
-          </p>
           <div className="grocery-progress">
             <span>
-              {t("Déjà à la maison ou acheté", "Already at home or bought")} ·{" "}
-              {ready} / {items.length}
+              <strong>{items.length - ready}</strong> {t("à acheter", "to buy")}
+              <span className="grocery-progress-separator">·</span>
+              {ready} / {items.length} {t("déjà prêts", "already ready")}
             </span>
             <progress
               max={items.length}
               value={ready}
               aria-label={t("Ingrédients prêts", "Ingredients ready")}
             />
-            <p>
-              {t(
-                "Vos réserves sont déduites des quantités à cuisiner. Cochez vos achats : ils seront gardés pour cette semaine. Une réserve sans quantité ou mesurée autrement reste à vérifier. Vos réserves ne sont pas modifiées par ce calcul.",
-                "Pantry quantities are deducted from what you need to cook. Check off your purchases: they are saved for this week. Stock without a quantity or with a different measure needs checking. This calculation does not change your pantry.",
-              )}
-            </p>
           </div>
+          <p className="grocery-explanation grocery-save-hint">
+            <Check size={15} />
+            {t(
+              "Vos réserves sont déduites. Vos achats cochés sont enregistrés pour la semaine.",
+              "Your pantry is deducted. Checked purchases are saved for the week.",
+            )}
+          </p>
           {!visibleItems.length && (
             <p className="grocery-all-ready" role="status">
               {t(
@@ -270,6 +315,7 @@ export function GroceryList({
                 key={item.ingredient.id}
               >
                 <input
+                  id={`grocery-${item.ingredient.id}`}
                   className="grocery-check"
                   type="checkbox"
                   aria-label={`${t("Prêt pour la semaine", "Ready for the week")} : ${name(item.ingredient)}`}
@@ -280,7 +326,11 @@ export function GroceryList({
                   }
                 />
                 <div className="grocery-item-body">
-                  <h3>{name(item.ingredient)}</h3>
+                  <h3>
+                    <label htmlFor={`grocery-${item.ingredient.id}`}>
+                      {name(item.ingredient)}
+                    </label>
+                  </h3>
                   {pantryForIngredient(pantry, item.ingredient.id).map((p) => (
                     <p className="pantry-badge" key={p.id}>
                       {t("Dans vos réserves", "In your pantry")} ·{" "}
@@ -345,6 +395,20 @@ export function GroceryList({
               </li>
             ))}
           </ul>
+          <details className="grocery-help">
+            <summary>
+              {t(
+                "Comment les quantités sont-elles calculées?",
+                "How are quantities calculated?",
+              )}
+            </summary>
+            <p>
+              {t(
+                "Les quantités couvrent les portions de chaque recette; un repas répété est compté à nouveau. Vos réserves sont déduites sans être modifiées. Une réserve sans quantité ou mesurée autrement reste à vérifier.",
+                "Quantities cover each recipe’s servings; a repeated meal is counted again. Pantry quantities are deducted without changing your stock. Stock without a quantity or with a different measure needs checking.",
+              )}
+            </p>
+          </details>
           {hasEstimates && (
             <p className="grocery-explanation">
               {t(
@@ -355,24 +419,40 @@ export function GroceryList({
           )}
         </div>
       ) : (
-        <div className="grocery-empty">
-          <ShoppingBasket size={36} strokeWidth={1.3} />
-          <h2>
-            {t(
-              "Votre épicerie commence par vos repas.",
-              "Your groceries start with your meals.",
-            )}
-          </h2>
-          <p>
-            {t(
-              "Choisissez des recettes pour cette semaine : les ingrédients s’ajouteront ici automatiquement.",
-              "Choose recipes for this week and their ingredients will appear here automatically.",
-            )}
-          </p>
-          <button className="primary" onClick={onPlan}>
-            {t("Choisir mes repas", "Choose my meals")}
-            <ArrowRight size={16} />
-          </button>
+        <div className="grocery-empty grocery-empty-planner">
+          <div className="grocery-empty-icon">
+            <ShoppingBasket size={40} strokeWidth={1.3} />
+          </div>
+          <div className="grocery-empty-copy">
+            <span className="eyebrow">
+              {t("UNE SEMAINE À COMPOSER", "A WEEK TO MAKE YOUR OWN")}
+            </span>
+            <h2>
+              {t(
+                "Votre épicerie commence par vos repas.",
+                "Your groceries start with your meals.",
+              )}
+            </h2>
+            <p>
+              {t(
+                "Choisissez des recettes pour cette semaine : les ingrédients s’ajouteront ici automatiquement.",
+                "Choose recipes for this week and their ingredients will appear here automatically.",
+              )}
+            </p>
+            <button className="primary" onClick={onPlan}>
+              {t("Choisir mes repas", "Choose my meals")}
+              <ArrowRight size={16} />
+            </button>
+            <div className="grocery-empty-note">
+              <PackageCheck size={16} />
+              <span>
+                {t(
+                  "Vos réserves à la maison seront prises en compte.",
+                  "Your pantry at home will be taken into account.",
+                )}
+              </span>
+            </div>
+          </div>
         </div>
       )}
     </section>
