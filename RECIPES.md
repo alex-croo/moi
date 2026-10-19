@@ -13,7 +13,16 @@ La bibliothèque est privée. Aucun formulaire d'ajout de recette n'est exposé 
 
 Les macros affichées sont la somme des masses × valeurs par 100 g, divisée par les portions de la recette. Les ingrédients facultatifs sont exclus. Les changements d'unités ne changent jamais les masses, les macros ou les données historiques.
 
+## Liste d’épicerie
+
+La liste se calcule à partir des repas du lundi au dimanche sélectionnés dans le planificateur. Une occurrence de repas utilise la recette complète, pour ses portions indiquées; une recette choisie deux fois compte deux fois. La semaine reste partagée entre le planificateur et la liste pendant la navigation.
+
+Le regroupement utilise exclusivement l’identifiant canonique, jamais le nom. Les quantités sont additionnées avant arrondi et affichées avec les préférences d’unités. Volumes et cuillères partagent les millilitres; lorsqu’une même matière mélange pièces, poids ou volumes, le total emploie les équivalents `grams` de chaque fiche et porte la mention « Poids estimé ». Des unités comptées différentes ne sont jamais additionnées directement. Les ingrédients facultatifs sont exclus par défaut et peuvent être inclus explicitement. Aucun stock ou achat n’est déduit automatiquement.
+
+La liste est dérivée des données privées déjà authentifiées, sans table supplémentaire, stockage navigateur ni service externe. Les changements de menu ou d’unités sont reflétés immédiatement. Une référence manquante signale une liste incomplète.
+
 ## Journal et IA
+
 
 `/api/journal/edit` utilise Vercel AI SDK et AI Gateway, modèle `deepseek/deepseek-v4.1-flash-1017`, avec l'OIDC du projet Vercel. Ce modèle est admissible aux crédits gratuits au 19 octobre 2026. Le routage exige `zeroDataRetention` et `disallowPromptTraining`; une requête échoue si aucun fournisseur admissible n'est disponible. Aucun secret de fournisseur n'est nécessaire. Le texte est envoyé uniquement sur action explicite; aucune écriture du journal n'est faite par cette route. L'utilisateur accepte ou rejette le résultat, peut annuler la correction, puis enregistre sa page. Les requêtes sont limitées à 8 000 caractères, 5 000 jetons de sortie et 20 propositions par heure et par membre. Le SDK ne journalise ni les entrées ni les sorties. Seuls les crédits gratuits du workspace sont activés, sans achat ni recharge automatique. La disponibilité dépend de leur solde et de l'admissibilité du modèle. Le routage ZDR par requête nécessite le plan Vercel Pro déjà actif du workspace.
 

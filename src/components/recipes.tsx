@@ -3,14 +3,14 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
   BookOpen,
-  ChevronLeft,
-  ChevronRight,
   Clock3,
   Plus,
   Search,
+  ShoppingBasket,
   X,
 } from "lucide-react";
 import { Plate } from "./plate";
+import { WeekNavigation } from "./week-navigation";
 import type {
   Ingredient,
   MealSlot,
@@ -22,7 +22,6 @@ import {
   addDays,
   instructionText,
   localToday,
-  monday,
   quantityLabel,
   recipeNutrition,
 } from "@/lib/units";
@@ -352,6 +351,9 @@ export function RecipeSheet({
   );
 }
 export function WeeklyPlanner({
+  week,
+  onWeekChange,
+  onGroceries,
   recipes,
   ingredients,
   slots,
@@ -360,6 +362,9 @@ export function WeeklyPlanner({
   onOpen,
   full = false,
 }: {
+  week: string;
+  onWeekChange: (week: string) => void;
+  onGroceries: () => void;
   recipes: Recipe[];
   ingredients: Ingredient[];
   slots: MealSlot[];
@@ -372,7 +377,6 @@ export function WeeklyPlanner({
   onOpen: (r: Recipe) => void;
   full?: boolean;
 }) {
-  const [week, setWeek] = useState(() => monday(localToday()));
   const [pick, setPick] = useState<{
     date: string;
     slot: "lunch" | "dinner";
@@ -456,42 +460,19 @@ export function WeeklyPlanner({
           </h2>
         </div>
         {full && (
-          <button className="text-button" onClick={() => void exportWeek()}>
-            <ArrowDownToLine size={16} />
-            {t("Exporter en PDF", "Export PDF")}
-          </button>
+          <div className="planner-actions">
+            <button className="text-button" onClick={onGroceries}>
+              <ShoppingBasket size={16} />
+              {t("Liste d’épicerie", "Grocery list")}
+            </button>
+            <button className="text-button" onClick={() => void exportWeek()}>
+              <ArrowDownToLine size={16} />
+              {t("Exporter en PDF", "Export PDF")}
+            </button>
+          </div>
         )}
       </div>
-      <div className="week-navigation">
-        <button
-          className="icon-button"
-          aria-label={t("Semaine précédente", "Previous week")}
-          onClick={() => setWeek(addDays(week, -7))}
-        >
-          <ChevronLeft size={18} />
-        </button>
-        <strong>
-          {date(week, { day: "numeric", month: "short" })} —{" "}
-          {date(addDays(week, 6), {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })}
-        </strong>
-        <button
-          className="icon-button"
-          aria-label={t("Semaine suivante", "Next week")}
-          onClick={() => setWeek(addDays(week, 7))}
-        >
-          <ChevronRight size={18} />
-        </button>
-        <button
-          className="text-button"
-          onClick={() => setWeek(monday(localToday()))}
-        >
-          {t("Aujourd’hui", "Today")}
-        </button>
-      </div>
+      <WeekNavigation week={week} locale={locale} onChange={onWeekChange} />
       {error && <p role="alert">{error}</p>}
       <div className="week-grid">
         {Array.from({ length: 7 }, (_, i) => {

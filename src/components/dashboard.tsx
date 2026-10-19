@@ -20,6 +20,7 @@ import {
   Menu,
   Plus,
   Scale,
+  ShoppingBasket,
   Settings2,
   Sprout,
   X,
@@ -30,6 +31,7 @@ import {
 import { WeeklyPlanner, RecipeLibrary, RecipeSheet } from "./recipes";
 import { JournalEditor } from "./journal-editor";
 import { UnitSettings } from "./unit-settings";
+import { GroceryList } from "./groceries";
 import { bodyWeight, monday, addDays } from "@/lib/units";
 import type {
   Recipe,
@@ -47,6 +49,7 @@ type View =
   | "overview"
   | "recipes"
   | "menus"
+  | "groceries"
   | "weight"
   | "journal"
   | "library"
@@ -72,6 +75,7 @@ export function Dashboard({
   const [locale, setLocale] = useState(initialLocale);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [view, setView] = useState<View>("overview");
+  const [selectedWeek, setSelectedWeek] = useState(() => monday(today()));
   const [data, setData] = useState(initialData);
   const [modal, setModal] = useState<Modal>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -109,6 +113,11 @@ export function Dashboard({
     },
     { id: "menus", icon: CalendarDays, label: t("Mes menus", "My menus") },
     { id: "recipes", icon: BookOpen, label: t("Mes recettes", "My recipes") },
+    {
+      id: "groceries",
+      icon: ShoppingBasket,
+      label: t("Liste d’épicerie", "Grocery list"),
+    },
     { id: "weight", icon: Scale, label: t("Mon parcours", "My progress") },
     { id: "journal", icon: BookOpen, label: t("Mon journal", "My journal") },
     {
@@ -273,6 +282,9 @@ export function Dashboard({
       <WeeklyPlanner
         key={full ? "full" : "overview"}
         full={full}
+        week={selectedWeek}
+        onWeekChange={setSelectedWeek}
+        onGroceries={() => go("groceries")}
         recipes={data.recipes}
         ingredients={data.ingredients}
         slots={data.slots}
@@ -748,6 +760,19 @@ export function Dashboard({
                 </p>
               </div>
             </div>
+          )}
+          {view === "groceries" && (
+            <GroceryList
+              recipes={data.recipes}
+              ingredients={data.ingredients}
+              slots={data.slots}
+              units={data.preferences}
+              locale={locale}
+              week={selectedWeek}
+              onWeekChange={setSelectedWeek}
+              onPlan={() => go("menus")}
+              onOpen={setSelectedRecipe}
+            />
           )}
           {view === "weight" && (
             <>

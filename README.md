@@ -10,6 +10,7 @@ pour **iamable.space**, workspace Vercel **moi**.
 - Démonstration explicite et éphémère : aucune donnée de santé réelle, aucun
   stockage local du journal ou du poids. Le rechargement efface les essais.
 - Semainier dîner/souper avec choix dans la bibliothèque et export PDF Lettre de quatre pages.
+- Liste d’épicerie hebdomadaire dans la navigation : ingrédients regroupés, quantités additionnées et unités personnelles appliquées, avec copie de la liste.
 - Fiches de recettes illustrées; ingrédients canoniques réutilisés et macros calculées.
 - Journal pleine page, paragraphes libres, propositions IA à accepter et protection contre les écritures concurrentes.
 - Unités indépendantes : poids corporel, ingrédients, liquides, cuillères, températures et dimensions. Les préférences sont privées et persistantes.
