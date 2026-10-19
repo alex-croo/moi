@@ -86,7 +86,9 @@ export async function buildRecipePdf(
       pendingSpace = false;
     };
     for (const run of runs) {
-      for (const token of clean(run.value).split(/(\n|[^\S\n]+)/)) {
+      // A mixed quantity such as 1 1/2 must stay together on the same line.
+      const value = clean(run.value).replace(/(\d) (?=\d+\/\d+\b)/g, "$1\u00a0");
+      for (const token of value.split(/(\n|[^\S\n\u00a0]+)/)) {
         if (token === "\n") {
           next();
           continue;

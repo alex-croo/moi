@@ -19,6 +19,40 @@ const n = (value: number, locale: Locale, digits = 1) =>
   value.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA", {
     maximumFractionDigits: digits,
   });
+
+// Format only the label: keep canonical quantities intact for nutrition and stock.
+function cookingAmount(value: number, locale: Locale, approximate = false) {
+  const absolute = Math.abs(value);
+  const mixed = (numerator: number, denominator: number) => {
+    const whole = Math.floor(numerator / denominator);
+    const remainder = numerator % denominator;
+    return `${value < 0 ? "-" : ""}${whole ? n(whole, locale, 0) : ""}${whole && remainder ? " " : ""}${remainder ? `${remainder}/${denominator}` : ""}`;
+  };
+  if (Number.isInteger(value)) return n(value, locale, 0);
+  // Include thirds and small spoon measures when a recipe's portions change.
+  for (const denominator of [2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64]) {
+    const numerator = Math.round(absolute * denominator);
+    if (numerator > 0 && Math.abs(absolute - numerator / denominator) < 1e-8)
+      return mixed(numerator, denominator);
+  }
+  // A metric-to-US-cup conversion can be close to a familiar cooking measure.
+  // Mark that approximation explicitly; never round a small amount down to zero.
+  if (approximate) {
+    for (const denominator of [1, 2, 3, 4, 8, 16]) {
+      const numerator = Math.round(absolute * denominator);
+      if (
+        numerator > 0 &&
+        Math.abs(absolute - numerator / denominator) / absolute <= 0.02
+      )
+        return `≈ ${mixed(numerator, denominator)}`;
+    }
+  }
+  const digits =
+    absolute > 0 && absolute < 0.01
+      ? Math.min(20, Math.ceil(-Math.log10(absolute)) + 1)
+      : 2;
+  return n(value, locale, digits);
+}
 export function bodyWeight(value: number, from: "kg" | "lb", to: "kg" | "lb") {
   return from === to
     ? value
@@ -35,26 +69,26 @@ export function measure(
   if (kind === "mass")
     return units.ingredientMass === "g"
       ? `${n(value, locale)} g`
-      : `${n(value / 28.349523125, locale, 2)} oz`;
+      : `${cookingAmount(value / 28.349523125, locale)} oz`;
   if (kind === "temp")
     return `${n(units.temperature === "C" ? value : (value * 9) / 5 + 32, locale, 0)} °${units.temperature}`;
   if (kind === "length")
     return units.length === "cm"
       ? `${n(value, locale)} cm`
-      : `${n(value / 2.54, locale, 2)} ${locale === "fr" ? "po" : "in"}`;
+      : `${cookingAmount(value / 2.54, locale)} ${locale === "fr" ? "po" : "in"}`;
   if (kind === "spoon") {
     if (units.spoons === "ml") return `${n(value, locale, 2)} ml`;
     const tbsp = value >= 15 && Number.isInteger((value / 15) * 4);
-    return `${n(value / (tbsp ? 15 : 5), locale, 2)} ${locale === "fr" ? (tbsp ? "c. à soupe" : "c. à thé") : tbsp ? "tbsp" : "tsp"}`;
+    return `${cookingAmount(value / (tbsp ? 15 : 5), locale)} ${locale === "fr" ? (tbsp ? "c. à soupe" : "c. à thé") : tbsp ? "tbsp" : "tsp"}`;
   }
   if (kind === "volume") {
     if (units.volume === "cup")
-      return `${n(value / 236.5882365, locale, 2)} ${locale === "fr" ? "tasse US" : "US cup"}`;
+      return `${cookingAmount(value / 236.5882365, locale, true)} ${locale === "fr" ? "tasse US" : "US cup"}`;
     if (units.volume === "fl_oz")
-      return `${n(value / 29.5735295625, locale, 2)} fl oz US`;
+      return `${cookingAmount(value / 29.5735295625, locale)} fl oz US`;
     return `${n(value, locale)} ml`;
   }
-  return n(value, locale, 2);
+  return cookingAmount(value, locale);
 }
 export function quantityLabel(
   q: Quantity,
