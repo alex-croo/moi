@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, Check, Sparkles, SpellCheck, Undo2, X } from "lucide-react";
+import type { JournalPrompt } from "@/lib/private-types";
 import type { JournalEntry } from "@/lib/types";
 import type { Locale } from "@/lib/locale";
 import { localToday } from "@/lib/units";
@@ -17,9 +18,13 @@ export function JournalEditor({
   entries,
   locale,
   onSave,
+  prompt,
+  encrypted = false,
 }: {
   entries: JournalEntry[];
   locale: Locale;
+  prompt?: JournalPrompt | null;
+  encrypted?: boolean;
   onSave: (data: {
     date: string;
     text: string;
@@ -61,6 +66,42 @@ export function JournalEditor({
     setDrafts((current) => ({ ...current, [date]: { ...draft, ...patch } }));
     setStatus("");
   }
+  const consumed = useRef(new Set<string>());
+  useEffect(() => {
+    if (!prompt || consumed.current.has(prompt.id)) return;
+    consumed.current.add(prompt.id);
+    const target = localToday();
+    const saved = entries.find((e) => e.date === target);
+    setDrafts((current) => {
+      const initial = {
+        text: saved?.text || "",
+        title: saved?.title || "",
+        mood: saved?.mood || 3,
+        revision: saved?.revision || 0,
+      };
+      const previous = current[target] || {
+        ...initial,
+        baseline: key(initial),
+      };
+      const addition = `${prompt.title}\n${prompt.question}\n\n`;
+      const text = previous.text ? `${previous.text}\n\n${addition}` : addition;
+      if (text.length > 20000) {
+        setError(
+          t(
+            "Cette page est pleine. Créez une nouvelle page avant d’ajouter cette réflexion.",
+            "This page is full. Open a new page before adding this reflection.",
+          ),
+        );
+        return current;
+      }
+      return {
+        ...current,
+        [target]: { ...previous, title: previous.title || prompt.title, text },
+      };
+    });
+    setDate(target);
+    requestAnimationFrame(() => editor.current?.focus());
+  }, [prompt]);
   useEffect(() => {
     if (editor.current) {
       editor.current.style.height = "auto";
@@ -114,6 +155,7 @@ export function JournalEditor({
     }
   }
   async function edit(action: "improve" | "correct") {
+    if (encrypted) return;
     const start = selection.start === selection.end ? 0 : selection.start;
     const end =
       selection.start === selection.end ? draft.text.length : selection.end;
@@ -215,41 +257,54 @@ export function JournalEditor({
             ))}
           </span>
         </div>
-        <div
-          className="inline-ai-toolbar"
-          aria-label={t("Édition assistée par IA", "AI editing")}
-        >
-          <span>
-            <Sparkles size={15} />
-            {selection.start !== selection.end
-              ? t("Sur la sélection", "On selection")
-              : t("Sur cette page", "On this page")}
-          </span>
-          <button
-            disabled={aiBusy || busy || !draft.text.trim()}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => void edit("improve")}
-          >
-            <Sparkles size={14} />
-            {t("Améliorer le texte", "Improve writing")}
-          </button>
-          <button
-            disabled={aiBusy || busy || !draft.text.trim()}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => void edit("correct")}
-          >
-            <SpellCheck size={15} />
-            {t("Corriger les fautes", "Fix spelling")}
-          </button>
-        </div>
-        <p className="ai-disclosure">
-          {t(
-            "À votre demande, le texte sélectionné — ou toute la page sans sélection — est envoyé à l’IA via Vercel. Vous décidez d’accepter la proposition.",
-            "When requested, selected text — or the whole page without a selection — is sent to AI through Vercel. You choose whether to accept the suggestion.",
-          )}
-        </p>
+        {encrypted ? (
+          <p className="privacy-note">
+            {t(
+              "Cette page reste dans votre coffre. L’IA distante est désactivée pour que son contenu ne soit pas transmis à un fournisseur.",
+              "This page stays in your vault. Remote AI is disabled so its contents are not sent to a provider.",
+            )}
+          </p>
+        ) : (
+          <>
+            <div
+              className="inline-ai-toolbar"
+              aria-label={t("Édition assistée par IA", "AI editing")}
+            >
+              <span>
+                <Sparkles size={15} />
+                {selection.start !== selection.end
+                  ? t("Sur la sélection", "On selection")
+                  : t("Sur cette page", "On this page")}
+              </span>
+              <button
+                disabled={aiBusy || busy || !draft.text.trim()}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => void edit("improve")}
+              >
+                <Sparkles size={14} />
+                {t("Améliorer le texte", "Improve writing")}
+              </button>
+              <button
+                disabled={aiBusy || busy || !draft.text.trim()}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => void edit("correct")}
+              >
+                <SpellCheck size={15} />
+                {t("Corriger les fautes", "Fix spelling")}
+              </button>
+            </div>
+            <p className="ai-disclosure">
+              {t(
+                "À votre demande, le texte sélectionné — ou toute la page sans sélection — est envoyé à l’IA via Vercel. Vous décidez d’accepter la proposition.",
+                "When requested, selected text — or the whole page without a selection — is sent to AI through Vercel. You choose whether to accept the suggestion.",
+              )}
+            </p>
+          </>
+        )}
         <textarea
           ref={editor}
+          spellCheck={!encrypted}
+          autoComplete="off"
           className="journal-canvas"
           aria-label={t("Texte du journal", "Journal text")}
           placeholder={t(

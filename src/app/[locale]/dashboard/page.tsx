@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
-import { Dashboard } from "@/components/dashboard";
+import { PrivateWorkspace } from "@/components/private-workspace";
 import { authorizedClient } from "@/lib/supabase";
-import { loadWorkspace } from "@/lib/workspace";
+
 export default async function PrivateDashboard({
   params,
 }: {
@@ -11,6 +11,12 @@ export default async function PrivateDashboard({
   if (locale !== "fr" && locale !== "en") notFound();
   const auth = await authorizedClient();
   if (!auth) redirect(`/${locale}`);
-  const data = await loadWorkspace(auth.db);
-  return <Dashboard locale={locale} mode="private" initialData={data} />;
+  const { data: admin } = await auth.db.rpc("current_user_admin");
+  return (
+    <PrivateWorkspace
+      locale={locale}
+      userId={auth.user.id}
+      admin={admin === true}
+    />
+  );
 }

@@ -136,6 +136,7 @@ export function Login({
               )}
             </span>
           </div>
+          <a href={`/${locale}/privacy`} className="demo-link">{t("Confidentialité et coffre personnel", "Privacy and personal vault")}</a>
           {demo && (
             <a href={`/${locale}/demo`} className="demo-link">
               {t("Explorer la maquette", "Explore the demo")}

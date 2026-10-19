@@ -30,6 +30,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { WeeklyPlanner, RecipeLibrary, RecipeSheet } from "./recipes";
+import { DailyProgram } from "./daily-program";
+import { Community } from "./community";
+import { PlatformAdmin } from "./platform-admin";
+import type { PrivateActions, JournalPrompt } from "@/lib/private-types";
 import { JournalEditor } from "./journal-editor";
 import { UnitSettings } from "./unit-settings";
 import { GroceryList } from "./groceries";
@@ -58,7 +62,10 @@ type View =
   | "weight"
   | "journal"
   | "library"
-  | "settings";
+  | "settings"
+  | "program"
+  | "circles"
+  | "admin";
 type Modal = "weight" | "document" | null;
 const today = () =>
   new Intl.DateTimeFormat("en-CA", {
@@ -72,11 +79,16 @@ export function Dashboard({
   locale: initialLocale,
   mode,
   initialData,
+  privateActions,
 }: {
   locale: Locale;
   mode: "demo" | "private";
   initialData: WorkspaceData;
+  privateActions?: PrivateActions;
 }) {
+  const [journalPrompt, setJournalPrompt] = useState<JournalPrompt | null>(
+    null,
+  );
   const [locale, setLocale] = useState(initialLocale);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [view, setView] = useState<View>("overview");
@@ -132,6 +144,24 @@ export function Dashboard({
       label: t("Mes documents", "My documents"),
     },
   ];
+  if (privateActions) {
+    nav.splice(1, 0, {
+      id: "program",
+      icon: Sprout,
+      label: t("Mon programme", "My program"),
+    });
+    nav.push({
+      id: "circles",
+      icon: Heart,
+      label: t("Mes cercles", "My circles"),
+    });
+    if (privateActions.admin)
+      nav.push({
+        id: "admin",
+        icon: Settings2,
+        label: t("Administration", "Administration"),
+      });
+  }
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
@@ -168,7 +198,9 @@ export function Dashboard({
     setBusy(true);
     setFormError("");
     try {
-      if (demo) {
+      if (privateActions) {
+        setData(await privateActions.mutate(type, value));
+      } else if (demo) {
         const record = { ...value, id: crypto.randomUUID() };
         setData((current) => {
           if (type === "weight") {
@@ -251,7 +283,9 @@ export function Dashboard({
     value: object,
   ): Promise<WorkspaceData> {
     let next: WorkspaceData;
-    if (demo) {
+    if (privateActions) {
+      next = await privateActions.mutate(type, value);
+    } else if (demo) {
       next = { ...data };
       if (type === "groceryCheck") {
         const check = value as GroceryCheck;
@@ -599,6 +633,23 @@ export function Dashboard({
           </div>
         </header>
         <main id="main-content" className="main-content">
+          {privateActions && view === "program" && (
+            <DailyProgram
+              locale={locale}
+              progress={privateActions.progress}
+              onSave={privateActions.saveProgress}
+              onJournal={(prompt) => {
+                setJournalPrompt(prompt);
+                go("journal");
+              }}
+            />
+          )}
+          {privateActions && view === "circles" && (
+            <Community locale={locale} userId={privateActions.userId} />
+          )}
+          {privateActions?.admin && view === "admin" && (
+            <PlatformAdmin locale={locale} />
+          )}
           {demo && (
             <div className="demo-banner">
               <span className="status-dot" />
@@ -609,6 +660,26 @@ export function Dashboard({
                 )}
               </span>
             </div>
+          )}
+          {privateActions && view === "overview" && (
+            <button
+              className="program-invitation card"
+              onClick={() => go("program")}
+            >
+              <Sprout size={25} />
+              <span>
+                <strong>
+                  {t("Un moment pour avancer", "A moment to move forward")}
+                </strong>
+                <small>
+                  {t(
+                    "Votre lecture du jour, une petite action et quelques lignes pour vous.",
+                    "Your daily reading, a small action and a few words for yourself.",
+                  )}
+                </small>
+              </span>
+              <ArrowRight size={20} />
+            </button>
           )}
           {view === "overview" && (
             <>
@@ -864,6 +935,8 @@ export function Dashboard({
           <div hidden={view !== "journal"}>
             <JournalEditor
               entries={data.journal}
+              prompt={journalPrompt}
+              encrypted={!!privateActions}
               locale={locale}
               onSave={async (value) => {
                 const result = await mutate("journal", value);
@@ -993,6 +1066,37 @@ export function Dashboard({
                 </span>
                 <h1>{t("Mes préférences.", "My preferences.")}</h1>
               </div>
+              {privateActions && (
+                <section className="card privacy-settings">
+                  <h2>{t("Mon coffre personnel", "My personal vault")}</h2>
+                  <p>
+                    {t(
+                      "Votre journal et vos données personnelles sont chiffrés avant leur enregistrement. Une sauvegarde chiffrée s’ouvre avec votre phrase secrète ou votre code de récupération.",
+                      "Your journal and personal data are encrypted before saving. An encrypted backup opens with your passphrase or recovery code.",
+                    )}
+                  </p>
+                  <div className="action-row">
+                    <button
+                      className="secondary"
+                      onClick={privateActions.backup}
+                    >
+                      {t(
+                        "Télécharger ma sauvegarde chiffrée",
+                        "Download encrypted backup",
+                      )}
+                    </button>
+                    <button className="secondary" onClick={privateActions.lock}>
+                      {t("Verrouiller mon coffre", "Lock my vault")}
+                    </button>
+                  </div>
+                  <p className="small muted">
+                    {t(
+                      "Pour changer votre phrase secrète, verrouillez le coffre et utilisez votre code de récupération.",
+                      "To change your passphrase, lock the vault and use your recovery code.",
+                    )}
+                  </p>
+                </section>
+              )}
               <div className="settings-card card">
                 <div>
                   <div>

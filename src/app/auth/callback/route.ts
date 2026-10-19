@@ -13,6 +13,7 @@ export async function GET(request: Request) {
   if (code && db) {
     const { error } = await db.auth.exchangeCodeForSession(code);
     if (!error) {
+      await db.rpc("claim_platform_invitation");
       if (await authorizedClient())
         return NextResponse.redirect(`${origin}/${locale}/dashboard`);
       await db.auth.signOut();
