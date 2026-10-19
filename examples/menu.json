@@ -1,0 +1,23 @@
+{
+  "title": "Mon prochain menu",
+  "titleEn": "My next menu",
+  "startDate": "2026-10-26",
+  "days": [
+    {
+      "date": "2026-10-26",
+      "lunch": {
+        "title": "Bol de poulet façon fajitas",
+        "titleEn": "Chicken fajita bowl",
+        "minutes": 30,
+        "portions": 2,
+        "kind": "bowl"
+      },
+      "dinner": null
+    },
+    { "date": "2026-10-27", "lunch": null, "dinner": null },
+    { "date": "2026-10-28", "lunch": null, "dinner": null },
+    { "date": "2026-10-29", "lunch": null, "dinner": null },
+    { "date": "2026-10-30", "lunch": null, "dinner": null },
+    { "date": "2026-10-31", "lunch": null, "dinner": null }
+  ]
+}
