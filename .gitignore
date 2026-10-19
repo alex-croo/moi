@@ -8,3 +8,4 @@ playwright-report/
 *.tsbuildinfo
 artifacts/
 .local/
+supabase/.temp/

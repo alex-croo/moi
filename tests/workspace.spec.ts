@@ -76,6 +76,24 @@ test("login is bilingual and does not pretend unconfigured Google auth works", a
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
 });
 
+test("native Google form preserves the browser Origin for CSRF validation", async ({ page }) => {
+  await page.goto("/fr");
+  const submitted = page.waitForResponse(
+    (response) => response.url().endsWith("/auth/google") && response.request().method() === "POST",
+  );
+  // Submit the real form even though OAuth is intentionally unconfigured in
+  // this test server. An accepted origin reaches the 503 configuration guard;
+  // no-referrer used to turn the browser Origin into null and return 403.
+  await page.locator('form[action="/auth/google"]').evaluate(
+    (form: HTMLFormElement) => form.requestSubmit(),
+  );
+  const response = await submitted;
+  expect(response.request().headers().origin).toBe("http://127.0.0.1:3000");
+  expect(response.status()).toBe(503);
+  await expect(page.locator("body")).toHaveText("Authentication is not configured");
+  await page.goto("/fr");
+});
+
 test("menu selection preserves empty meals and exports a real three-page Letter PDF", async ({
   page,
 }) => {
