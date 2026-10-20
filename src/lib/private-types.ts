@@ -6,7 +6,13 @@ export type ProgramProgress = {
 export type PersonalData = Omit<WorkspaceData, "recipes" | "ingredients"> & {
   program: ProgramProgress;
 };
-export type JournalPrompt = { id: string; title: string; question: string };
+export type JournalPrompt = {
+  id: string;
+  title: string;
+  question: string;
+  lessonId?: string;
+  date?: string;
+};
 export type PrivateActions = {
   protection: "standard" | "enhanced";
   privacyPanel: (locale: import("./locale").Locale) => import("react").ReactNode;

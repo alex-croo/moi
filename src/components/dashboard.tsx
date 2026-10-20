@@ -48,7 +48,6 @@ import type {
   GroceryCheck,
 } from "@/lib/types";
 import { Brand } from "./brand";
-import { Plate } from "./plate";
 import { tr, type Locale } from "@/lib/locale";
 import { documentSchema } from "@/lib/validation";
 import type { WorkspaceData, MenuPlan } from "@/lib/types";
@@ -92,6 +91,7 @@ export function Dashboard({
   const [locale, setLocale] = useState(initialLocale);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [view, setView] = useState<View>("overview");
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [view]);
   const [selectedWeek, setSelectedWeek] = useState(() => monday(today()));
   const [data, setData] = useState(initialData);
   const [modal, setModal] = useState<Modal>(null);
@@ -398,14 +398,14 @@ export function Dashboard({
         >
           <path
             d="M20 30H320M20 65H320M20 100H320"
-            stroke="#E7E9E0"
+            stroke="#e7e2e7"
             strokeDasharray="3 5"
           />
-          <path d={`M${points.join(" L")} L320 106 L20 106Z`} fill="#E9EFE5" />
+          <path d={`M${points.join(" L")} L320 106 L20 106Z`} fill="#f6e8f0" />
           <polyline
             points={points.join(" ")}
             fill="none"
-            stroke="#526D44"
+            stroke="#c8006d"
             strokeWidth="2.5"
             strokeLinejoin="round"
           />
@@ -415,7 +415,7 @@ export function Dashboard({
               cx={p.split(",")[0]}
               cy={p.split(",")[1]}
               r={i === points.length - 1 ? 4 : 2.5}
-              fill="#526D44"
+              fill="#c8006d"
               stroke="white"
               strokeWidth="2"
             />
@@ -637,6 +637,7 @@ export function Dashboard({
             <DailyProgram
               locale={locale}
               progress={privateActions.progress}
+              entries={data.journal}
               onSave={privateActions.saveProgress}
               onJournal={(prompt) => {
                 setJournalPrompt(prompt);
@@ -718,12 +719,7 @@ export function Dashboard({
                   </div>
                 </div>
                 <div className="welcome-art">
-                  <span className="art-circle" />
-                  <Plate large />
-                  <span className="art-caption">
-                    <Sprout size={15} />
-                    {t("Bien dans mon quotidien.", "Feeling good, every day.")}
-                  </span>
+                  <img src="/brand/growth.webp" alt="" width={1024} height={688} />
                 </div>
               </section>
               <div className="quick-stats">
@@ -936,6 +932,7 @@ export function Dashboard({
             <JournalEditor
               entries={data.journal}
               prompt={journalPrompt}
+              onProgram={privateActions ? () => go("program") : undefined}
               encrypted={privateActions?.protection === "enhanced"}
               locale={locale}
               onSave={async (value) => {

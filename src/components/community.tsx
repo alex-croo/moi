@@ -121,7 +121,8 @@ export function Community({
     ) || [];
   return (
     <section className="community-page">
-      <div className="page-heading">
+      <div className="page-heading community-heading">
+        <div>
         <span className="eyebrow">
           {t("AVANCER, ENSEMBLE", "MOVING FORWARD, TOGETHER")}
         </span>
@@ -132,6 +133,8 @@ export function Community({
             "A small group of people you trust, a place for encouragement.",
           )}
         </p>
+        </div>
+        <img src="/brand/together.webp" alt="" width={1024} height={688} />
       </div>
       <aside className="privacy-note">
         <Heart size={20} />

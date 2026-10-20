@@ -1,5 +1,6 @@
 import { mutationSchema } from "./validation";
 import type { PersonalData } from "./private-types";
+import { progressWithJournal } from "./program-journal";
 export function applyPrivateMutation(
   current: PersonalData,
   type: string,
@@ -68,6 +69,7 @@ export function applyPrivateMutation(
         },
         ...current.journal.filter((x) => x.date !== entry.date),
       ];
+      next.program = progressWithJournal(current.program, next.journal[0]);
       break;
     }
   }

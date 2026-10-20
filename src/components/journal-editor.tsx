@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
+  ArrowLeft,
   Check,
   LockKeyhole,
   Sparkles,
@@ -12,6 +13,8 @@ import {
 import { applyJournalSuggestion, journalChanges } from "@/lib/journal-revision";
 import { journalSelectionPosition } from "@/lib/journal-selection";
 import type { JournalPrompt } from "@/lib/private-types";
+import { lessons } from "@/lib/daily-program";
+import { reflectionInEntry } from "@/lib/program-journal";
 import type { JournalEntry } from "@/lib/types";
 import type { Locale } from "@/lib/locale";
 import { localToday } from "@/lib/units";
@@ -30,11 +33,13 @@ export function JournalEditor({
   onSave,
   prompt,
   encrypted = false,
+  onProgram,
 }: {
   entries: JournalEntry[];
   locale: Locale;
   prompt?: JournalPrompt | null;
   encrypted?: boolean;
+  onProgram?: () => void;
   onSave: (data: {
     date: string;
     text: string;
@@ -137,7 +142,7 @@ export function JournalEditor({
   useEffect(() => {
     if (!prompt || consumed.current.has(prompt.id)) return;
     consumed.current.add(prompt.id);
-    const target = localToday();
+    const target = prompt.date || localToday();
     const saved = entries.find((e) => e.date === target);
     setDrafts((current) => {
       const initial = {
@@ -150,8 +155,12 @@ export function JournalEditor({
         ...initial,
         baseline: key(initial),
       };
+      const lesson = lessons.find((l) => l.id === prompt.lessonId);
+      const exists = lesson
+        ? reflectionInEntry(lesson, previous) !== null || !!prompt.date
+        : previous.text.includes(prompt.question);
       const addition = `${prompt.title}\n${prompt.question}\n\n`;
-      const text = previous.text ? `${previous.text}\n\n${addition}` : addition;
+      const text = exists ? previous.text : previous.text ? `${previous.text}\n\n${addition}` : addition;
       if (text.length > 20000) {
         setError(
           t(
@@ -167,7 +176,11 @@ export function JournalEditor({
       };
     });
     setDate(target);
-    requestAnimationFrame(() => editor.current?.focus());
+    requestAnimationFrame(() => {
+      editor.current?.focus();
+      const length = editor.current?.value.length || 0;
+      editor.current?.setSelectionRange(length, length);
+    });
   }, [prompt]);
   useEffect(() => {
     const fields = [editor.current, titleEditor.current].filter(
@@ -366,6 +379,18 @@ export function JournalEditor({
         </label>
       </div>
       <div className="journal-paper">
+        {prompt?.lessonId && onProgram && (
+          <div className="journal-program-link">
+            <button className="text-button" onClick={onProgram} disabled={busy}>
+              <ArrowLeft size={15} /> {t("Retour au programme", "Back to the program")}
+            </button>
+            <strong>{prompt.title}</strong>
+            <small>{t(
+              "Enregistrez votre réflexion pour retrouver cette étape cochée dans votre programme.",
+              "Save your reflection to see this step checked in your program.",
+            )}</small>
+          </div>
+        )}
         <span className="journal-page-icon">✦</span>
         <textarea
           ref={titleEditor}

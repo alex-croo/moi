@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { ArrowRight, LockKeyhole, Sprout } from "lucide-react";
 import { Brand } from "./brand";
-import { Plate } from "./plate";
 import { tr, type Locale } from "@/lib/locale";
 export function Login({
   locale,
@@ -38,7 +37,7 @@ export function Login({
               "Eat well. Take a breath. Move at your own pace.",
             )}
           </p>
-          <Plate large />
+          <img className="login-brand-art" src="/brand/growth.webp" alt="" width={1024} height={688} />
           <div className="story-note">
             <Sprout size={18} />
             {t(
