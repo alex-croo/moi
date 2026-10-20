@@ -88,6 +88,7 @@ export function Dashboard({
   const [journalPrompt, setJournalPrompt] = useState<JournalPrompt | null>(
     null,
   );
+  const [journalNavigation, setJournalNavigation] = useState<{ id: number; date?: string }>({ id: 0 });
   const [locale, setLocale] = useState(initialLocale);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [view, setView] = useState<View>("overview");
@@ -182,13 +183,14 @@ export function Dashboard({
       `/${value}/${demo ? "demo" : "dashboard"}`,
     );
   }
-  function go(value: View) {
+  function go(value: View, journalDate?: string) {
+    if (value === "journal") setJournalNavigation(current => ({ id: current.id + 1, date: journalDate }));
     setView(value);
     setMenuOpen(false);
   }
   function open(value: Modal | "journal") {
     if (value === "journal") {
-      go("journal");
+      go("journal", today());
       return;
     }
     setFormError("");
@@ -641,7 +643,7 @@ export function Dashboard({
               onSave={privateActions.saveProgress}
               onJournal={(prompt) => {
                 setJournalPrompt(prompt);
-                go("journal");
+                go("journal", prompt.date || today());
               }}
             />
           )}
@@ -931,6 +933,8 @@ export function Dashboard({
           <div hidden={view !== "journal"}>
             <JournalEditor
               entries={data.journal}
+              navigation={journalNavigation}
+              active={view === "journal"}
               prompt={journalPrompt}
               onProgram={privateActions ? () => go("program") : undefined}
               encrypted={privateActions?.protection === "enhanced"}

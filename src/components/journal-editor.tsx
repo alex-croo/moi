@@ -1,8 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   BookOpen,
+  FileText,
+  Plus,
   ArrowLeft,
+  ArrowRight,
   Check,
   LockKeyhole,
   Sparkles,
@@ -11,22 +15,15 @@ import {
   X,
 } from "lucide-react";
 import { applyJournalSuggestion, journalChanges } from "@/lib/journal-revision";
-import { journalSelectionPosition } from "@/lib/journal-selection";
+import { JournalLibrary } from "./journal-library";
+import { journalPages, journalPageTitle, journalDraftKey as key, type JournalDraft as Draft } from "@/lib/journal-library";
+import { journalSelectionPosition, placeJournalToolbar } from "@/lib/journal-selection";
 import type { JournalPrompt } from "@/lib/private-types";
 import { lessons } from "@/lib/daily-program";
 import { reflectionInEntry } from "@/lib/program-journal";
 import type { JournalEntry } from "@/lib/types";
 import type { Locale } from "@/lib/locale";
 import { localToday } from "@/lib/units";
-type Draft = {
-  text: string;
-  title: string;
-  mood: number;
-  revision: number;
-  baseline: string;
-};
-const key = (d: { text: string; title: string; mood: number }) =>
-  JSON.stringify([d.text, d.title, d.mood]);
 export function JournalEditor({
   entries,
   locale,
@@ -34,8 +31,12 @@ export function JournalEditor({
   prompt,
   encrypted = false,
   onProgram,
+  navigation,
+  active = true,
 }: {
   entries: JournalEntry[];
+  navigation?: { id: number; date?: string };
+  active?: boolean;
   locale: Locale;
   prompt?: JournalPrompt | null;
   encrypted?: boolean;
@@ -48,13 +49,16 @@ export function JournalEditor({
     expectedRevision: number;
   }) => Promise<JournalEntry>;
 }) {
+  const [screen, setScreen] = useState<"library" | "editor">("library");
+  const [openDates, setOpenDates] = useState<string[]>([]);
+  const pageRoot = useRef<HTMLElement>(null);
   const [date, setDate] = useState(localToday);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const editor = useRef<HTMLTextAreaElement>(null);
   const titleEditor = useRef<HTMLTextAreaElement>(null);
   const selectionTools = useRef<HTMLDivElement>(null);
   const aiRequest = useRef<AbortController | null>(null);
-  const [anchor, setAnchor] = useState({ left: 0, top: 0 });
+  const [anchor, setAnchor] = useState<{ left: number; top: number; visible: boolean }>({ left: 0, top: 0, visible: false });
   const [previewResult, setPreviewResult] = useState(false);
   const [protectionChanged, setProtectionChanged] = useState(false);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
@@ -90,17 +94,74 @@ export function JournalEditor({
   const aiDisabled = encrypted || protectionChanged;
   function captureSelection() {
     const el = editor.current;
-    if (!el) return;
-    setSelection({ start: el.selectionStart, end: el.selectionEnd });
-    if (el.selectionStart !== el.selectionEnd) {
-      const point = journalSelectionPosition(el, el.selectionStart);
-      const nearTop = el.getBoundingClientRect().top + point.top < 110;
-      setAnchor({
-        left: Math.max(0, Math.min(point.left, el.clientWidth - 420)),
-        top: nearTop ? point.top + point.height + 8 : point.top - 82,
-      });
-    }
+    if (el) setSelection({ start: el.selectionStart, end: el.selectionEnd });
   }
+  function openPage(nextDate: string) {
+    setDate(nextDate);
+    setScreen("editor");
+    setOpenDates(current => current.includes(nextDate) ? current : [...current, nextDate]);
+    setSelection({ start: 0, end: 0 });
+    setError("");
+    setStatus("");
+    requestAnimationFrame(() => {
+      pageRoot.current?.scrollIntoView({ block: "start" });
+      titleEditor.current?.focus({ preventScroll: true });
+    });
+  }
+  useEffect(() => {
+    cancelAi();
+    setProposal(null);
+    setSelection({ start: 0, end: 0 });
+    if (navigation?.date) openPage(navigation.date);
+    else setScreen("library");
+  }, [navigation]);
+  useEffect(() => {
+    if (!active) {
+      cancelAi();
+      setSelection({ start: 0, end: 0 });
+    }
+  }, [active]);
+  useLayoutEffect(() => {
+    if (!active || screen !== "editor" || selection.start === selection.end || aiDisabled || aiBusy || proposal) return;
+    const position = () => {
+      const el = editor.current, toolbar = selectionTools.current;
+      if (!el || !toolbar) return;
+      const viewport = window.visualViewport;
+      const viewportTop = viewport?.offsetTop || 0;
+      const tabs = pageRoot.current?.querySelector(".journal-tabs")?.getBoundingClientRect();
+      const safeTop = tabs && tabs.top <= viewportTop + 1 ? Math.max(viewportTop, tabs.bottom) : viewportTop;
+      const bounds = { left: viewport?.offsetLeft || 0, top: safeTop, width: viewport?.width || window.innerWidth, height: (viewport?.height || window.innerHeight) - (safeTop - viewportTop) };
+      const rects = journalSelectionPosition(el, selection.start, selection.end);
+      const size = toolbar.getBoundingClientRect();
+      setAnchor(placeJournalToolbar(rects, { width: size.width, height: size.height }, bounds));
+    };
+    position();
+    const observer = new ResizeObserver(position);
+    if (selectionTools.current) observer.observe(selectionTools.current);
+    window.addEventListener("resize", position);
+    window.addEventListener("scroll", position, true);
+    window.visualViewport?.addEventListener("resize", position);
+    window.visualViewport?.addEventListener("scroll", position);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", position);
+      window.removeEventListener("scroll", position, true);
+      window.visualViewport?.removeEventListener("resize", position);
+      window.visualViewport?.removeEventListener("scroll", position);
+    };
+  }, [selection, active, screen, aiDisabled, aiBusy, proposal, date, locale]);
+  useEffect(() => {
+    const dismiss = (event: PointerEvent) => {
+      if (!editor.current?.contains(event.target as Node) && !selectionTools.current?.contains(event.target as Node)) setSelection({ start: 0, end: 0 });
+    };
+    const sync = () => { if (document.activeElement === editor.current) captureSelection(); };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("selectionchange", sync);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("selectionchange", sync);
+    };
+  }, []);
   function cancelAi() {
     aiRequest.current?.abort();
     aiRequest.current = null;
@@ -118,26 +179,6 @@ export function JournalEditor({
     setProposal(null);
     setSelection({ start: 0, end: 0 });
   }, [aiDisabled]);
-  useEffect(() => {
-    const outside = (event: PointerEvent) => {
-      if (
-        event.target !== editor.current &&
-        !selectionTools.current?.contains(event.target as Node)
-      )
-        setSelection({ start: 0, end: 0 });
-    };
-    const selectionChanged = () => {
-      if (document.activeElement === editor.current) captureSelection();
-    };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("selectionchange", selectionChanged);
-    window.addEventListener("resize", captureSelection);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("selectionchange", selectionChanged);
-      window.removeEventListener("resize", captureSelection);
-    };
-  }, []);
   const consumed = useRef(new Set<string>());
   useEffect(() => {
     if (!prompt || consumed.current.has(prompt.id)) return;
@@ -175,7 +216,7 @@ export function JournalEditor({
         [target]: { ...previous, title: previous.title || prompt.title, text },
       };
     });
-    setDate(target);
+    openPage(target);
     requestAnimationFrame(() => {
       editor.current?.focus();
       const length = editor.current?.value.length || 0;
@@ -208,7 +249,7 @@ export function JournalEditor({
       observer.observe(field);
     }
     return () => observer.disconnect();
-  }, [draft.text, draft.title, date, proposal, locale]);
+  }, [draft.text, draft.title, date, proposal, locale, screen, active]);
   const dirty = Object.values(drafts).some((d) => key(d) !== d.baseline);
   useEffect(() => {
     if (!dirty) return;
@@ -353,45 +394,51 @@ export function JournalEditor({
       editor.current?.setSelectionRange(caret, caret);
     });
   }
+  const pages = journalPages(entries, drafts);
+  const titleFor = (pageDate: string) => journalPageTitle(pages.find(page => page.date === pageDate), t("Sans titre", "Untitled"));
+  const locked = busy || aiBusy || !!proposal;
   return (
-    <section className="journal-page">
-      <div className="journal-page-nav">
-        <span>
-          <BookOpen size={16} />
-          {t("Mon journal", "My journal")}
-        </span>
-        <label>
-          {t("Ouvrir une page", "Open a page")}
-          <input
-            type="date"
-            aria-label={t("Date du journal", "Journal date")}
-            value={date}
-            disabled={busy || aiBusy || !!proposal}
-            onChange={(e) => {
-              if (e.target.value) {
-                setDate(e.target.value);
-                setSelection({ start: 0, end: 0 });
-                setError("");
-                setStatus("");
+    <section className={`journal-page journal-${screen}`} ref={pageRoot}>
+      {(screen === "editor" || openDates.length > 0) && <nav className="journal-tabs" aria-label={t("Pages du journal", "Journal pages")}>
+        <button className="journal-home-tab" aria-current={screen === "library" ? "page" : undefined} disabled={locked} onClick={() => setScreen("library")}><BookOpen size={15}/>{t("Toutes mes pages", "All my pages")}</button>
+        <div className="journal-open-tabs">
+          {openDates.map(pageDate => <div className="journal-tab" key={pageDate} data-selected={screen === "editor" && date === pageDate}>
+            <button aria-current={screen === "editor" && date === pageDate ? "page" : undefined} disabled={locked} onClick={() => openPage(pageDate)} title={`${pageDate} · ${titleFor(pageDate)}`}><FileText size={14}/><span>{titleFor(pageDate)}</span>{pages.find(page => page.date === pageDate)?.dirty && <i aria-label={t("Non enregistré", "Unsaved")}/>}</button>
+            <button className="journal-close-tab" disabled={locked} aria-label={`${t("Fermer l’onglet", "Close tab")} ${titleFor(pageDate)}`} onClick={() => {
+              const remaining = openDates.filter(value => value !== pageDate);
+              setOpenDates(remaining);
+              if (screen === "editor" && date === pageDate) {
+                if (remaining.length) openPage(remaining.at(-1)!);
+                else setScreen("library");
               }
-            }}
-          />
-        </label>
+            }}><X size={12}/></button>
+          </div>)}
+        </div>
+        <button className="journal-new-tab" disabled={locked} aria-label={t("Écrire aujourd’hui", "Write today")} title={t("Écrire aujourd’hui", "Write today")} onClick={() => openPage(localToday())}><Plus size={17}/></button>
+      </nav>}
+      {screen === "library" ? <JournalLibrary pages={pages} locale={locale} onOpen={openPage}/> : <>
+      <div className="journal-page-nav">
+        <form className="journal-date-form" onSubmit={event => {
+          event.preventDefault();
+          const value = new FormData(event.currentTarget).get("journal-date");
+          if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) openPage(value);
+        }}>
+          <label>{t("Aller au", "Go to")}
+            <input key={date} name="journal-date" type="date" required aria-label={t("Date du journal", "Journal date")} defaultValue={date} disabled={locked}/>
+          </label>
+          <button type="submit" className="journal-open-date" disabled={locked} aria-label={t("Ouvrir cette date", "Open this date")} title={t("Ouvrir cette date", "Open this date")}><ArrowRight size={15}/></button>
+        </form>
+        <div className="journal-page-actions">
+          <span className="journal-save-indicator">{key(draft) === draft.baseline ? t("À jour", "Up to date") : t("Brouillon", "Draft")}</span>
+          <button className="primary" disabled={locked || !draft.text.trim()} onClick={() => void save()}>{busy ? t("Enregistrement…", "Saving…") : t("Enregistrer", "Save")}</button>
+        </div>
       </div>
       <div className="journal-paper">
-        {prompt?.lessonId && onProgram && (
-          <div className="journal-program-link">
-            <button className="text-button" onClick={onProgram} disabled={busy}>
-              <ArrowLeft size={15} /> {t("Retour au programme", "Back to the program")}
-            </button>
-            <strong>{prompt.title}</strong>
-            <small>{t(
-              "Enregistrez votre réflexion pour retrouver cette étape cochée dans votre programme.",
-              "Save your reflection to see this step checked in your program.",
-            )}</small>
-          </div>
+        {prompt?.lessonId && onProgram && (draft.text.includes(prompt.question) || prompt.date === date) && (
+          <button className="journal-program-back text-button" onClick={onProgram} disabled={busy}>
+            <ArrowLeft size={13} /> {t("Mon programme", "My program")}
+          </button>
         )}
-        <span className="journal-page-icon">✦</span>
         <textarea
           ref={titleEditor}
           rows={1}
@@ -442,11 +489,11 @@ export function JournalEditor({
           </p>
         )}
         <div className="journal-writing-area" aria-busy={aiBusy}>
-          {!aiDisabled && !aiBusy && !currentProposal && highlighted.trim() && (
+          {active && !aiDisabled && !aiBusy && !currentProposal && highlighted.trim() && createPortal(
             <div
               ref={selectionTools}
               className="journal-selection-tools"
-              style={{ left: anchor.left, top: anchor.top }}
+              style={{ left: anchor.left, top: anchor.top, visibility: anchor.visible ? "visible" : "hidden" }}
               role="toolbar"
               aria-label={t("IA sur la sélection", "AI for selection")}
               onMouseDown={(e) => e.preventDefault()}
@@ -491,7 +538,7 @@ export function JournalEditor({
                       "Only this selection will be sent to AI through Vercel.",
                     )}
               </span>
-            </div>
+            </div>, document.body
           )}
           {aiBusy && (
             <div className="journal-ai-pending" role="status">
@@ -654,31 +701,8 @@ export function JournalEditor({
         </div>
         {error && <p role="alert">{error}</p>}
         {status && <p role="status">{status}</p>}
-        {!!entries.length && (
-          <details className="journal-history">
-            <summary>
-              {t("Mes pages précédentes", "Previous pages")} ({entries.length})
-            </summary>
-            {[...entries]
-              .sort((a, b) => b.date.localeCompare(a.date))
-              .map((e) => (
-                <button
-                  disabled={busy || aiBusy || !!proposal}
-                  key={e.id}
-                  onClick={() => {
-                    setDate(e.date);
-                    setSelection({ start: 0, end: 0 });
-                    setStatus("");
-                    setError("");
-                  }}
-                >
-                  <span>{e.date}</span>
-                  {e.title || e.text.slice(0, 70)}
-                </button>
-              ))}
-          </details>
-        )}
       </div>
+      </>}
     </section>
   );
 }

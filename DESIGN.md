@@ -25,3 +25,11 @@ adding duplicate prompts. Existing text and reading dates are preserved.
 The progress and links stay in the personal workspace. In enhanced protection,
 matching and updates run on the device before encryption; no new plaintext
 telemetry, shared-circle fields or administrative journal access is introduced.
+
+### Journal library and pages
+
+“Mon journal” in the navigation opens the complete library, grouped by month. A Higgsfield glass-notebook cover uses the same magenta/silver art direction as the Croo.Studio family. Search runs locally over the user's already available entries. Open pages become tabs; unsaved drafts remain in the mounted editor across navigation and closing a tab, with explicit saved/draft states. They are not stored in browser storage. The existing one-page-per-date data model and save/revision checks are unchanged.
+
+Writing pages omit the large cover, decorative icon and repeated program explanation. Compact metadata and a top save action leave more room for text. The contextual AI toolbar measures selected lines and its own dimensions, tracks scrolling/resizing/visual viewport changes, and stays clear of the tab bar. It remains disabled under enhanced protection; review, accept/reject and undo semantics are preserved.
+
+Interaction references: [Notion writing and editing](https://www.notion.com/help/writing-and-editing-basics) (selection-driven toolbar) and [page customization](https://www.notion.com/help/customize-and-style-your-content) (cover and spacious writing canvas). This is an independent implementation; Notion block storage and collaboration are not reproduced.
