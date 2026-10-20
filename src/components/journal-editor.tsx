@@ -170,21 +170,32 @@ export function JournalEditor({
     requestAnimationFrame(() => editor.current?.focus());
   }, [prompt]);
   useEffect(() => {
-    if (editor.current) {
-      editor.current.style.height = "auto";
-      editor.current.style.height = `${Math.max(340, editor.current.scrollHeight)}px`;
-    }
-  }, [draft.text, date, proposal]);
-  useEffect(() => {
-    const resize = () => {
-      if (!titleEditor.current) return;
-      titleEditor.current.style.height = "auto";
-      titleEditor.current.style.height = `${titleEditor.current.scrollHeight}px`;
+    const fields = [editor.current, titleEditor.current].filter(
+      (field): field is HTMLTextAreaElement => !!field,
+    );
+    const widths = new Map<HTMLTextAreaElement, number>();
+    const resize = (field: HTMLTextAreaElement) => {
+      // Dashboard panels mount while hidden. Measure only after they become visible.
+      if (!field.clientWidth) return;
+      field.style.height = "auto";
+      field.style.height = `${Math.max(field === editor.current ? 340 : 0, field.scrollHeight)}px`;
     };
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, [draft.title, date, locale]);
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const field = entry.target as HTMLTextAreaElement;
+        const width = field.clientWidth;
+        if (width !== widths.get(field)) {
+          widths.set(field, width);
+          resize(field);
+        }
+      }
+    });
+    for (const field of fields) {
+      resize(field);
+      observer.observe(field);
+    }
+    return () => observer.disconnect();
+  }, [draft.text, draft.title, date, proposal, locale]);
   const dirty = Object.values(drafts).some((d) => key(d) !== d.baseline);
   useEffect(() => {
     if (!dirty) return;

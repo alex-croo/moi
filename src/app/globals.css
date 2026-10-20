@@ -3469,7 +3469,8 @@ input[type="file"]::file-selector-button {
 .journal-title::placeholder {
   color: #b1b5a5;
 }
-.journal-title { resize: none; overflow: hidden; white-space: pre-wrap; min-height: 0; }
+.journal-title { resize: none; overflow: hidden; white-space: pre-wrap; min-height: calc(1.2em + 20px); }
+.journal-title:focus-visible { outline: none; }
 .journal-properties {
   display: flex;
   flex-wrap: wrap;
