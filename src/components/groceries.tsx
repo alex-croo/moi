@@ -5,7 +5,6 @@ import {
   Copy,
   ShoppingBasket,
   PackageCheck,
-  Check,
 } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type {
@@ -141,14 +140,11 @@ export function GroceryList({
     <section className="grocery-page">
       <div className="grocery-heading">
         <div className="page-heading">
-          <span className="eyebrow">
-            {t("AVANT DE PASSER À TABLE", "BEFORE SITTING DOWN TO EAT")}
-          </span>
           <h1>{t("Ma liste d’épicerie.", "My grocery list.")}</h1>
           <p>
             {t(
-              "Tout ce qu’il faut pour les repas de votre semaine, rassemblé au même endroit.",
-              "Everything you need for this week’s meals, gathered in one place.",
+              "Les ingrédients de votre semaine, vos réserves déjà déduites.",
+              "This week’s ingredients, with your pantry already deducted.",
             )}
           </p>
         </div>
@@ -165,7 +161,6 @@ export function GroceryList({
       </div>
       <div className="grocery-controls">
         <div className="grocery-week">
-          <span className="eyebrow">{t("MA SEMAINE", "MY WEEK")}</span>
           <WeekNavigation
             week={week}
             locale={locale}
@@ -191,8 +186,8 @@ export function GroceryList({
             <span>
               <strong>
                 {t(
-                  "Afficher les aliments déjà prêts",
-                  "Show foods already ready",
+                  "Déjà prêts",
+                  "Already ready",
                 )}
               </strong>
               <small id="grocery-ready-help">
@@ -220,8 +215,8 @@ export function GroceryList({
             <span>
               <strong>
                 {t(
-                  "Inclure les ingrédients facultatifs",
-                  "Include optional ingredients",
+                  "Ingrédients facultatifs",
+                  "Optional ingredients",
                 )}
               </strong>
               <small id="grocery-optional-help">
@@ -290,13 +285,6 @@ export function GroceryList({
               aria-label={t("Ingrédients prêts", "Ingredients ready")}
             />
           </div>
-          <p className="grocery-explanation grocery-save-hint">
-            <Check size={15} />
-            {t(
-              "Vos réserves sont déduites. Vos achats cochés sont enregistrés pour la semaine.",
-              "Your pantry is deducted. Checked purchases are saved for the week.",
-            )}
-          </p>
           {!visibleItems.length && (
             <p className="grocery-all-ready" role="status">
               {t(
@@ -304,6 +292,13 @@ export function GroceryList({
                 "Everything is ready for this week’s planned meals.",
               )}
             </p>
+          )}
+          {visibleItems.length > 0 && (
+            <div className="grocery-column-headings" aria-hidden="true">
+              <span>{t("Ingrédient", "Ingredient")}</span>
+              <span>{t("Pour ces recettes", "For these recipes")}</span>
+              <span>{t("À acheter", "To buy")}</span>
+            </div>
           )}
           <ul
             className="grocery-items"
@@ -361,26 +356,20 @@ export function GroceryList({
                       )}
                     </p>
                   )}
-                  <details>
-                    <summary>
-                      {t("Voir les recettes", "View recipes")} (
-                      {item.uses.length})
-                    </summary>
-                    <ul>
-                      {item.uses.map(({ recipe, meals: uses }) => (
-                        <li key={recipe.id}>
-                          <button
-                            className="text-button"
-                            onClick={() => onOpen(recipe)}
-                          >
-                            {locale === "fr" ? recipe.title : recipe.titleEn}
-                          </button>
-                          <span> × {uses}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
                 </div>
+                <ul
+                  className="grocery-recipes"
+                  aria-label={t("Pour ces recettes", "For these recipes")}
+                >
+                  {item.uses.map(({ recipe, meals: uses }) => (
+                    <li key={recipe.id}>
+                      <button onClick={() => onOpen(recipe)}>
+                        <span>{locale === "fr" ? recipe.title : recipe.titleEn}</span>
+                        {uses > 1 && <span className="grocery-recipe-count">× {uses}</span>}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
                 <div className="grocery-quantity">
                   <strong>
                     {item.estimated ? "≈ " : ""}
@@ -404,8 +393,8 @@ export function GroceryList({
             </summary>
             <p>
               {t(
-                "Les quantités couvrent les portions de chaque recette; un repas répété est compté à nouveau. Vos réserves sont déduites sans être modifiées. Une réserve sans quantité ou mesurée autrement reste à vérifier.",
-                "Quantities cover each recipe’s servings; a repeated meal is counted again. Pantry quantities are deducted without changing your stock. Stock without a quantity or with a different measure needs checking.",
+                "Les quantités couvrent les portions de chaque recette; un repas répété est compté à nouveau. Vos réserves sont déduites sans être modifiées. Une réserve sans quantité ou mesurée autrement reste à vérifier. Vos achats cochés sont enregistrés pour la semaine.",
+                "Quantities cover each recipe’s servings; a repeated meal is counted again. Pantry quantities are deducted without changing your stock. Stock without a quantity or with a different measure needs checking. Checked purchases are saved for the week.",
               )}
             </p>
           </details>
