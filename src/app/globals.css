@@ -3108,13 +3108,17 @@ input[type="file"]::file-selector-button {
   gap: 22px;
 }
 .recipe-card {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #e1e5d8;
   background: #fffefa;
   border-radius: 12px;
   overflow: hidden;
 }
 .recipe-open {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   border: 0;
   padding: 0;
   background: none;
@@ -3123,6 +3127,7 @@ input[type="file"]::file-selector-button {
   color: inherit;
 }
 .recipe-cover {
+  flex-shrink: 0;
   height: 200px;
   overflow: hidden;
   background: #e8eddf;
@@ -3138,7 +3143,13 @@ input[type="file"]::file-selector-button {
   transform: scale(1.035);
 }
 .recipe-card-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 23px;
+}
+.recipe-card-copy .recipe-meta {
+  margin-top: auto;
 }
 .recipe-card h3 {
   font:
