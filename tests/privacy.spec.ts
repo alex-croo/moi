@@ -14,6 +14,7 @@ import {
   completeLesson,
   programState,
 } from "../src/lib/daily-program";
+import type { ProgramProgress } from "../src/lib/private-types";
 const a = "11111111-1111-4111-8111-111111111111",
   b = "22222222-2222-4222-8222-222222222222",
   c = "33333333-3333-4333-8333-333333333333",
@@ -78,22 +79,41 @@ test("client vault protects plaintext, binds owner/revision, detects tampering a
     ),
   ).toEqual(personal);
 });
-test("31 days advance once daily, retain missed-day progress and complete four milestones", () => {
+test("31 days unlock in order immediately, retain progress and complete four milestones", () => {
   expect(lessons).toHaveLength(31);
   expect(new Set(lessons.map((l) => l.id)).size).toBe(31);
-  let p = { completed: {}, reflections: {} };
-  p = completeLesson(p, lessons[0].id, "2026-10-19");
-  expect(programState(p, "2026-10-19").available).toBe(false);
+  let p: ProgramProgress = {
+    completed: {},
+    reflections: { private: "kept locally" },
+  };
   expect(() => completeLesson(p, lessons[1].id, "2026-10-19")).toThrow();
+  p = completeLesson(p, lessons[0].id, "2026-10-19");
+  expect(programState(p)).toMatchObject({
+    index: 1,
+    completed: 1,
+    available: true,
+  });
+  expect(() => completeLesson(p, lessons[0].id, "2026-10-19")).toThrow();
   expect(() => completeLesson(p, lessons[2].id, "2026-10-20")).toThrow();
-  expect(programState(p, "2026-11-20").index).toBe(1);
-  for (let i = 1; i < 31; i++)
+  p = completeLesson(p, lessons[1].id, "2026-10-19");
+  expect(programState(p)).toMatchObject({
+    index: 2,
+    completed: 2,
+    available: true,
+  });
+  expect(p.reflections.private).toBe("kept locally");
+  for (let i = 2; i < 31; i++)
     p = completeLesson(
       p,
       lessons[i].id,
       `2026-11-${String(i).padStart(2, "0")}`,
     );
-  expect(programState(p, "2026-12-01").finished).toBe(true);
+  expect(programState(p)).toMatchObject({
+    finished: true,
+    completed: 31,
+    available: false,
+  });
+  expect(() => completeLesson(p, lessons[30].id, "2026-12-01")).toThrow();
   for (const lesson of lessons) {
     expect(lesson.body[0].length).toBeGreaterThan(300);
     expect(lesson.body[1].length).toBeGreaterThan(250);

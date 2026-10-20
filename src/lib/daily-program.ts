@@ -548,13 +548,13 @@ export const lessons: Lesson[] = rows.map(
     source,
   }),
 );
-export function programState(progress: ProgramProgress, today: string) {
+export function programState(progress: ProgramProgress) {
   const next = lessons.findIndex((l) => !progress.completed[l.id]);
   return {
     index: next < 0 ? lessons.length - 1 : next,
     finished: next < 0,
     completed: lessons.filter((l) => progress.completed[l.id]).length,
-    available: !Object.values(progress.completed).includes(today),
+    available: next >= 0,
   };
 }
 export function completeLesson(
@@ -562,7 +562,7 @@ export function completeLesson(
   lessonId: string,
   today: string,
 ): ProgramProgress {
-  const state = programState(progress, today);
+  const state = programState(progress);
   if (
     state.finished ||
     !state.available ||

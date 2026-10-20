@@ -3173,6 +3173,34 @@ input[type="file"]::file-selector-button {
   margin: 0 22px 22px;
   width: calc(100% - 44px);
 }
+/* Share content tracks across each row, including titles that wrap to 3+ lines. */
+@supports (grid-template-rows: subgrid) {
+  .recipe-card {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 5;
+    row-gap: 0;
+  }
+  .recipe-card:has(> .recipe-select),
+  .recipe-card:has(> .secondary) {
+    grid-row: span 6;
+  }
+  .recipe-card:has(> .recipe-select):has(> .secondary) {
+    grid-row: span 7;
+  }
+  .recipe-open {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 5;
+    row-gap: 0;
+  }
+  .recipe-card-copy {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+    row-gap: 0;
+  }
+}
 .recipe-sheet,
 .recipe-picker {
   border: 1px solid #dce2d3;
@@ -4101,6 +4129,7 @@ input[type="file"]::file-selector-button {
   gap: 8px;
 }
 .lesson-paper h2 {
+  scroll-margin-top: 100px;
   font-family: Georgia, serif;
   font-size: 34px;
   line-height: 1.2;

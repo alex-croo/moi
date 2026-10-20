@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   BookOpen,
   Check,
@@ -31,12 +31,9 @@ export function DailyProgram({
   preview?: boolean;
 }) {
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
-  const state = programState(progress, localToday());
-  const [selected, setSelected] = useState(
-      !state.available && !state.finished
-        ? Math.max(0, state.index - 1)
-        : state.index,
-    ),
+  const lessonTitle = useRef<HTMLHeadingElement>(null);
+  const state = programState(progress);
+  const [selected, setSelected] = useState(state.index),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const lesson = lessons[selected],
@@ -56,8 +53,8 @@ export function DailyProgram({
         <h1>{t("Mon programme.", "My program.")}</h1>
         <p>
           {t(
-            "31 journées pour mieux vous connaître et trouver vos repères. Une lecture à la fois, sans rattrapage.",
-            "31 days to get to know yourself and find your footing. One reading at a time, with no catching up.",
+            "31 journées pour mieux vous connaître et trouver vos repères. Une lecture à la fois, à votre rythme.",
+            "31 days to get to know yourself and find your footing. One reading at a time, at your own pace.",
           )}
         </p>
       </div>
@@ -98,14 +95,6 @@ export function DailyProgram({
           ))}
         </div>
       </div>
-      {!preview && !state.available && !state.finished && (
-        <p className="privacy-note">
-          {t(
-            "Votre lecture du jour est terminée. La prochaine sera disponible demain. Vous pouvez relire vos journées et poursuivre votre journal à votre rythme.",
-            "Today’s reading is complete. The next one will be available tomorrow. Revisit past days and continue your journal at your own pace.",
-          )}
-        </p>
-      )}
       {state.finished && (
         <p className="privacy-note">
           {t(
@@ -123,7 +112,7 @@ export function DailyProgram({
             const unlocked =
               preview ||
               !!progress.completed[l.id] ||
-              (i === state.index && (state.available || state.completed === 0));
+              (i === state.index && state.available);
             return (
               <button
                 key={l.id}
@@ -161,7 +150,9 @@ export function DailyProgram({
                 : t("Un moment pour vous", "A moment for you")}
             </span>
           </div>
-          <h2>{t(...lesson.title)}</h2>
+          <h2 ref={lessonTitle} tabIndex={-1}>
+            {t(...lesson.title)}
+          </h2>
           {t(...lesson.body)
             .split("\n\n")
             .map((p, i) => (
@@ -246,6 +237,21 @@ export function DailyProgram({
                     : t("Terminer cette lecture", "Complete this reading")}
                 </button>
               )}
+            {!preview && completed && !state.finished && (
+              <button
+                className="primary"
+                onClick={() => {
+                  setSelected(state.index);
+                  setError("");
+                  requestAnimationFrame(() => {
+                    lessonTitle.current?.focus({ preventScroll: true });
+                    lessonTitle.current?.scrollIntoView({ block: "start" });
+                  });
+                }}
+              >
+                {t("Passer au jour", "Continue to day")} {lessons[state.index].day}
+              </button>
+            )}
           </div>
           {error && <p role="alert">{error}</p>}
           <details className="lesson-source">

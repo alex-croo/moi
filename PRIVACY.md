@@ -102,8 +102,9 @@ be withdrawn from screenshots or recipients' copies. Limits: 10 owned circles,
 ## Daily program
 
 31 original FR/EN educational readings, milestones on days 7, 14, 21 and 31.
-One new completion per local Toronto day; no missed-day penalty. Completion and
-progress are encrypted. A lesson adds a prompt to today's existing draft without
+The next reading unlocks immediately after the previous one is completed,
+including on the same date; no missed-day penalty. Existing completion dates
+are retained. Progress uses the account's chosen protection level. A lesson adds a prompt to today's existing draft without
 overwriting it; journaling is optional. Published lessons are common content,
 not personalized clinical recommendations. Citations accompany each reading;
 the program itself has not been clinically validated. No weight-loss promises,
