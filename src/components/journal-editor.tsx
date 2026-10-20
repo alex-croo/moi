@@ -1,6 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, Check, Sparkles, SpellCheck, Undo2, X } from "lucide-react";
+import {
+  BookOpen,
+  Check,
+  LockKeyhole,
+  Sparkles,
+  SpellCheck,
+  Undo2,
+  X,
+} from "lucide-react";
+import { applyJournalSuggestion, journalChanges } from "@/lib/journal-revision";
+import { journalSelectionPosition } from "@/lib/journal-selection";
 import type { JournalPrompt } from "@/lib/private-types";
 import type { JournalEntry } from "@/lib/types";
 import type { Locale } from "@/lib/locale";
@@ -20,13 +30,11 @@ export function JournalEditor({
   onSave,
   prompt,
   encrypted = false,
-  remoteAiDisabled = false,
 }: {
   entries: JournalEntry[];
   locale: Locale;
   prompt?: JournalPrompt | null;
   encrypted?: boolean;
-  remoteAiDisabled?: boolean;
   onSave: (data: {
     date: string;
     text: string;
@@ -38,6 +46,12 @@ export function JournalEditor({
   const [date, setDate] = useState(localToday);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const editor = useRef<HTMLTextAreaElement>(null);
+  const titleEditor = useRef<HTMLTextAreaElement>(null);
+  const selectionTools = useRef<HTMLDivElement>(null);
+  const aiRequest = useRef<AbortController | null>(null);
+  const [anchor, setAnchor] = useState({ left: 0, top: 0 });
+  const [previewResult, setPreviewResult] = useState(false);
+  const [protectionChanged, setProtectionChanged] = useState(false);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
   const [busy, setBusy] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
@@ -68,6 +82,57 @@ export function JournalEditor({
     setDrafts((current) => ({ ...current, [date]: { ...draft, ...patch } }));
     setStatus("");
   }
+  const aiDisabled = encrypted || protectionChanged;
+  function captureSelection() {
+    const el = editor.current;
+    if (!el) return;
+    setSelection({ start: el.selectionStart, end: el.selectionEnd });
+    if (el.selectionStart !== el.selectionEnd) {
+      const point = journalSelectionPosition(el, el.selectionStart);
+      const nearTop = el.getBoundingClientRect().top + point.top < 110;
+      setAnchor({
+        left: Math.max(0, Math.min(point.left, el.clientWidth - 420)),
+        top: nearTop ? point.top + point.height + 8 : point.top - 82,
+      });
+    }
+  }
+  function cancelAi() {
+    aiRequest.current?.abort();
+    aiRequest.current = null;
+    setAiBusy(false);
+  }
+  useEffect(
+    () => () => {
+      aiRequest.current?.abort();
+    },
+    [],
+  );
+  useEffect(() => {
+    if (!aiDisabled) return;
+    cancelAi();
+    setProposal(null);
+    setSelection({ start: 0, end: 0 });
+  }, [aiDisabled]);
+  useEffect(() => {
+    const outside = (event: PointerEvent) => {
+      if (
+        event.target !== editor.current &&
+        !selectionTools.current?.contains(event.target as Node)
+      )
+        setSelection({ start: 0, end: 0 });
+    };
+    const selectionChanged = () => {
+      if (document.activeElement === editor.current) captureSelection();
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("selectionchange", selectionChanged);
+    window.addEventListener("resize", captureSelection);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("selectionchange", selectionChanged);
+      window.removeEventListener("resize", captureSelection);
+    };
+  }, []);
   const consumed = useRef(new Set<string>());
   useEffect(() => {
     if (!prompt || consumed.current.has(prompt.id)) return;
@@ -109,7 +174,17 @@ export function JournalEditor({
       editor.current.style.height = "auto";
       editor.current.style.height = `${Math.max(340, editor.current.scrollHeight)}px`;
     }
-  }, [draft.text, date]);
+  }, [draft.text, date, proposal]);
+  useEffect(() => {
+    const resize = () => {
+      if (!titleEditor.current) return;
+      titleEditor.current.style.height = "auto";
+      titleEditor.current.style.height = `${titleEditor.current.scrollHeight}px`;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, [draft.title, date, locale]);
   const dirty = Object.values(drafts).some((d) => key(d) !== d.baseline);
   useEffect(() => {
     if (!dirty) return;
@@ -157,43 +232,103 @@ export function JournalEditor({
     }
   }
   async function edit(action: "improve" | "correct") {
-    if (encrypted || remoteAiDisabled) return;
-    const start = selection.start === selection.end ? 0 : selection.start;
-    const end =
-      selection.start === selection.end ? draft.text.length : selection.end;
+    if (aiDisabled || aiBusy || busy) return;
+    const { start, end } = selection;
     const original = draft.text;
     const text = original.slice(start, end);
-    if (!text.trim()) return;
+    if (!text.trim() || text.length > 8000) return;
     setError("");
     setProposal(null);
     setAiBusy(true);
+    const controller = new AbortController();
+    aiRequest.current = controller;
+    setPreviewResult(false);
     try {
       const response = await fetch("/api/journal/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, text }),
+        signal: controller.signal,
       });
       if (!response.ok) throw new Error(String(response.status));
       const result = await response.json();
-      setProposal({ text: result.text, original, start, end, date });
+      if (controller.signal.aborted) return;
+      if (typeof result.text !== "string" || !result.text.trim())
+        throw Error("invalid");
+      const next = { text: result.text, original, start, end, date };
+      applyJournalSuggestion(original, next);
+      if (result.text === text)
+        setStatus(
+          t(
+            "Ce passage ne nécessite aucune correction.",
+            "This passage needs no changes.",
+          ),
+        );
+      else setProposal(next);
+      setSelection({ start: 0, end: 0 });
     } catch (e) {
+      if (controller.signal.aborted) return;
+      if (e instanceof Error && e.message === "409") setProtectionChanged(true);
       setError(
         e instanceof Error && e.message === "429"
           ? t(
               "La limite de 20 propositions par heure est atteinte. Réessayez plus tard.",
               "The limit of 20 suggestions per hour has been reached. Please try later.",
             )
-          : t(
-              "L’IA n’est pas disponible pour le moment. Votre texte n’a pas changé.",
-              "AI is currently unavailable. Your text has not changed.",
-            ),
+          : e instanceof Error && e.message === "409"
+            ? t(
+                "La protection renforcée est active. Rechargez votre espace pour continuer.",
+                "Enhanced protection is active. Reload your workspace to continue.",
+              )
+            : e instanceof Error && e.message === "too_long"
+              ? t(
+                  "Cette proposition dépasse la longueur de la page. Sélectionnez un passage plus court.",
+                  "This suggestion would exceed the page limit. Select a shorter passage.",
+                )
+              : t(
+                  "L’IA n’est pas disponible pour le moment. Votre texte n’a pas changé.",
+                  "AI is currently unavailable. Your text has not changed.",
+                ),
       );
     } finally {
-      setAiBusy(false);
+      if (aiRequest.current === controller) {
+        aiRequest.current = null;
+        setAiBusy(false);
+      }
     }
   }
   const currentProposal = proposal?.date === date ? proposal : null;
   const stale = !!currentProposal && currentProposal.original !== draft.text;
+  const highlighted = draft.text.slice(selection.start, selection.end);
+  function finishSuggestion(accept: boolean) {
+    if (!currentProposal) return;
+    if (accept) {
+      try {
+        const after = applyJournalSuggestion(draft.text, currentProposal);
+        setUndo({ before: draft.text, after, date });
+        change({ text: after });
+      } catch {
+        setError(
+          t(
+            "Le texte a changé. Relancez la proposition.",
+            "The text changed. Request a new suggestion.",
+          ),
+        );
+        return;
+      }
+    }
+    const caret =
+      currentProposal.start +
+      (accept
+        ? currentProposal.text.length
+        : currentProposal.end - currentProposal.start);
+    setProposal(null);
+    setSelection({ start: 0, end: 0 });
+    requestAnimationFrame(() => {
+      editor.current?.focus({ preventScroll: true });
+      editor.current?.setSelectionRange(caret, caret);
+    });
+  }
   return (
     <section className="journal-page">
       <div className="journal-page-nav">
@@ -207,7 +342,7 @@ export function JournalEditor({
             type="date"
             aria-label={t("Date du journal", "Journal date")}
             value={date}
-            disabled={busy || aiBusy}
+            disabled={busy || aiBusy || !!proposal}
             onChange={(e) => {
               if (e.target.value) {
                 setDate(e.target.value);
@@ -221,14 +356,16 @@ export function JournalEditor({
       </div>
       <div className="journal-paper">
         <span className="journal-page-icon">✦</span>
-        <input
+        <textarea
+          ref={titleEditor}
+          rows={1}
           className="journal-title"
           aria-label={t("Titre de la page", "Page title")}
           placeholder={t("Une nouvelle page", "A new page")}
           maxLength={160}
           value={draft.title}
           onChange={(e) => change({ title: e.target.value })}
-          disabled={busy}
+          disabled={busy || aiBusy || !!proposal}
         />
         <div className="journal-properties">
           <span>
@@ -250,7 +387,7 @@ export function JournalEditor({
                 key={m}
                 className={draft.mood === m ? "selected" : ""}
                 onClick={() => change({ mood: m })}
-                disabled={busy}
+                disabled={busy || aiBusy || !!proposal}
                 aria-label={`${t("Humeur", "Mood")} ${m}/5`}
                 aria-pressed={draft.mood === m}
               >
@@ -259,135 +396,196 @@ export function JournalEditor({
             ))}
           </span>
         </div>
-        {encrypted || remoteAiDisabled ? (
-          <p className="privacy-note">
+        {aiDisabled && (
+          <p className="journal-privacy-hint">
+            <LockKeyhole size={14} />
             {t(
-              encrypted
-                ? "Cette page reste dans votre coffre. L’IA distante est désactivée pour que son contenu ne soit pas transmis à un fournisseur."
-                : "Votre journal est personnel. L’assistance IA distante est désactivée.",
-              encrypted
-                ? "This page stays in your vault. Remote AI is disabled so its contents are not sent to a provider."
-                : "Your journal is personal. Remote AI assistance is disabled.",
+              "Protection renforcée · L’IA est désactivée pour garder vos mots dans votre coffre.",
+              "Enhanced protection · AI is off to keep your words inside your vault.",
             )}
           </p>
-        ) : (
-          <>
+        )}
+        <div className="journal-writing-area" aria-busy={aiBusy}>
+          {!aiDisabled && !aiBusy && !currentProposal && highlighted.trim() && (
             <div
-              className="inline-ai-toolbar"
-              aria-label={t("Édition assistée par IA", "AI editing")}
+              ref={selectionTools}
+              className="journal-selection-tools"
+              style={{ left: anchor.left, top: anchor.top }}
+              role="toolbar"
+              aria-label={t("IA sur la sélection", "AI for selection")}
+              onMouseDown={(e) => e.preventDefault()}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setSelection({ start: 0, end: 0 });
+                  editor.current?.focus();
+                }
+              }}
             >
-              <span>
-                <Sparkles size={15} />
-                {selection.start !== selection.end
-                  ? t("Sur la sélection", "On selection")
-                  : t("Sur cette page", "On this page")}
+              <div className="journal-selection-actions">
+                <button
+                  disabled={busy || highlighted.length > 8000}
+                  onClick={() => void edit("improve")}
+                >
+                  <Sparkles size={15} />
+                  {t("Améliorer", "Improve writing")}
+                </button>
+                <button
+                  disabled={busy || highlighted.length > 8000}
+                  onClick={() => void edit("correct")}
+                >
+                  <SpellCheck size={16} />
+                  {t("Corriger les fautes", "Fix spelling")}
+                </button>
+                <button
+                  className="journal-tool-close"
+                  aria-label={t("Fermer les outils IA", "Close AI tools")}
+                  onClick={() => setSelection({ start: 0, end: 0 })}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <span className="journal-selection-disclosure">
+                {highlighted.length > 8000
+                  ? t(
+                      "Sélectionnez au maximum 8 000 caractères.",
+                      "Select up to 8,000 characters.",
+                    )
+                  : t(
+                      "Seule la sélection sera envoyée à l’IA via Vercel.",
+                      "Only this selection will be sent to AI through Vercel.",
+                    )}
               </span>
-              <button
-                disabled={aiBusy || busy || !draft.text.trim()}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => void edit("improve")}
-              >
-                <Sparkles size={14} />
-                {t("Améliorer le texte", "Improve writing")}
-              </button>
-              <button
-                disabled={aiBusy || busy || !draft.text.trim()}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => void edit("correct")}
-              >
-                <SpellCheck size={15} />
-                {t("Corriger les fautes", "Fix spelling")}
-              </button>
             </div>
-            <p className="ai-disclosure">
-              {t(
-                "À votre demande, le texte sélectionné — ou toute la page sans sélection — est envoyé à l’IA via Vercel. Vous décidez d’accepter la proposition.",
-                "When requested, selected text — or the whole page without a selection — is sent to AI through Vercel. You choose whether to accept the suggestion.",
-              )}
-            </p>
-          </>
-        )}
-        <textarea
-          ref={editor}
-          spellCheck={!encrypted}
-          autoComplete="off"
-          className="journal-canvas"
-          aria-label={t("Texte du journal", "Journal text")}
-          placeholder={t(
-            "Commencez à écrire…\n\nUne pensée, un moment, quelques lignes pour vous.",
-            "Start writing…\n\nA thought, a moment, a few lines for yourself.",
           )}
-          maxLength={20000}
-          value={draft.text}
-          disabled={busy}
-          onChange={(e) => change({ text: e.target.value })}
-          onSelect={(e) =>
-            setSelection({
-              start: e.currentTarget.selectionStart,
-              end: e.currentTarget.selectionEnd,
-            })
-          }
-        />
-        {aiBusy && (
-          <p role="status" className="ai-loading">
-            <Sparkles size={16} />
-            {t("Une proposition se prépare…", "Preparing a suggestion…")}
-          </p>
-        )}
-        {currentProposal && (
-          <aside
-            className="ai-proposal"
-            aria-label={t("Proposition de l’IA", "AI suggestion")}
-          >
-            <span className="eyebrow">
-              {t("PROPOSITION À RELIRE", "SUGGESTION TO REVIEW")}
-            </span>
-            <div className="proposal-comparison">
-              <div>
-                <small>{t("Votre texte", "Your text")}</small>
-                <p>
-                  {currentProposal.original.slice(
-                    currentProposal.start,
-                    currentProposal.end,
+          {aiBusy && (
+            <div className="journal-ai-pending" role="status">
+              <Sparkles size={15} />
+              <span>
+                {t(
+                  "Je prépare une proposition pour ce passage…",
+                  "Preparing a suggestion for this passage…",
+                )}
+              </span>
+              <button onClick={cancelAi}>{t("Annuler", "Cancel")}</button>
+            </div>
+          )}
+          {currentProposal ? (
+            <>
+              <div
+                className="journal-review-controls"
+                role="toolbar"
+                aria-label={t("Relire les modifications", "Review changes")}
+              >
+                <span>
+                  <Sparkles size={14} />
+                  {t("Proposition à relire", "Suggestion to review")}
+                </span>
+                <button
+                  aria-pressed={previewResult}
+                  onClick={() => setPreviewResult(!previewResult)}
+                >
+                  {previewResult
+                    ? t("Voir les modifications", "Show changes")
+                    : t("Voir le résultat", "Preview result")}
+                </button>
+                <button
+                  className="journal-accept"
+                  disabled={stale || busy}
+                  onClick={() => finishSuggestion(true)}
+                >
+                  <Check size={15} />
+                  {t("Accepter", "Accept")}
+                </button>
+                <button onClick={() => finishSuggestion(false)}>
+                  <X size={15} />
+                  {t("Refuser", "Reject")}
+                </button>
+              </div>
+              {!previewResult && (
+                <p className="journal-diff-key">
+                  {t(
+                    "Barré : retiré · Souligné : ajouté. Rien n’est appliqué avant votre accord.",
+                    "Strikethrough: removed · Underline: added. Nothing changes until you accept.",
                   )}
                 </p>
-              </div>
-              <div>
-                <small>{t("Proposition", "Suggestion")}</small>
-                <p>{currentProposal.text}</p>
-              </div>
-            </div>
-            {stale && (
-              <p role="alert">
-                {t(
-                  "Le texte a changé depuis cette demande. Relancez l’IA pour obtenir une proposition à jour.",
-                  "The text changed since this request. Ask AI again for an updated suggestion.",
+              )}
+              <div
+                className="journal-canvas journal-inline-review"
+                aria-label={t(
+                  "Texte avec modifications proposées",
+                  "Text with suggested changes",
                 )}
-              </p>
-            )}
-            <div className="proposal-actions">
-              <button
-                className="primary"
-                disabled={stale || busy}
-                onClick={() => {
-                  const after =
-                    draft.text.slice(0, currentProposal.start) +
-                    currentProposal.text +
-                    draft.text.slice(currentProposal.end);
-                  setUndo({ before: draft.text, after, date });
-                  change({ text: after });
-                  setProposal(null);
-                }}
+                tabIndex={0}
               >
-                <Check size={15} />
-                {t("Accepter la proposition", "Accept suggestion")}
-              </button>
-              <button className="text-button" onClick={() => setProposal(null)}>
-                <X size={15} />
-                {t("Ignorer", "Dismiss")}
-              </button>
-            </div>
-          </aside>
+                {currentProposal.original.slice(0, currentProposal.start)}
+                {previewResult
+                  ? currentProposal.text
+                  : journalChanges(
+                      currentProposal.original.slice(
+                        currentProposal.start,
+                        currentProposal.end,
+                      ),
+                      currentProposal.text,
+                    ).map((part, i) =>
+                      part.kind === "remove" ? (
+                        <del key={i}>{part.text}</del>
+                      ) : part.kind === "add" ? (
+                        <ins key={i}>{part.text}</ins>
+                      ) : (
+                        <span key={i}>{part.text}</span>
+                      ),
+                    )}
+                {currentProposal.original.slice(currentProposal.end)}
+              </div>
+              {stale && (
+                <p role="alert">
+                  {t(
+                    "La page a changé. Refusez cette proposition et relancez l’IA sur le passage à jour.",
+                    "The page changed. Reject this suggestion and select the updated passage.",
+                  )}
+                </p>
+              )}
+            </>
+          ) : (
+            <textarea
+              ref={editor}
+              spellCheck={!encrypted}
+              autoComplete="off"
+              className="journal-canvas"
+              aria-label={t("Texte du journal", "Journal text")}
+              aria-describedby={
+                !aiDisabled ? "journal-selection-help" : undefined
+              }
+              placeholder={t(
+                "Commencez à écrire…\n\nUne pensée, un moment, quelques lignes pour vous.",
+                "Start writing…\n\nA thought, a moment, a few lines for yourself.",
+              )}
+              maxLength={20000}
+              value={draft.text}
+              readOnly={busy || aiBusy}
+              onChange={(e) => {
+                change({ text: e.target.value });
+                setSelection({ start: 0, end: 0 });
+              }}
+              onSelect={captureSelection}
+              onPointerUp={captureSelection}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setSelection({ start: 0, end: 0 });
+                if (e.key === "Tab" && selectionTools.current && !e.shiftKey) {
+                  e.preventDefault();
+                  selectionTools.current.querySelector("button")?.focus();
+                }
+              }}
+            />
+          )}
+        </div>
+        {!aiDisabled && (
+          <p id="journal-selection-help" className="journal-writing-hint">
+            {t(
+              "Sélectionnez un passage pour l’améliorer ou corriger les fautes. Vous gardez le dernier mot.",
+              "Select a passage to improve it or fix spelling. You have the final say.",
+            )}
+          </p>
         )}
         {undo?.date === date && undo.after === draft.text && (
           <button
@@ -410,7 +608,7 @@ export function JournalEditor({
           </span>
           <button
             className="primary"
-            disabled={busy || aiBusy || !draft.text.trim()}
+            disabled={busy || aiBusy || !!currentProposal || !draft.text.trim()}
             onClick={() => void save()}
           >
             {busy
@@ -429,7 +627,7 @@ export function JournalEditor({
               .sort((a, b) => b.date.localeCompare(a.date))
               .map((e) => (
                 <button
-                  disabled={busy || aiBusy}
+                  disabled={busy || aiBusy || !!proposal}
                   key={e.id}
                   onClick={() => {
                     setDate(e.date);

@@ -937,7 +937,6 @@ export function Dashboard({
               entries={data.journal}
               prompt={journalPrompt}
               encrypted={privateActions?.protection === "enhanced"}
-              remoteAiDisabled={!!privateActions}
               locale={locale}
               onSave={async (value) => {
                 const result = await mutate("journal", value);

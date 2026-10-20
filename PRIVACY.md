@@ -25,8 +25,12 @@ Switching unlocking methods requires an already unlocked vault and rotates its d
 key and recovery code. Old encrypted backups still need their old secrets.
 
 The same key wrapping is used for decrypted backups; recovery and existing
-passphrase vaults remain supported. Remote AI journal editing stays disabled in
-both modes. This update does not publish OAuth or enable new signups.
+passphrase vaults remain supported. Remote AI journal editing is available on explicit selection in standard mode only.
+Encrypted accounts are refused before the request body is read; the SQL quota
+function independently rejects accounts with a vault. Only the selected passage
+is sent through Vercel AI Gateway, with zero-retention/no-training provider
+filters and SDK input/output telemetry disabled. Proposals stay in memory until
+accepted; accepting edits the draft, and saving persists that accepted text. This update does not publish OAuth or enable new signups.
 
 In enhanced mode, personal data (journal text, titles, mood, weights, meal selections, pantry,
 shopping checks, document links, unit preferences and program progress) is
@@ -114,5 +118,5 @@ Tests cover cryptographic tampering, owner/revision binding, wrong passphrase,
 recovery and backup roundtrips; PostgreSQL RLS, admission, admin isolation,
 revocation, circle acceptance/removal and sequential daily progression.
 Browser verification uses CUA with synthetic data; it is separate from database
-and cryptographic tests. Remote AI journal editing is disabled before reading any
-request body. No private journal content is sent to Vercel AI Gateway.
+and cryptographic tests. For encrypted accounts, remote AI editing is disabled before reading any request
+body. Standard-mode selections are sent only after an explicit editing action.
