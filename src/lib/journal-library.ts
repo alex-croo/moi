@@ -6,15 +6,16 @@ export type JournalDraft = {
   mood: number;
   revision: number;
   baseline: string;
+  sent?: string;
 };
 export const journalDraftKey = (d: { text: string; title: string; mood: number }) =>
   JSON.stringify([d.text, d.title, d.mood]);
 
-// Drafts stay in the mounted editor, never in browser storage or analytics.
+// Pages combine confirmed entries with the editor’s pending, recoverable changes.
 export function journalPages(entries: JournalEntry[], drafts: Record<string, JournalDraft>) {
   const pages = new Map(entries.map(entry => [entry.date, { ...entry, dirty: false }]));
   for (const [date, draft] of Object.entries(drafts)) {
-    const dirty = journalDraftKey(draft) !== draft.baseline;
+    const dirty = journalDraftKey(draft) !== draft.baseline || draft.sent !== undefined;
     if (!pages.has(date) && !dirty) continue;
     pages.set(date, {
       id: pages.get(date)?.id || date, date, title: draft.title,

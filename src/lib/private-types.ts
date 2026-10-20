@@ -15,6 +15,8 @@ export type JournalPrompt = {
 };
 export type PrivateActions = {
   protection: "standard" | "enhanced";
+  journalKey?: CryptoKey | null;
+  journalSync?: import("./journal-autosave").JournalSyncBridge;
   privacyPanel: (locale: import("./locale").Locale) => import("react").ReactNode;
   mutate: (type: string, value: object) => Promise<WorkspaceData>;
   progress: ProgramProgress;

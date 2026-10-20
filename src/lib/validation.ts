@@ -84,11 +84,7 @@ export const mutationSchema = z.discriminatedUnion("type", [
     type: z.literal("journal"),
     data: z.object({
       date,
-      text: z
-        .string()
-        .min(1)
-        .max(20000)
-        .refine((v) => v.trim().length > 0),
+      text: z.string().max(20000),
       title: z.string().max(160).default(""),
       expectedRevision: z.number().int().min(0),
       mood: z.number().int().min(1).max(5),

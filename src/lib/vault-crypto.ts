@@ -288,3 +288,11 @@ export async function changeVaultPassphrase(
     raw?.fill(0);
   }
 }
+
+// Separate authenticated-data purpose from the server vault payload.
+export async function sealJournalRecovery(key: CryptoKey, value: unknown, owner: string) {
+  return seal(key, encode(JSON.stringify(value)), owner, "journal-recovery");
+}
+export async function openJournalRecovery(key: CryptoKey, value: Sealed, owner: string): Promise<unknown> {
+  return JSON.parse(new TextDecoder().decode(await open(key, value, owner, "journal-recovery")));
+}

@@ -14,6 +14,7 @@ export default async function PrivateDashboard({
   const { data: admin } = await auth.db.rpc("current_user_admin");
   return (
     <PrivateWorkspace
+      key={auth.user.id}
       locale={locale}
       userId={auth.user.id}
       admin={admin === true}

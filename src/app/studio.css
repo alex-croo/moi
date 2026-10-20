@@ -275,3 +275,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(max-width:600px) { .journal-date-form label { font-size:0;gap:0; } }
 
 .journal-date-form input { width:132px;flex:none; }
+.journal-autosave-indicator { display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:11px; }
+.journal-autosave-indicator svg { flex:none;color:#80717b; }
+.journal-autosave-footer { border-top:1px solid var(--line);padding-top:18px; }
+.journal-sync-message { font-size:12px;color:var(--muted);line-height:1.7;margin:14px 0; }
+@media(max-width:600px) { .journal-autosave-indicator { font-size:10px;gap:5px; } .journal-autosave-footer { flex-direction:row;flex-wrap:wrap; } }

@@ -8,6 +8,8 @@ import type { Locale } from "@/lib/locale";
 import type { WorkspaceData } from "@/lib/types";
 import type { PersonalData } from "@/lib/private-types";
 import { applyPrivateMutation } from "@/lib/private-mutations";
+import { reconcileJournal } from "@/lib/journal-reconcile";
+import type { JournalWrite } from "@/lib/journal-autosave";
 import {
   decryptVault,
   encryptVault,
@@ -45,6 +47,7 @@ export function PrivateWorkspace({
     [secret, setSecret] = useState(""),
     [recovery, setRecovery] = useState(false);
   const [restore, setRestore] = useState<VaultEnvelope | null>(null);
+  const journalSync = useRef<import("@/lib/journal-autosave").JournalSyncBridge>({});
   const state = useRef<Current | null>(null),
     queue = useRef<Promise<unknown>>(Promise.resolve());
   useEffect(() => {
@@ -113,49 +116,87 @@ export function PrivateWorkspace({
     const operation = queue.current
       .catch(() => undefined)
       .then(async () => {
-        const current = state.current;
+        let current = state.current;
         if (!current) throw Error("locked");
-        let next: PersonalData;
-        if (current.envelope && current.key) {
-          next =
-            type === "program"
-              ? { ...current.data, program: value as PersonalData["program"] }
-              : applyPrivateMutation(current.data, type, value);
-          const envelope = await encryptVault(
-            current.key,
-            current.envelope,
-            next,
-          );
-          await upload(envelope, current.revision);
-          state.current = {
-            ...current,
-            data: next,
-            envelope,
-            revision: envelope.revision,
-          };
-        } else {
-          const response = await fetch("/api/personal", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              expectedRevision: current.revision,
-              type,
-              value,
-            }),
-          });
-          if (!response.ok)
-            throw Error(response.status === 409 ? "conflict" : "save");
-          const saved = await response.json();
-          next = saved.data;
-          state.current = { ...current, data: next, revision: saved.revision };
+        const original = current;
+        let mutation = value;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            let next: PersonalData;
+            if (current.envelope && current.key) {
+              next =
+                type === "program"
+                  ? { ...current.data, program: value as PersonalData["program"] }
+                  : applyPrivateMutation(current.data, type, mutation);
+              const envelope = await encryptVault(
+                current.key,
+                current.envelope,
+                next,
+              );
+              if (!state.current) throw Error("locked");
+              await upload(envelope, current.revision);
+              if (!state.current) throw Error("locked");
+              state.current = {
+                ...current,
+                data: next,
+                envelope,
+                revision: envelope.revision,
+              };
+            } else {
+              const response = await fetch("/api/personal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  expectedRevision: current.revision,
+                  type,
+                  value: mutation,
+                }),
+              });
+              if (!response.ok)
+                throw Error(response.status === 409 ? "conflict" : "save");
+              const saved = await response.json();
+              if (!state.current) throw Error("locked");
+              next = saved.data;
+              state.current = { ...current, data: next, revision: saved.revision };
+            }
+            setData(next);
+            return next;
+          } catch (error) {
+            if (type !== "journal" || attempt !== 0 || !(error instanceof Error) || error.message !== "conflict") throw error;
+            if (!state.current) throw Error("locked");
+            const response = await fetch("/api/vault", { cache: "no-store" });
+            if (!response.ok) throw Error("save");
+            const fresh: LoadedWorkspace = await response.json();
+            if (!state.current) throw Error("locked");
+            // A protection change in another tab requires reopening the workspace.
+            if (!!fresh.envelope !== !!original.envelope) throw Error("conflict");
+            const remote = fresh.envelope && original.key
+              ? await decryptVault<PersonalData>(original.key, fresh.envelope, userId)
+              : fresh.standard;
+            if (!state.current) throw Error("locked");
+            if (!remote) throw Error("conflict");
+            const write = value as JournalWrite;
+            const resolution = reconcileJournal(
+              original.data.journal.find(entry => entry.date === write.date),
+              remote.journal.find(entry => entry.date === write.date),
+              write,
+            );
+            current = { ...original, data: remote, envelope: fresh.envelope, revision: fresh.envelope?.revision ?? fresh.standardRevision ?? 0 };
+            state.current = current;
+            if (resolution === "acknowledged") {
+              setData(remote);
+              return remote;
+            }
+            mutation = resolution;
+          }
         }
-        setData(next);
-        return next;
+        throw Error("conflict");
       });
     queue.current = operation;
     return operation;
   }
   async function snapshot() {
+    await journalSync.current.flush?.();
     await queue.current.catch(() => undefined);
     const current = state.current;
     if (!current) throw Error("locked");
@@ -166,6 +207,7 @@ export function PrivateWorkspace({
     envelope: VaultEnvelope,
     expected: Current,
   ) {
+    await journalSync.current.flush?.();
     await queue.current.catch(() => undefined);
     if (
       state.current?.revision !== expected.revision ||
@@ -279,6 +321,8 @@ export function PrivateWorkspace({
         privateActions={{
           admin,
           userId,
+          journalKey: current.key,
+          journalSync: journalSync.current,
           progress: data.program,
           protection: current.envelope ? "enhanced" : "standard",
           mutate: async (type, value) => ({

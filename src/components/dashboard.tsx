@@ -933,6 +933,9 @@ export function Dashboard({
           <div hidden={view !== "journal"}>
             <JournalEditor
               entries={data.journal}
+              ownerId={privateActions?.userId || "demo"}
+              recoveryKey={privateActions?.journalKey || null}
+              syncBridge={privateActions?.journalSync}
               navigation={journalNavigation}
               active={view === "journal"}
               prompt={journalPrompt}

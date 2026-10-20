@@ -8,6 +8,8 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  Cloud,
+  CloudUpload,
   LockKeyhole,
   Sparkles,
   SpellCheck,
@@ -15,6 +17,8 @@ import {
   X,
 } from "lucide-react";
 import { applyJournalSuggestion, journalChanges } from "@/lib/journal-revision";
+import { useJournalAutosave } from "@/hooks/use-journal-autosave";
+import { draftFromEntry, type JournalSyncBridge } from "@/lib/journal-autosave";
 import { JournalLibrary } from "./journal-library";
 import { journalPages, journalPageTitle, journalDraftKey as key, type JournalDraft as Draft } from "@/lib/journal-library";
 import { journalSelectionPosition, placeJournalToolbar } from "@/lib/journal-selection";
@@ -33,8 +37,14 @@ export function JournalEditor({
   onProgram,
   navigation,
   active = true,
+  ownerId = "demo",
+  recoveryKey = null,
+  syncBridge,
 }: {
   entries: JournalEntry[];
+  ownerId?: string;
+  recoveryKey?: CryptoKey | null;
+  syncBridge?: JournalSyncBridge;
   navigation?: { id: number; date?: string };
   active?: boolean;
   locale: Locale;
@@ -53,7 +63,8 @@ export function JournalEditor({
   const [openDates, setOpenDates] = useState<string[]>([]);
   const pageRoot = useRef<HTMLElement>(null);
   const [date, setDate] = useState(localToday);
-  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const sync = useJournalAutosave(entries, onSave, ownerId, recoveryKey, syncBridge);
+  const drafts = sync.drafts;
   const editor = useRef<HTMLTextAreaElement>(null);
   const titleEditor = useRef<HTMLTextAreaElement>(null);
   const selectionTools = useRef<HTMLDivElement>(null);
@@ -62,7 +73,7 @@ export function JournalEditor({
   const [previewResult, setPreviewResult] = useState(false);
   const [protectionChanged, setProtectionChanged] = useState(false);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
-  const [busy, setBusy] = useState(false);
+  const busy = !sync.ready;
   const [aiBusy, setAiBusy] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
@@ -79,16 +90,9 @@ export function JournalEditor({
     date: string;
   } | null>(null);
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
-  const entry = entries.find((e) => e.date === date);
-  const initial = {
-    text: entry?.text || "",
-    title: entry?.title || "",
-    mood: entry?.mood || 3,
-    revision: entry?.revision || 0,
-  };
-  const draft = drafts[date] || { ...initial, baseline: key(initial) };
+  const draft = drafts[date] || draftFromEntry(entries.find(e => e.date === date));
   function change(patch: Partial<Draft>) {
-    setDrafts((current) => ({ ...current, [date]: { ...draft, ...patch } }));
+    sync.update(date, { ...(drafts[date] || draft), ...patch });
     setStatus("");
   }
   const aiDisabled = encrypted || protectionChanged;
@@ -181,11 +185,12 @@ export function JournalEditor({
   }, [aiDisabled]);
   const consumed = useRef(new Set<string>());
   useEffect(() => {
-    if (!prompt || consumed.current.has(prompt.id)) return;
+    if (!sync.ready || !prompt || consumed.current.has(prompt.id)) return;
     consumed.current.add(prompt.id);
     const target = prompt.date || localToday();
     const saved = entries.find((e) => e.date === target);
-    setDrafts((current) => {
+    {
+      const current = sync.drafts;
       const initial = {
         text: saved?.text || "",
         title: saved?.title || "",
@@ -209,20 +214,17 @@ export function JournalEditor({
             "This page is full. Open a new page before adding this reflection.",
           ),
         );
-        return current;
+        return;
       }
-      return {
-        ...current,
-        [target]: { ...previous, title: previous.title || prompt.title, text },
-      };
-    });
+      sync.update(target, { ...previous, title: previous.title || prompt.title, text });
+    }
     openPage(target);
     requestAnimationFrame(() => {
       editor.current?.focus();
       const length = editor.current?.value.length || 0;
       editor.current?.setSelectionRange(length, length);
     });
-  }, [prompt]);
+  }, [prompt, sync.ready]);
   useEffect(() => {
     const fields = [editor.current, titleEditor.current].filter(
       (field): field is HTMLTextAreaElement => !!field,
@@ -250,52 +252,9 @@ export function JournalEditor({
     }
     return () => observer.disconnect();
   }, [draft.text, draft.title, date, proposal, locale, screen, active]);
-  const dirty = Object.values(drafts).some((d) => key(d) !== d.baseline);
   useEffect(() => {
-    if (!dirty) return;
-    const prevent = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", prevent);
-    return () => window.removeEventListener("beforeunload", prevent);
-  }, [dirty]);
-  async function save() {
-    setBusy(true);
-    setError("");
-    const savedDate = date;
-    try {
-      const result = await onSave({
-        date,
-        text: draft.text,
-        title: draft.title,
-        mood: draft.mood,
-        expectedRevision: draft.revision,
-      });
-      const next = {
-        text: result.text,
-        title: result.title || "",
-        mood: result.mood,
-        revision: result.revision || 1,
-      };
-      setDrafts((current) => ({
-        ...current,
-        [savedDate]: { ...next, baseline: key(next) },
-      }));
-      setStatus(t("Votre page est enregistrée.", "Your page is saved."));
-    } catch (e) {
-      setError(
-        e instanceof Error && e.message === "conflict"
-          ? t(
-              "Cette page a été modifiée dans un autre onglet. Votre brouillon est conservé ici. Copiez-le avant de recharger pour comparer les versions.",
-              "This page changed in another tab. Your draft is preserved here. Copy it before reloading to compare versions.",
-            )
-          : t(
-              "L’enregistrement n’a pas été confirmé. Votre texte est conservé ici.",
-              "Saving could not be confirmed. Your text is still here.",
-            ),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+    if (!active) void sync.flush();
+  }, [active, sync]);
   async function edit(action: "improve" | "correct") {
     if (aiDisabled || aiBusy || busy) return;
     const { start, end } = selection;
@@ -397,13 +356,15 @@ export function JournalEditor({
   const pages = journalPages(entries, drafts);
   const titleFor = (pageDate: string) => journalPageTitle(pages.find(page => page.date === pageDate), t("Sans titre", "Untitled"));
   const locked = busy || aiBusy || !!proposal;
+  const saveState = sync.states[date] || "saved";
+  const saveLabel = !sync.ready ? t("Ouverture…", "Opening…") : saveState === "conflict" ? t("Versions à comparer", "Versions to compare") : saveState === "offline" ? t("En attente de connexion", "Waiting for connection") : saveState === "pending" || saveState === "saving" ? t("Enregistrement…", "Saving…") : t("Enregistré", "Saved");
   return (
     <section className={`journal-page journal-${screen}`} ref={pageRoot}>
       {(screen === "editor" || openDates.length > 0) && <nav className="journal-tabs" aria-label={t("Pages du journal", "Journal pages")}>
         <button className="journal-home-tab" aria-current={screen === "library" ? "page" : undefined} disabled={locked} onClick={() => setScreen("library")}><BookOpen size={15}/>{t("Toutes mes pages", "All my pages")}</button>
         <div className="journal-open-tabs">
           {openDates.map(pageDate => <div className="journal-tab" key={pageDate} data-selected={screen === "editor" && date === pageDate}>
-            <button aria-current={screen === "editor" && date === pageDate ? "page" : undefined} disabled={locked} onClick={() => openPage(pageDate)} title={`${pageDate} · ${titleFor(pageDate)}`}><FileText size={14}/><span>{titleFor(pageDate)}</span>{pages.find(page => page.date === pageDate)?.dirty && <i aria-label={t("Non enregistré", "Unsaved")}/>}</button>
+            <button aria-current={screen === "editor" && date === pageDate ? "page" : undefined} disabled={locked} onClick={() => openPage(pageDate)} title={`${pageDate} · ${titleFor(pageDate)}`}><FileText size={14}/><span>{titleFor(pageDate)}</span>{pages.find(page => page.date === pageDate)?.dirty && <i aria-label={t("Synchronisation en cours", "Syncing")}/>}</button>
             <button className="journal-close-tab" disabled={locked} aria-label={`${t("Fermer l’onglet", "Close tab")} ${titleFor(pageDate)}`} onClick={() => {
               const remaining = openDates.filter(value => value !== pageDate);
               setOpenDates(remaining);
@@ -429,8 +390,7 @@ export function JournalEditor({
           <button type="submit" className="journal-open-date" disabled={locked} aria-label={t("Ouvrir cette date", "Open this date")} title={t("Ouvrir cette date", "Open this date")}><ArrowRight size={15}/></button>
         </form>
         <div className="journal-page-actions">
-          <span className="journal-save-indicator">{key(draft) === draft.baseline ? t("À jour", "Up to date") : t("Brouillon", "Draft")}</span>
-          <button className="primary" disabled={locked || !draft.text.trim()} onClick={() => void save()}>{busy ? t("Enregistrement…", "Saving…") : t("Enregistrer", "Save")}</button>
+          <span className="journal-autosave-indicator" role="status">{saveState === "saved" ? <Cloud size={15}/> : <CloudUpload size={15}/>}{saveLabel}</span>
         </div>
       </div>
       <div className="journal-paper">
@@ -682,23 +642,13 @@ export function JournalEditor({
             {t("Annuler la correction", "Undo correction")}
           </button>
         )}
-        <div className="journal-save">
-          <span>
-            {draft.text.length.toLocaleString(locale)} / 20 000 ·{" "}
-            {key(draft) === draft.baseline
-              ? t("À jour", "Up to date")
-              : t("Brouillon non enregistré", "Unsaved draft")}
-          </span>
-          <button
-            className="primary"
-            disabled={busy || aiBusy || !!currentProposal || !draft.text.trim()}
-            onClick={() => void save()}
-          >
-            {busy
-              ? t("Enregistrement…", "Saving…")
-              : t("Enregistrer ma page", "Save my page")}
-          </button>
+        <div className="journal-save journal-autosave-footer">
+          <span>{draft.text.length.toLocaleString(locale)} / 20 000</span>
+          <span>{t("Enregistrement automatique activé", "Automatic saving is on")}</span>
         </div>
+        {saveState === "offline" && !sync.recoveryError && <p className="journal-sync-message" role="status">{t("Vos mots sont conservés dans cet onglet. L’enregistrement reprendra automatiquement dès que la connexion sera rétablie.", "Your words are kept in this tab. Saving will resume automatically when the connection returns.")}</p>}
+        {saveState === "conflict" && <p className="journal-sync-message" role="alert">{t("Cette page a changé dans un autre onglet. Votre version reste affichée ici. Copiez-la, puis ouvrez le journal dans un nouvel onglet pour comparer les deux textes; aucune version n’est remplacée automatiquement.", "This page changed in another tab. Your version is still shown here. Copy it, then open the journal in a new tab to compare both texts; neither version is automatically replaced.")}</p>}
+        {sync.recoveryError && <p className="journal-sync-message" role="alert">{t("La copie de récupération de cet onglet n’est pas disponible. Attendez l’indication « Enregistré » avant de fermer ou de rafraîchir la page.", "Recovery storage is unavailable in this tab. Wait for ‘Saved’ before closing or refreshing the page.")}</p>}
         {error && <p role="alert">{error}</p>}
         {status && <p role="status">{status}</p>}
       </div>

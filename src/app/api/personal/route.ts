@@ -56,6 +56,7 @@ export async function POST(request: Request) {
       );
     return reply({ revision, data: next });
   } catch (e) {
+    if (e instanceof Error && e.message === "conflict") return reply({ error: "conflict" }, 409);
     return reply(
       { error: e instanceof z.ZodError ? "invalid_input" : "save_failed" },
       e instanceof z.ZodError ? 400 : 503,
