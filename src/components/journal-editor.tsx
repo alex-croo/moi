@@ -20,11 +20,13 @@ export function JournalEditor({
   onSave,
   prompt,
   encrypted = false,
+  remoteAiDisabled = false,
 }: {
   entries: JournalEntry[];
   locale: Locale;
   prompt?: JournalPrompt | null;
   encrypted?: boolean;
+  remoteAiDisabled?: boolean;
   onSave: (data: {
     date: string;
     text: string;
@@ -155,7 +157,7 @@ export function JournalEditor({
     }
   }
   async function edit(action: "improve" | "correct") {
-    if (encrypted) return;
+    if (encrypted || remoteAiDisabled) return;
     const start = selection.start === selection.end ? 0 : selection.start;
     const end =
       selection.start === selection.end ? draft.text.length : selection.end;
@@ -257,11 +259,15 @@ export function JournalEditor({
             ))}
           </span>
         </div>
-        {encrypted ? (
+        {encrypted || remoteAiDisabled ? (
           <p className="privacy-note">
             {t(
-              "Cette page reste dans votre coffre. L’IA distante est désactivée pour que son contenu ne soit pas transmis à un fournisseur.",
-              "This page stays in your vault. Remote AI is disabled so its contents are not sent to a provider.",
+              encrypted
+                ? "Cette page reste dans votre coffre. L’IA distante est désactivée pour que son contenu ne soit pas transmis à un fournisseur."
+                : "Votre journal est personnel. L’assistance IA distante est désactivée.",
+              encrypted
+                ? "This page stays in your vault. Remote AI is disabled so its contents are not sent to a provider."
+                : "Your journal is personal. Remote AI assistance is disabled.",
             )}
           </p>
         ) : (

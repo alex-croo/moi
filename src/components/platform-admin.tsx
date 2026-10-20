@@ -51,8 +51,8 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
     } catch {
       setError(
         t(
-          "L’opération n’a pas abouti. Vérifiez l’adresse, l’accès existant et votre coffre, puis réessayez.",
-          "The operation did not complete. Check the address, existing access and your vault, then retry.",
+          "L’opération n’a pas abouti. Vérifiez l’adresse et l’accès existant, puis réessayez.",
+          "The operation did not complete. Check the address and existing access, then retry.",
         ),
       );
     } finally {
@@ -209,8 +209,8 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
                       window.confirm(
                         m.active
                           ? t(
-                              "Suspendre cet accès? Les données chiffrées seront conservées.",
-                              "Suspend access? Encrypted data will be preserved.",
+                              "Suspendre cet accès? Les données seront conservées.",
+                              "Suspend access? Data will be preserved.",
                             )
                           : t("Rétablir cet accès?", "Restore access?"),
                       )

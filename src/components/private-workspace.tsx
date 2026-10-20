@@ -1,27 +1,33 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { LockKeyhole, ShieldCheck, KeyRound } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
 import { Dashboard } from "./dashboard";
 import { Brand } from "./brand";
+import { PrivacySettings } from "./privacy-settings";
 import type { Locale } from "@/lib/locale";
 import type { WorkspaceData } from "@/lib/types";
-import type { PersonalData, ProgramProgress } from "@/lib/private-types";
+import type { PersonalData } from "@/lib/private-types";
 import { applyPrivateMutation } from "@/lib/private-mutations";
 import {
-  createVault,
   decryptVault,
   encryptVault,
   unlockVault,
-  changeVaultPassphrase,
+  unlockVaultWithPasskey,
   type VaultEnvelope,
 } from "@/lib/vault-crypto";
-type Loaded = {
+import { getPasskeySecret } from "@/lib/vault-passkeys";
+export type LoadedWorkspace = {
   envelope: VaultEnvelope | null;
-  legacy: Omit<WorkspaceData, "recipes" | "ingredients"> | null;
+  standard: PersonalData | null;
+  standardRevision: number | null;
   catalog: Pick<WorkspaceData, "recipes" | "ingredients">;
 };
-const message = (locale: Locale, fr: string, en: string) =>
-  locale === "fr" ? fr : en;
+type Current = {
+  key: CryptoKey | null;
+  envelope: VaultEnvelope | null;
+  data: PersonalData;
+  revision: number;
+};
 export function PrivateWorkspace({
   locale,
   userId,
@@ -31,219 +37,240 @@ export function PrivateWorkspace({
   userId: string;
   admin: boolean;
 }) {
-  const t = (fr: string, en: string) => message(locale, fr, en);
-  const [loaded, setLoaded] = useState<Loaded | null>(null),
+  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const [loaded, setLoaded] = useState<LoadedWorkspace | null>(null),
     [data, setData] = useState<PersonalData | null>(null);
-  const [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
-    [password, setPassword] = useState(""),
-    [confirm, setConfirm] = useState(""),
-    [recovery, setRecovery] = useState(false),
-    [newPassword, setNewPassword] = useState("");
-  const [pending, setPending] = useState<Awaited<
-      ReturnType<typeof createVault<PersonalData>>
-    > | null>(null),
-    [recoveryCheck, setRecoveryCheck] = useState("");
+  const [error, setError] = useState(""),
+    [busy, setBusy] = useState(false),
+    [secret, setSecret] = useState(""),
+    [recovery, setRecovery] = useState(false);
   const [restore, setRestore] = useState<VaultEnvelope | null>(null);
-  const state = useRef<{
-    key: CryptoKey;
-    envelope: VaultEnvelope;
-    data: PersonalData;
-  } | null>(null);
-  const queue = useRef<Promise<unknown>>(Promise.resolve());
-  const mounted = useRef(true);
+  const state = useRef<Current | null>(null),
+    queue = useRef<Promise<unknown>>(Promise.resolve());
   useEffect(() => {
-    mounted.current = true;
+    let alive = true;
     void fetch("/api/vault", { cache: "no-store" })
       .then(async (r) => {
-        if (!r.ok) throw Error("load");
-        return r.json();
+        if (!r.ok) throw Error();
+        return r.json() as Promise<LoadedWorkspace>;
       })
       .then((v) => {
-        if (mounted.current) setLoaded(v);
+        if (!alive) return;
+        setLoaded(v);
+        if (!v.envelope && v.standard) {
+          state.current = {
+            key: null,
+            envelope: null,
+            data: v.standard,
+            revision: v.standardRevision ?? 0,
+          };
+          setData(v.standard);
+        }
       })
-      .catch(() =>
-        setError(
-          t(
-            "Impossible d’ouvrir votre espace. Rechargez la page.",
-            "Unable to open your space. Please reload.",
-          ),
-        ),
-      );
+      .catch(() => {
+        if (alive)
+          setError(
+            t(
+              "Impossible d’ouvrir votre espace. Rechargez la page.",
+              "Unable to open your space. Please reload.",
+            ),
+          );
+      });
     return () => {
-      mounted.current = false;
+      alive = false;
       state.current = null;
     };
-  }, []); // Never cache plaintext in persistent browser storage.
-  async function upload(envelope: VaultEnvelope, expectedRevision: number) {
-    const response = await fetch("/api/vault", {
+  }, []);
+  async function upload(
+    envelope: VaultEnvelope,
+    expectedRevision: number,
+    expectedStandardRevision?: number,
+  ) {
+    const r = await fetch("/api/vault", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ envelope, expectedRevision }),
+      body: JSON.stringify({
+        envelope,
+        expectedRevision,
+        expectedStandardRevision,
+      }),
     });
-    if (!response.ok)
-      throw Error(response.status === 409 ? "conflict" : "save");
-    const saved = await response.json();
-    if (saved.revision !== envelope.revision) throw Error("save");
+    if (!r.ok) throw Error(r.status === 409 ? "conflict" : "save");
+    if ((await r.json()).revision !== envelope.revision) throw Error("save");
   }
-  async function enter(event: React.FormEvent) {
-    event.preventDefault();
-    if (!loaded) return;
-    setBusy(true);
-    setError("");
-    try {
-      const envelope = restore || loaded.envelope;
-      if (envelope) {
-        const key = await unlockVault(envelope, userId, password, recovery);
-        const value = await decryptVault<PersonalData>(key, envelope, userId);
-        if (
-          !Array.isArray(value.journal) ||
-          !Array.isArray(value.weights) ||
-          !value.program
+  function describe(e: unknown) {
+    return e instanceof Error && e.message === "conflict"
+      ? t(
+          "Votre espace a changé dans une autre page. Rechargez avant de réessayer; aucune donnée n’a été remplacée.",
+          "Your space changed in another page. Reload before retrying; no data was replaced.",
         )
-          throw Error("format");
-        let current = envelope;
-        if (recovery) {
-          if (newPassword !== confirm) throw Error("confirmation");
-          current = await changeVaultPassphrase(
-            current,
-            userId,
-            password,
-            newPassword,
-          );
-        }
-        if (restore || recovery) {
-          if (
-            restore &&
-            !window.confirm(
-              t(
-                "Remplacer les données de votre coffre par cette sauvegarde? Les changements plus récents seront perdus.",
-                "Replace your vault with this backup? More recent changes will be lost.",
-              ),
-            )
-          )
-            return;
-          current = await encryptVault(
-            key,
-            { ...current, revision: loaded.envelope?.revision || 0 },
-            value,
-          );
-          await upload(current, loaded.envelope?.revision || 0);
-        }
-        state.current = { key, envelope: current, data: value };
-        setData(value);
-        setPassword("");
-        setNewPassword("");
-        setConfirm("");
-        setRestore(null);
-      } else {
-        if (password !== confirm) throw Error("confirmation");
-        if (!loaded.legacy) throw Error("migration");
-        const value: PersonalData = {
-          ...loaded.legacy,
-          program: { completed: {}, reflections: {} },
-        };
-        setPending(await createVault(userId, password, value));
-        setPassword("");
-        setConfirm("");
-      }
-    } catch (e) {
-      setError(
-        e instanceof Error && e.message === "conflict"
-          ? t(
-              "Une autre page a modifié ce coffre. Rechargez avant de réessayer.",
-              "Another page changed this vault. Reload before retrying.",
-            )
-          : t(
-              "L’ouverture n’a pas pu être confirmée. Vérifiez votre phrase secrète, votre code et la confirmation. En cas de connexion interrompue, rechargez avant de réessayer.",
-              "Opening could not be confirmed. Check your passphrase, recovery code and confirmation. If the connection was interrupted, reload before retrying.",
-            ),
-      );
-    } finally {
-      setBusy(false);
-    }
+      : t(
+          "L’opération n’a pas pu être confirmée. Vérifiez votre moyen de déverrouillage et votre connexion.",
+          "The operation could not be confirmed. Check your unlocking method and connection.",
+        );
   }
-  async function finishSetup() {
-    if (
-      !pending ||
-      !loaded ||
-      recoveryCheck.trim().toLowerCase() !==
-        pending.recoveryCode.split("-").at(-1)
-    )
-      return;
-    setBusy(true);
-    setError("");
-    try {
-      const value = await decryptVault<PersonalData>(
-        pending.key,
-        pending.envelope,
-        userId,
-      );
-      await upload(pending.envelope, 0);
-      // Readback confirms the actual server record, not only a successful POST.
-      const response = await fetch("/api/vault", { cache: "no-store" });
-      if (!response.ok) throw Error("readback");
-      const saved: Loaded = await response.json();
-      if (!saved.envelope) throw Error("readback");
-      const verified = await decryptVault<PersonalData>(
-        pending.key,
-        saved.envelope,
-        userId,
-      );
-      if (JSON.stringify(value) !== JSON.stringify(verified))
-        throw Error("readback");
-      state.current = {
-        key: pending.key,
-        envelope: saved.envelope,
-        data: verified,
-      };
-      setData(verified);
-      setLoaded({ ...saved, legacy: null });
-      setPending(null);
-      setRecoveryCheck("");
-    } catch {
-      setError(
-        t(
-          "L’enregistrement n’a pas pu être confirmé. Gardez votre code de récupération et rechargez pour ouvrir votre coffre.",
-          "Saving could not be confirmed. Keep your recovery code and reload to open your vault.",
-        ),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-  function persist(
-    update: (current: PersonalData) => PersonalData,
-  ): Promise<PersonalData> {
+  function persist(type: string, value: object): Promise<PersonalData> {
     const operation = queue.current
       .catch(() => undefined)
       .then(async () => {
         const current = state.current;
         if (!current) throw Error("locked");
-        const next = update(current.data);
-        const envelope = await encryptVault(
-          current.key,
-          current.envelope,
-          next,
-        );
-        await upload(envelope, current.envelope.revision);
-        state.current = { ...current, data: next, envelope };
+        let next: PersonalData;
+        if (current.envelope && current.key) {
+          next =
+            type === "program"
+              ? { ...current.data, program: value as PersonalData["program"] }
+              : applyPrivateMutation(current.data, type, value);
+          const envelope = await encryptVault(
+            current.key,
+            current.envelope,
+            next,
+          );
+          await upload(envelope, current.revision);
+          state.current = {
+            ...current,
+            data: next,
+            envelope,
+            revision: envelope.revision,
+          };
+        } else {
+          const response = await fetch("/api/personal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              expectedRevision: current.revision,
+              type,
+              value,
+            }),
+          });
+          if (!response.ok)
+            throw Error(response.status === 409 ? "conflict" : "save");
+          const saved = await response.json();
+          next = saved.data;
+          state.current = { ...current, data: next, revision: saved.revision };
+        }
         setData(next);
         return next;
       });
     queue.current = operation;
     return operation;
   }
-  function backup() {
+  async function snapshot() {
+    await queue.current.catch(() => undefined);
     const current = state.current;
-    if (!current) return;
-    download(
-      JSON.stringify(current.envelope, null, 2),
-      "iamable-coffre-chiffre.json",
-      "application/json",
-    );
+    if (!current) throw Error("locked");
+    return { ...current };
   }
-  if (data && state.current && loaded)
+  async function protect(
+    key: CryptoKey,
+    envelope: VaultEnvelope,
+    expected: Current,
+  ) {
+    await queue.current.catch(() => undefined);
+    if (
+      state.current?.revision !== expected.revision ||
+      state.current?.envelope !== expected.envelope
+    )
+      throw Error("conflict");
+    const prepared = await decryptVault<PersonalData>(key, envelope, userId);
+    const current = await encryptVault(
+      key,
+      { ...envelope, revision: expected.envelope ? expected.revision : 0 },
+      prepared,
+    );
+    await upload(
+      current,
+      expected.envelope ? expected.revision : 0,
+      expected.envelope ? undefined : expected.revision,
+    );
+    const response = await fetch("/api/vault", { cache: "no-store" });
+    if (!response.ok) throw Error("readback");
+    const saved: LoadedWorkspace = await response.json();
+    if (!saved.envelope || saved.standard) throw Error("readback");
+    const verified = await decryptVault<PersonalData>(
+      key,
+      saved.envelope,
+      userId,
+    );
+    if (JSON.stringify(verified) !== JSON.stringify(prepared))
+      throw Error("readback");
+    state.current = {
+      key,
+      envelope: saved.envelope,
+      data: verified,
+      revision: saved.envelope.revision,
+    };
+    setLoaded(saved);
+    setData(verified);
+    setRestore(null);
+    setSecret("");
+  }
+  async function open(usePasskey = false) {
+    const envelope = restore || loaded?.envelope;
+    if (!envelope) return;
+    setBusy(true);
+    setError("");
+    try {
+      const entry = envelope.passkeys?.[0];
+      const key =
+        usePasskey && entry
+          ? await unlockVaultWithPasskey(
+              envelope,
+              userId,
+              entry.id,
+              await getPasskeySecret(entry),
+            )
+          : await unlockVault(envelope, userId, secret, recovery || !envelope.password);
+      const value = await decryptVault<PersonalData>(key, envelope, userId);
+      if (
+        !Array.isArray(value.journal) ||
+        !Array.isArray(value.weights) ||
+        !value.program
+      )
+        throw Error("format");
+      if (restore) {
+        if (
+          !window.confirm(
+            t(
+              "Restaurer cette sauvegarde? Elle remplacera vos données actuelles et activera la protection renforcée si nécessaire.",
+              "Restore this backup? It will replace current data and enable enhanced protection if needed.",
+            ),
+          )
+        )
+          return;
+        const expected = state.current || {
+          key: null,
+          envelope: loaded!.envelope,
+          data: value,
+          revision: loaded!.envelope?.revision ?? loaded!.standardRevision ?? 0,
+        };
+        // A locked encrypted workspace still has a known revision; its old key is not needed.
+        state.current = expected;
+        await protect(key, envelope, expected);
+      } else {
+        state.current = {
+          key,
+          envelope,
+          data: value,
+          revision: envelope.revision,
+        };
+        setData(value);
+      }
+      setSecret("");
+      setRecovery(false);
+    } catch (e) {
+      setError(describe(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  function selectRestore(value: VaultEnvelope) {
+    setRestore(value);
+    setRecovery(!value.password);
+    setError("");
+  }
+  if (loaded && data && state.current && !restore) {
+    const current = state.current;
     return (
       <Dashboard
         locale={locale}
@@ -253,20 +280,47 @@ export function PrivateWorkspace({
           admin,
           userId,
           progress: data.program,
+          protection: current.envelope ? "enhanced" : "standard",
           mutate: async (type, value) => ({
-            ...(await persist((current) =>
-              applyPrivateMutation(current, type, value),
-            )),
+            ...(await persist(type, value)),
             ...loaded.catalog,
           }),
-          saveProgress: async (program: ProgramProgress) => {
-            await persist((current) => ({ ...current, program }));
+          saveProgress: async (p) => {
+            await persist("program", p);
           },
           lock: () => window.location.reload(),
-          backup,
+          backup: () => {
+            if (state.current?.envelope)
+              download(
+                JSON.stringify(state.current.envelope, null, 2),
+                "iamable-coffre-chiffre.json",
+                "application/json",
+              );
+          },
+          privacyPanel: (displayLocale) => (
+            <PrivacySettings
+              locale={displayLocale}
+              userId={userId}
+              enhanced={!!current.envelope}
+              passkey={!!current.envelope?.passkeys?.length}
+              snapshot={snapshot}
+              protect={protect}
+              onRestore={selectRestore}
+              backup={() => {
+                if (state.current?.envelope)
+                  download(
+                    JSON.stringify(state.current.envelope, null, 2),
+                    "iamable-coffre-chiffre.json",
+                    "application/json",
+                  );
+              }}
+            />
+          ),
         }}
       />
     );
+  }
+  const envelope = restore || loaded?.envelope;
   return (
     <main className="vault-screen">
       <a href={`/${locale}`}>
@@ -280,167 +334,85 @@ export function PrivateWorkspace({
           {t("VOTRE ESPACE, POUR VOUS", "YOUR SPACE, FOR YOU")}
         </span>
         <h1>
-          {pending
-            ? t("Votre clé de secours.", "Your recovery key.")
-            : loaded?.envelope
-              ? t("Ouvrir mon coffre.", "Unlock my vault.")
-              : t("Protéger mon espace.", "Protect my space.")}
+          {envelope
+            ? t("Déverrouiller mon espace.", "Unlock my space.")
+            : t("Bienvenue chez vous.", "Welcome to your space.")}
         </h1>
         {!loaded ? (
           <p role="status">
             {t("Ouverture de votre espace…", "Opening your space…")}
           </p>
-        ) : pending ? (
+        ) : envelope ? (
           <>
             <p>
-              {t(
-                "Conservez ce code dans votre gestionnaire de mots de passe ou sur papier, dans un endroit sûr. Il peut ouvrir votre coffre sans votre phrase secrète.",
-                "Save this code in your password manager or on paper in a safe place. It can unlock your vault without your passphrase.",
-              )}
-            </p>
-            <code className="recovery-code">{pending.recoveryCode}</code>
-            <button
-              className="secondary"
-              onClick={() =>
-                download(
-                  `I am able — ${userId}\n${pending.recoveryCode}\n`,
-                  "iamable-code-de-recuperation.txt",
-                  "text/plain",
-                )
-              }
-            >
-              {t("Télécharger mon code", "Download my code")}
-            </button>
-            <p>
-              {t(
-                "Sans la phrase secrète ni ce code, personne — même l’administration — ne pourra récupérer votre journal.",
-                "Without the passphrase or this code, nobody — including the administrator — can recover your journal.",
-              )}
-            </p>
-            <label>
-              {t(
-                "Recopiez le dernier groupe de 8 caractères de votre copie",
-                "Enter the last 8-character group from your saved copy",
-              )}
-              <input
-                autoComplete="off"
-                spellCheck={false}
-                value={recoveryCheck}
-                onChange={(e) => setRecoveryCheck(e.target.value)}
-              />
-            </label>
-            <button
-              className="primary"
-              disabled={
-                busy ||
-                recoveryCheck.trim().toLowerCase() !==
-                  pending.recoveryCode.split("-").at(-1)
-              }
-              onClick={() => void finishSetup()}
-            >
-              {busy
-                ? t("Protection en cours…", "Protecting…")
-                : t(
-                    "J’ai conservé mon code · Protéger mes données",
-                    "I saved my code · Protect my data",
-                  )}
-            </button>
-          </>
-        ) : (
-          <>
-            <p>
-              {loaded.envelope
+              {restore
                 ? t(
-                    "Votre connexion Google vous identifie. Votre phrase secrète déchiffre vos données uniquement sur cet appareil.",
-                    "Google signs you in. Your passphrase decrypts your data only on this device.",
+                    "Sauvegarde sélectionnée. Déverrouillez-la pour confirmer sa restauration.",
+                    "Backup selected. Unlock it to confirm restoration.",
                   )
                 : t(
-                    "Votre journal, vos mesures, vos menus et votre progression seront chiffrés sur cet appareil avant d’être enregistrés. Choisissez une longue phrase que vous n’utilisez nulle part ailleurs.",
-                    "Your journal, measurements, menus and progress will be encrypted on this device before they are saved. Choose a long passphrase you do not use elsewhere.",
+                    "Vous avez activé la protection renforcée. Déverrouillez vos données sur cet appareil.",
+                    "You enabled enhanced protection. Unlock your data on this device.",
                   )}
             </p>
-            {!loaded.envelope && (
-              <p className="privacy-note">
-                {t(
-                  "Vos données existantes seront conservées dans le coffre. Les anciennes copies de sauvegarde nécessitent un traitement séparé; elles ne deviennent pas chiffrées automatiquement.",
-                  "Your existing data will be kept in the vault. Older backups need separate handling; they do not become encrypted automatically.",
-                )}
-              </p>
+            {!!envelope.passkeys?.length && (
+              <>
+                <button
+                  className="primary"
+                  disabled={busy}
+                  onClick={() => void open(true)}
+                >
+                  {t(
+                    "Déverrouiller avec ma clé d’accès",
+                    "Unlock with my passkey",
+                  )}
+                </button>
+                <p className="small muted">
+                  {t(
+                    "Touch ID, Face ID ou code de l’appareil, selon votre configuration.",
+                    "Touch ID, Face ID or device PIN, depending on your setup.",
+                  )}
+                </p>
+              </>
             )}
-            {restore && (
-              <p role="status">
-                {t(
-                  "Sauvegarde sélectionnée. Déverrouillez-la pour confirmer sa restauration.",
-                  "Backup selected. Unlock it to confirm restoration.",
-                )}
-              </p>
-            )}
-            <form onSubmit={enter}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void open();
+              }}
+            >
               <label>
-                {recovery
+                {recovery || !envelope.password
                   ? t("Code de récupération", "Recovery code")
                   : t("Phrase secrète", "Passphrase")}
                 <input
                   type="password"
-                  autoComplete={
-                    loaded.envelope ? "current-password" : "new-password"
-                  }
-                  spellCheck={false}
+                  autoComplete={recovery || !envelope.password ? "off" : "current-password"}
                   required
-                  minLength={recovery ? 64 : loaded.envelope ? 1 : 16}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={secret}
                   disabled={busy}
+                  spellCheck={false}
+                  onChange={(e) => {
+                    setSecret(e.target.value);
+                    if (!envelope.password) setRecovery(true);
+                  }}
                 />
               </label>
-              {recovery && (
-                <label>
-                  {t(
-                    "Nouvelle phrase secrète · 16 caractères minimum",
-                    "New passphrase · at least 16 characters",
-                  )}
-                  <input
-                    type="password"
-                    required
-                    minLength={16}
-                    autoComplete="new-password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                </label>
-              )}
-              {((!loaded.envelope && !restore) || recovery) && (
-                <label>
-                  {t("Confirmer la phrase secrète", "Confirm passphrase")}
-                  <input
-                    type="password"
-                    required
-                    minLength={16}
-                    autoComplete="new-password"
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
-                  />
-                </label>
-              )}
-              <button className="primary" disabled={busy}>
+              <button className="secondary" disabled={busy}>
                 {busy
                   ? t("Un instant…", "One moment…")
-                  : loaded.envelope || restore
-                    ? t("Ouvrir mon espace", "Open my space")
-                    : t("Créer mon coffre", "Create my vault")}
+                  : t("Déverrouiller", "Unlock")}
               </button>
             </form>
-            {(loaded.envelope || restore) && (
+            {envelope.password && (
               <button
                 className="text-button"
+                disabled={busy}
                 onClick={() => {
                   setRecovery(!recovery);
-                  setPassword("");
-                  setConfirm("");
-                  setNewPassword("");
+                  setSecret("");
                 }}
               >
-                <KeyRound size={16} />
                 {recovery
                   ? t("Utiliser ma phrase secrète", "Use my passphrase")
                   : t(
@@ -449,57 +421,25 @@ export function PrivateWorkspace({
                     )}
               </button>
             )}
-            <details>
-              <summary>
-                {t(
-                  "Restaurer une sauvegarde chiffrée",
-                  "Restore an encrypted backup",
-                )}
-              </summary>
-              <label>
-                {t("Fichier de sauvegarde", "Backup file")}
-                <input
-                  type="file"
-                  accept=".json,application/json"
-                  onChange={async (e) => {
-                    try {
-                      const file = e.target.files?.[0];
-                      if (!file || file.size > 12000000) throw Error();
-                      const value = JSON.parse(await file.text());
-                      if (value.version !== 1 || value.ownerId !== userId)
-                        throw Error();
-                      setRestore(value);
-                      setError("");
-                    } catch {
-                      setError(
-                        t(
-                          "Ce fichier ne correspond pas à votre coffre.",
-                          "This file does not belong to your vault.",
-                        ),
-                      );
-                    }
-                  }}
-                />
-              </label>
-              {restore && (
-                <button
-                  className="text-button"
-                  onClick={() => setRestore(null)}
-                >
-                  {t("Annuler la restauration", "Cancel restore")}
-                </button>
-              )}
-            </details>
+            {restore && (
+              <button
+                className="text-button"
+                onClick={() => {
+                  setRestore(null);
+                  setSecret("");
+                }}
+              >
+                {t("Annuler la restauration", "Cancel restore")}
+              </button>
+            )}
+            <RestoreFile
+              locale={locale}
+              userId={userId}
+              onSelect={selectRestore}
+            />
           </>
-        )}
+        ) : null}
         {error && <p role="alert">{error}</p>}
-        <p className="privacy-note">
-          <ShieldCheck size={16} />
-          {t(
-            "Aucune copie de votre clé n’est confiée à l’administration. Les dates de connexion et le volume du coffre restent des informations techniques visibles.",
-            "The administrator does not hold a copy of your key. Sign-in times and vault size remain visible technical information.",
-          )}
-        </p>
         <form method="post" action="/auth/logout">
           <input type="hidden" name="locale" value={locale} />
           <button className="text-button">
@@ -510,7 +450,51 @@ export function PrivateWorkspace({
     </main>
   );
 }
-function download(text: string, name: string, type: string) {
+export function RestoreFile({
+  locale,
+  userId,
+  onSelect,
+}: {
+  locale: Locale;
+  userId: string;
+  onSelect: (e: VaultEnvelope) => void;
+}) {
+  const [error, setError] = useState("");
+  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  return (
+    <details>
+      <summary>
+        {t("Restaurer une sauvegarde chiffrée", "Restore an encrypted backup")}
+      </summary>
+      <label>
+        {t("Fichier de sauvegarde", "Backup file")}
+        <input
+          type="file"
+          accept=".json,application/json"
+          onChange={async (e) => {
+            try {
+              const file = e.target.files?.[0];
+              if (!file || file.size > 12000000) throw Error();
+              const v = JSON.parse(await file.text());
+              if (v.version !== 1 || v.ownerId !== userId) throw Error();
+              setError("");
+              onSelect(v);
+            } catch {
+              setError(
+                t(
+                  "Ce fichier ne correspond pas à votre espace.",
+                  "This file does not belong to your space.",
+                ),
+              );
+            }
+          }}
+        />
+      </label>
+      {error && <p role="alert">{error}</p>}
+    </details>
+  );
+}
+export function download(text: string, name: string, type: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = document.createElement("a");
   a.href = url;

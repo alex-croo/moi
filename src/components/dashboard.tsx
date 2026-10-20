@@ -936,7 +936,8 @@ export function Dashboard({
             <JournalEditor
               entries={data.journal}
               prompt={journalPrompt}
-              encrypted={!!privateActions}
+              encrypted={privateActions?.protection === "enhanced"}
+              remoteAiDisabled={!!privateActions}
               locale={locale}
               onSave={async (value) => {
                 const result = await mutate("journal", value);
@@ -1066,37 +1067,7 @@ export function Dashboard({
                 </span>
                 <h1>{t("Mes préférences.", "My preferences.")}</h1>
               </div>
-              {privateActions && (
-                <section className="card privacy-settings">
-                  <h2>{t("Mon coffre personnel", "My personal vault")}</h2>
-                  <p>
-                    {t(
-                      "Votre journal et vos données personnelles sont chiffrés avant leur enregistrement. Une sauvegarde chiffrée s’ouvre avec votre phrase secrète ou votre code de récupération.",
-                      "Your journal and personal data are encrypted before saving. An encrypted backup opens with your passphrase or recovery code.",
-                    )}
-                  </p>
-                  <div className="action-row">
-                    <button
-                      className="secondary"
-                      onClick={privateActions.backup}
-                    >
-                      {t(
-                        "Télécharger ma sauvegarde chiffrée",
-                        "Download encrypted backup",
-                      )}
-                    </button>
-                    <button className="secondary" onClick={privateActions.lock}>
-                      {t("Verrouiller mon coffre", "Lock my vault")}
-                    </button>
-                  </div>
-                  <p className="small muted">
-                    {t(
-                      "Pour changer votre phrase secrète, verrouillez le coffre et utilisez votre code de récupération.",
-                      "To change your passphrase, lock the vault and use your recovery code.",
-                    )}
-                  </p>
-                </section>
-              )}
+              {privateActions?.privacyPanel(locale)}
               <div className="settings-card card">
                 <div>
                   <div>

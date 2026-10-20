@@ -137,8 +137,8 @@ export function Community({
         <Heart size={20} />
         <p>
           {t(
-            "Votre journal, votre poids et vos repas restent dans votre coffre. Seul le message choisi ci-dessous est partagé. Les messages des cercles sont visibles aux membres et sont stockés séparément; ils ne sont pas chiffrés avec votre clé personnelle.",
-            "Your journal, weight and meals stay in your vault. Only the message chosen below is shared. Circle messages are visible to members and stored separately; they are not encrypted with your personal key.",
+            "Votre journal, votre poids et vos repas restent dans votre espace personnel. Seul le message choisi ci-dessous est partagé. Les messages des cercles sont visibles aux membres et sont stockés séparément; ils ne sont pas chiffrés avec votre clé personnelle.",
+            "Your journal, weight and meals stay in your personal space. Only the message chosen below is shared. Circle messages are visible to members and stored separately; they are not encrypted with your personal key.",
           )}
         </p>
       </aside>

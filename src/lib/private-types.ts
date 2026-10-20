@@ -8,6 +8,8 @@ export type PersonalData = Omit<WorkspaceData, "recipes" | "ingredients"> & {
 };
 export type JournalPrompt = { id: string; title: string; question: string };
 export type PrivateActions = {
+  protection: "standard" | "enhanced";
+  privacyPanel: (locale: import("./locale").Locale) => import("react").ReactNode;
   mutate: (type: string, value: object) => Promise<WorkspaceData>;
   progress: ProgramProgress;
   saveProgress: (progress: ProgramProgress) => Promise<void>;

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { authorizedClient } from "@/lib/supabase";
 import { sameOrigin } from "@/lib/security";
-import { loadWorkspace } from "@/lib/workspace";
+import { loadPersonalWorkspace } from "@/lib/personal-workspace";
 import { boundedJson, privateReply as reply } from "@/lib/private-http";
 const encoded = z.string().regex(/^[A-Za-z0-9+/]*={0,2}$/);
 const sealed = z
@@ -14,32 +14,34 @@ const envelope = z
     revision: z.number().int().positive(),
     iterations: z.literal(600000),
     salt: encoded.length(24),
-    password: sealed,
+    password: sealed.nullable(),
+    passkeys: z
+      .array(
+        z
+          .object({
+            id: z.string().regex(/^[A-Za-z0-9_-]{1,2048}$/),
+            salt: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+            rpId: z.string().max(253),
+            wrapped: sealed,
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(5)
+      .optional(),
     recovery: sealed,
     payload: sealed,
   })
-  .strict();
+  .strict()
+  .refine((e) => e.password !== null || !!e.passkeys?.length);
 export async function GET() {
   const auth = await authorizedClient();
   if (!auth) return reply({ error: "unauthorized" }, 401);
-  const { data: vault, error } = await auth.db
-    .from("personal_vaults")
-    .select("envelope,revision")
-    .maybeSingle();
-  if (error) return reply({ error: "unavailable" }, 503);
-  // Owner RLS prevents a migration read of another person's legacy records.
-  const workspace = await loadWorkspace(auth.db);
-  const recipes = workspace.recipes.map((r) => ({
-    ...r,
-    source: /^https:\/\/(docs|drive)\.google\.com\//.test(r.source)
-      ? ""
-      : r.source,
-  }));
-  return reply({
-    envelope: vault?.envelope ?? null,
-    legacy: vault ? null : { ...workspace, recipes: [], ingredients: [] },
-    catalog: { recipes, ingredients: workspace.ingredients },
-  });
+  try {
+    return reply(await loadPersonalWorkspace(auth.db));
+  } catch {
+    return reply({ error: "unavailable" }, 503);
+  }
 }
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return reply({ error: "forbidden" }, 403);
@@ -52,7 +54,11 @@ export async function POST(request: Request) {
     return reply({ error: "invalid_input" }, 400);
   }
   const parsed = z
-    .object({ expectedRevision: z.number().int().min(0), envelope })
+    .object({
+      expectedRevision: z.number().int().min(0),
+      expectedStandardRevision: z.number().int().min(0).optional(),
+      envelope,
+    })
     .strict()
     .safeParse(raw);
   if (
@@ -61,10 +67,21 @@ export async function POST(request: Request) {
     parsed.data.envelope.revision !== parsed.data.expectedRevision + 1
   )
     return reply({ error: "invalid_input" }, 400);
-  const { data, error } = await auth.db.rpc("save_personal_vault", {
-    expected_revision: parsed.data.expectedRevision,
-    sealed: parsed.data.envelope,
-  });
+  const activating = parsed.data.expectedStandardRevision !== undefined;
+  if (activating && parsed.data.expectedRevision !== 0)
+    return reply({ error: "invalid_input" }, 400);
+  const { data, error } = await auth.db.rpc(
+    activating ? "activate_personal_vault" : "save_personal_vault",
+    activating
+      ? {
+          expected_standard_revision: parsed.data.expectedStandardRevision,
+          sealed: parsed.data.envelope,
+        }
+      : {
+          expected_revision: parsed.data.expectedRevision,
+          sealed: parsed.data.envelope,
+        },
+  );
   if (error)
     return reply(
       { error: error.code === "40001" ? "conflict" : "save_failed" },

@@ -1,12 +1,22 @@
 /** Browser-only cryptography. Neither a passphrase nor an unwrapped key goes to the server. */
 export type Sealed = { iv: string; ciphertext: string };
+export type VaultPasskey = {
+  id: string;
+  salt: string;
+  rpId: string;
+  wrapped: Sealed;
+};
+export type PasskeyMaterial = Omit<VaultPasskey, "wrapped"> & {
+  secret: Uint8Array;
+};
 export type VaultEnvelope = {
   version: 1;
   ownerId: string;
   revision: number;
   iterations: 600000;
   salt: string;
-  password: Sealed;
+  password: Sealed | null;
+  passkeys?: VaultPasskey[];
   recovery: Sealed;
   payload: Sealed;
 };
@@ -123,10 +133,14 @@ export async function encryptVault<T>(
 }
 export async function createVault<T>(
   ownerId: string,
-  passphrase: string,
+  passphrase: string | null,
   value: T,
+  passkey?: PasskeyMaterial,
 ) {
-  if (passphrase.length < 16) throw new Error("Use at least 16 characters");
+  if (passphrase !== null && passphrase.length < 16)
+    throw new Error("Use at least 16 characters");
+  if (!passphrase && !passkey)
+    throw new Error("A protection method is required");
   const raw = random(32),
     recoveryRaw = random(32),
     salt = b64(random(16));
@@ -144,15 +158,32 @@ export async function createVault<T>(
       revision: 0,
       iterations: 600000,
       salt,
-      password: await seal(
-        await passwordKey(passphrase, salt),
-        raw,
-        ownerId,
-        "password",
-      ),
+      password:
+        passphrase === null
+          ? null
+          : await seal(
+              await passwordKey(passphrase, salt),
+              raw,
+              ownerId,
+              "password",
+            ),
       recovery: await seal(await aes(recoveryRaw), raw, ownerId, "recovery"),
       payload: { iv: "", ciphertext: "" },
     };
+    if (passkey)
+      base.passkeys = [
+        {
+          id: passkey.id,
+          salt: passkey.salt,
+          rpId: passkey.rpId,
+          wrapped: await seal(
+            await aes(passkey.secret),
+            raw,
+            ownerId,
+            `passkey:${passkey.id}`,
+          ),
+        },
+      ];
     const envelope = await encryptVault(key, base, value);
     // Verify a complete decrypt before ever allowing the server to replace legacy data.
     if (
@@ -164,6 +195,7 @@ export async function createVault<T>(
   } finally {
     raw.fill(0);
     recoveryRaw.fill(0);
+    passkey?.secret.fill(0);
   }
 }
 export async function unlockVault(
@@ -186,7 +218,12 @@ export async function unlockVault(
   } else wrapping = await passwordKey(secret, envelope.salt);
   const raw = await open(
     wrapping,
-    recovery ? envelope.recovery : envelope.password,
+    recovery
+      ? envelope.recovery
+      : (envelope.password ??
+          (() => {
+            throw new Error("Use your passkey or recovery code");
+          })()),
     owner,
     recovery ? "recovery" : "password",
   );
@@ -194,6 +231,24 @@ export async function unlockVault(
     return await aes(raw);
   } finally {
     raw.fill(0);
+  }
+}
+export async function unlockVaultWithPasskey(
+  envelope: VaultEnvelope,
+  owner: string,
+  id: string,
+  secret: Uint8Array,
+) {
+  verifyEnvelope(envelope, owner);
+  const entry = envelope.passkeys?.find((p) => p.id === id);
+  if (!entry || secret.length !== 32) throw new Error("Invalid passkey");
+  let raw: Uint8Array | undefined;
+  try {
+    raw = await open(await aes(secret), entry.wrapped, owner, `passkey:${id}`);
+    return await aes(raw);
+  } finally {
+    secret.fill(0);
+    raw?.fill(0);
   }
 }
 export async function changeVaultPassphrase(

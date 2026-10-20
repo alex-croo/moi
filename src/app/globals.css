@@ -4330,3 +4330,97 @@ input[type="file"]::file-selector-button {
     display: none;
   }
 }
+
+/* Optional privacy follows the same settings rhythm as language and units. */
+.privacy-settings {
+  padding: 28px;
+  display: grid;
+  gap: 16px;
+}
+.privacy-settings p,
+.privacy-settings h2,
+.privacy-settings h3 {
+  margin: 0;
+}
+.privacy-settings p {
+  line-height: 1.7;
+}
+.privacy-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.privacy-heading h2 {
+  margin-top: 8px;
+}
+.privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line, #ddd);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.privacy-badge.enhanced {
+  background: #edf2e7;
+  color: #244d3c;
+}
+.privacy-setup {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  background: #f5f6ef;
+  border: 1px solid #dce3d2;
+  border-radius: 12px;
+}
+.privacy-setup form {
+  display: grid;
+  gap: 14px;
+  max-width: 520px;
+}
+.privacy-setup label:not(.privacy-consent) {
+  display: grid;
+  gap: 8px;
+}
+.privacy-consent {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  line-height: 1.6;
+}
+.privacy-consent input {
+  appearance: auto;
+  width: 18px;
+  height: 18px;
+  margin: 4px 0 0;
+  accent-color: #244d3c;
+  padding: 0;
+}
+.privacy-settings details {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.privacy-settings .recovery-code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+@media (max-width: 640px) {
+  .privacy-settings {
+    padding: 20px;
+  }
+  .privacy-setup {
+    padding: 16px;
+  }
+  .privacy-heading {
+    gap: 12px;
+  }
+  .privacy-settings .action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
