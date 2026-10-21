@@ -1188,7 +1188,7 @@ export function Dashboard({
         aria-labelledby="dialog-title"
       >
         <div className="dialog-heading">
-          <span className="eyebrow">I AM ABLE</span>
+          <span className="eyebrow">TRED’MEAL</span>
           <button
             className="icon-button"
             disabled={busy}

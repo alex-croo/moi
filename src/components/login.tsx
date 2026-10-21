@@ -47,7 +47,7 @@ export function Login({
           </div>
         </div>
         <span className="login-copyright">
-          I AM ABLE ·{" "}
+          TRED’MEAL ·{" "}
           {t("VOTRE PARCOURS, VOTRE RYTHME", "YOUR JOURNEY, YOUR PACE")}
         </span>
       </section>
