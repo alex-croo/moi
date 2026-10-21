@@ -54,7 +54,7 @@ export function Pantry({
   const [filter, setFilter] = useState<PantryLocation | "all">("all");
   const [editing, setEditing] = useState<PantryItem | null>(null);
   const [amount, setAmount] = useState("");
-  const [kind, setKind] = useState<Quantity["kind"]>("mass");
+  const [kind, setKind] = useState<Quantity["kind"]>("volume");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
@@ -88,7 +88,7 @@ export function Pantry({
         inStock: true,
       },
     );
-    setKind(item?.quantity?.kind || "mass");
+    setKind(item?.quantity?.kind || "volume");
     setAmount(
       item?.quantity
         ? String(

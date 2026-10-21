@@ -103,6 +103,7 @@ test("grocery list hides covered items and copies only the missing quantity in c
       .getByRole("button", { name: "Ajouter un aliment", exact: true })
       .click();
     await page.getByLabel("Aliment", { exact: true }).selectOption(id);
+    await page.getByLabel("Mesure", { exact: true }).selectOption("mass");
     await page.getByLabel(/Quantité \(facultatif\)/).fill(quantity);
     await page
       .getByRole("button", { name: "Garder dans mes réserves", exact: true })

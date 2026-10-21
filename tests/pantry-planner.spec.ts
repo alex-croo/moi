@@ -118,6 +118,7 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await page
     .getByLabel("Où le ranger", { exact: true })
     .selectOption("freezer");
+  await page.getByLabel("Mesure", { exact: true }).selectOption("mass");
   await page.getByLabel(/Quantité \(facultatif\)/).fill("500");
   await page
     .getByLabel("Petit repère (facultatif)", { exact: true })

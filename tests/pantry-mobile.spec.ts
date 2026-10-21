@@ -26,7 +26,7 @@ test("mobile pantry add and edit preserve units and quantities across narrow scr
   await expect(dialog.getByRole("button", { name: "Fermer", exact: true })).toBeFocused();
   await dialog.getByLabel("Aliment", { exact: true }).selectOption("custom");
   await dialog.getByLabel("Nom de l’aliment", { exact: true }).fill("Bouillon maison");
-  await dialog.getByLabel("Mesure", { exact: true }).selectOption("volume");
+  await expect(dialog.getByLabel("Mesure", { exact: true })).toHaveValue("volume");
   const amount = dialog.getByLabel(/Quantité \(facultatif\)/);
   await expect(amount).toHaveAttribute("inputmode", "decimal");
   await amount.fill("250.5");
@@ -80,6 +80,8 @@ test("mobile pantry fields and actions remain reachable with a keyboard during a
   for (const editing of [false, true]) {
     await page.getByRole("button", { name: editing ? "Modifier Bœuf haché extra maigre" : "Ajouter un aliment", exact: true }).click();
     await dialog.getByLabel("Aliment", { exact: true }).selectOption("beef-95-raw");
+    await expect(dialog.getByLabel("Mesure", { exact: true })).toHaveValue(editing ? "mass" : "volume");
+    if (!editing) await dialog.getByLabel("Mesure", { exact: true }).selectOption("mass");
     const amount = dialog.getByLabel(/Quantité \(facultatif\)/);
     if (editing) await expect(amount).toHaveValue("500");
     await amount.fill(editing ? "250" : "500");
