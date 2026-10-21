@@ -1,6 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import { Archive, Check, Pencil, Plus, Search, Trash2, Snowflake } from "lucide-react";
+import { Archive, Check, Pencil, Plus, Search, Trash2, Snowflake, X } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type {
   Ingredient,
@@ -18,6 +18,17 @@ import {
 } from "@/lib/pantry";
 import { quantityLabel } from "@/lib/units";
 import { pantrySchema } from "@/lib/validation";
+import { useShoppingDialog } from "./use-shopping-dialog";
+
+function PantryEditor({ title, locale, busy, onClose, children }: {
+  title: string; locale: Locale; busy: boolean; onClose: () => void; children: ReactNode;
+}) {
+  const dialog = useShoppingDialog();
+  return <dialog ref={dialog} className="shopping-dialog pantry-editor" aria-labelledby="pantry-editor-title" onCancel={e => busy ? e.preventDefault() : onClose()}>
+    <header><h2 id="pantry-editor-title">{title}</h2><button type="button" className="icon-button" disabled={busy} onClick={onClose} aria-label={locale === "fr" ? "Fermer" : "Close"}><X size={20}/></button></header>
+    {children}
+  </dialog>;
+}
 
 export function Pantry({
   items,
@@ -61,6 +72,10 @@ export function Pantry({
   const filtered = items.filter((p) =>
     normalize(pantryName(p, ingredients, locale)).includes(normalize(query)),
   );
+  function closeEditor() {
+    setEditing(null);
+    setError("");
+  }
   function edit(item?: PantryItem) {
     setEditing(
       item || {
@@ -178,7 +193,7 @@ export function Pantry({
           {t("Ma liste d’épicerie", "My grocery list")}
         </button>
       </div>
-      {error && (
+      {error && !editing && (
         <p className="form-error" role="alert">
           {error}
         </p>
@@ -189,6 +204,7 @@ export function Pantry({
         </p>
       )}
       {editing && (
+        <PantryEditor title={items.some(p => p.id === editing.id) ? t("Modifier un aliment", "Edit a food") : t("Ajouter un aliment", "Add a food")} locale={locale} busy={busy} onClose={closeEditor}>
         <form
           className="pantry-form"
           onSubmit={(e) => {
@@ -196,11 +212,6 @@ export function Pantry({
             void save();
           }}
         >
-          <h2>
-            {items.some((p) => p.id === editing.id)
-              ? t("Un repère pour cet aliment", "A note about this food")
-              : t("Qu’avez-vous à la maison?", "What do you have at home?")}
-          </h2>
           <div className="pantry-fields">
             <label>
               {t("Aliment", "Food")}
@@ -289,6 +300,7 @@ export function Pantry({
               {pantryUnit(kind, units, locale)}
               <input
                 type="number"
+                inputMode="decimal"
                 min="0.000001"
                 step="any"
                 value={amount}
@@ -322,25 +334,24 @@ export function Pantry({
               )}
             </p>
           )}
-          <div className="pantry-toolbar">
+          {error && <p className="form-error" role="alert">{error}</p>}
+          <footer>
+            <button
+              type="button"
+              className="text-button"
+              disabled={busy}
+              onClick={closeEditor}
+            >
+              {t("Annuler", "Cancel")}
+            </button>
             <button className="primary" disabled={busy}>
               {busy
                 ? t("Enregistrement…", "Saving…")
                 : t("Garder dans mes réserves", "Save to my pantry")}
             </button>
-            <button
-              type="button"
-              className="secondary"
-              disabled={busy}
-              onClick={() => {
-                setEditing(null);
-                setError("");
-              }}
-            >
-              {t("Annuler", "Cancel")}
-            </button>
-          </div>
+          </footer>
         </form>
+        </PantryEditor>
       )}
       <label className="recipe-search">
         <Search size={18} />

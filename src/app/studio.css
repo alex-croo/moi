@@ -551,13 +551,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .grocery-more-panel button:hover{background:var(--accent-soft)}
 .pantry-quick-add{width:min(650px,calc(var(--dialog-width,100vw) - 24px))}.pantry-quick-add .purchase-options{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
 .grocery-reserve-button{display:none}
+.pantry-editor{width:min(650px,calc(var(--dialog-width,100vw) - 24px))}
+.pantry-editor>.pantry-form{border:0;border-radius:0;margin:0;background:white;padding-top:16px}
+.pantry-editor .pantry-fields{gap:12px}
+.pantry-editor .pantry-fields label{margin:0;gap:6px}
 .grocery-order-check{background:var(--accent-soft);padding:8px 10px;border-radius:8px}.grocery-order-check button{font-size:inherit;padding:4px}
 .pantry-item-copy h3>svg{vertical-align:middle;color:#3574a6}
 @container(max-width:480px){.grocery-page .grocery-quantity{justify-content:flex-start}}
 @media(max-width:767px), (pointer:coarse) {
   /* A readable input size prevents Safari's focus zoom; pinch zoom stays available. */
   .shopping-dialog input,.shopping-dialog select,.shopping-dialog textarea,
-  .grocery-page input,.grocery-page select { font-size:16px; }
+  .grocery-page input,.grocery-page select,.pantry-page input,.pantry-page select { font-size:16px; }
   .shopping-dialog input:not([type="checkbox"]),.shopping-dialog select { min-height:44px; }
   .grocery-more{display:none}
   .grocery-reserve-button{display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border:1px solid var(--line);border-radius:50%;background:var(--accent-soft);color:var(--accent);padding:0;cursor:pointer}
