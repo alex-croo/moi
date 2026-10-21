@@ -8,12 +8,13 @@ import type { ShoppingItem } from "@/lib/shopping";
 import { preferredGrocer } from "@/lib/grocer-preferences";
 import { instacartListBody, isInstacartLink } from "@/lib/instacart";
 import { quantityLabel } from "@/lib/units";
+import { useShoppingDialog } from "./use-shopping-dialog";
 
 export function InstacartExport({ items, grocers, locale, units, onClose }: {
   items: ShoppingItem[]; grocers: Grocer[]; locale: Locale; units: UnitPreferences; onClose: () => void;
 }) {
   const t = (fr: string, en: string) => locale === "fr" ? fr : en;
-  const dialog = useRef<HTMLDialogElement>(null);
+  const dialog = useShoppingDialog();
   const links = useRef(new Map<string, { url: string; development: boolean }>());
   const [group, setGroup] = useState("all"), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const [availability, setAvailability] = useState<"loading" | "ready" | "unavailable" | "anonymous">("loading");
@@ -25,7 +26,6 @@ export function InstacartExport({ items, grocers, locale, units, onClose }: {
   const [exported, setExported] = useState<{ signature: string; url: string; development: boolean } | null>(null);
   const result = exported?.signature === signature ? exported : null;
   useEffect(() => {
-    dialog.current?.showModal();
     const controller = new AbortController();
     void fetch("/api/shopping/instacart", { cache: "no-store", signal: controller.signal })
       .then(async response => {

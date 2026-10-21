@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { X } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type { Ingredient, UnitPreferences } from "@/lib/types";
@@ -7,19 +7,19 @@ import type { Grocer, Purchase, PurchaseLine } from "@/lib/shopping-types";
 import { purchaseLineKey, type ShoppingMutation } from "@/lib/shopping";
 import { pantryFactor, pantryUnit, pantryLabel, pantryLocations } from "@/lib/pantry";
 import { localToday, quantityLabel } from "@/lib/units";
+import { useShoppingDialog } from "./use-shopping-dialog";
 
 export function PurchaseEditor({ initialLines, order, mode, grocers, ingredients, units, locale, onClose, onSave }: {
   initialLines: PurchaseLine[]; order?: Purchase; mode: "store" | "online" | "receive"; grocers: Grocer[];
   ingredients: Ingredient[]; units: UnitPreferences; locale: Locale; onClose: () => void; onSave: (m: ShoppingMutation) => Promise<void>;
 }) {
   const t = (fr: string, en: string) => locale === "fr" ? fr : en;
-  const dialog = useRef<HTMLDialogElement>(null), operationId = useRef(order?.id || crypto.randomUUID());
+  const dialog = useShoppingDialog(), operationId = useRef(order?.id || crypto.randomUUID());
   const [lines, setLines] = useState(initialLines), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const first = grocers.find(g => g.favorite) || grocers[0];
   const [grocerId, setGrocerId] = useState(first?.id || ""), [date, setDate] = useState(order?.expectedDate || localToday()), [fulfillment, setFulfillment] = useState<"delivery" | "pickup">(first?.fulfillment || "delivery");
   const grocer = grocers.find(g => g.id === grocerId);
   const title = mode === "receive" ? t("J’ai reçu ma commande", "I received my order") : mode === "store" ? t("Ranger mes achats", "Put my groceries away") : t("Ma commande en ligne", "My online order");
-  useEffect(() => { dialog.current?.showModal(); }, []);
   async function submit() {
     setBusy(true); setError("");
     try {

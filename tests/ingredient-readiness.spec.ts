@@ -86,6 +86,7 @@ test("compact UI supports pantry shortcut, checked orders, coverage explanations
   await page.getByRole("button", { name: "Options pour Bœuf haché extra maigre", exact: true }).click();
   await page.getByRole("button", { name: "Déjà en réserve", exact: true }).click();
   const dialog = page.getByRole("dialog");
+  await dialog.getByRole("combobox", { name: "Mesure", exact: true }).selectOption("mass");
   await dialog.getByLabel("Quantité en réserve", { exact: false }).fill("500");
   await dialog.getByLabel("Cet aliment est congelé", { exact: true }).check();
   await dialog.getByRole("button", { name: "Ajouter à mes réserves", exact: true }).click();

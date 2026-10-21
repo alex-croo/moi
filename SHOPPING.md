@@ -37,7 +37,9 @@ Les noms d’épiciers affichés dans la liste proviennent uniquement des comman
 
 Le rond vert du repas exige une couverture complète de chaque ingrédient obligatoire. Le rond rouge détaille les manquants ou les quantités à vérifier. Le même calcul réserve le stock chronologiquement dans les menus et les courses; une livraison dont le créneau se termine après le repas ne le couvre pas. Les explications fonctionnent au survol, au clavier et au toucher.
 
-Le menu « … → Déjà en réserve » ajoute la quantité réellement présente, son rangement et une note, avec les préférences d’unités. Le congélateur indique explicitement que l’aliment est congelé.
+Le menu « … → Déjà en réserve » ajoute la quantité réellement présente, son rangement et une note, avec les préférences d’unités. Sur mobile et écran tactile, un bouton rond avec un réfrigérateur ouvre directement ce formulaire. La mesure initiale est « Volume », dans l’unité choisie par l’utilisateur; la quantité reste vide pour saisir le stock réel sans convertir arbitrairement le poids demandé par une recette. Les autres mesures restent disponibles. Le congélateur indique explicitement que l’aliment est congelé.
+
+Les fenêtres de courses suivent la zone visible du navigateur lorsque le clavier s’ouvre et gardent le champ actif accessible par défilement interne. Les champs tactiles utilisent une police de 16 px, sans désactiver le zoom manuel. `grocery-mobile.spec.ts` couvre les petits écrans, le paysage, le clavier simulé, les unités et l’ajout aux réserves.
 
 Les rappels de décongélation sont calculés localement, y compris pour un espace chiffré. Les réserves montrent les prochaines décongélations; un avis apparaît partout dans l’application dans les 24 heures précédant le repas. Repères horaires Toronto : 8 h / 10 h / 12 h / 15 h / 18 h / 21 h. La durée de décongélation nécessaire dépend du format; ce rappel n’est pas une garantie sanitaire. « Mis au réfrigérateur » déplace uniquement la quantité indiquée, sans la consommer; l’opération est idempotente et le frais est utilisé avant le congelé.
 

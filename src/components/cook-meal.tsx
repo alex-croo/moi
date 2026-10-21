@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { X } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type { MealSlot } from "@/lib/types";
@@ -7,13 +7,13 @@ import type { ShoppingWorkspace } from "@/lib/shopping-types";
 import { previewCooking, type ShoppingMutation } from "@/lib/shopping";
 import { quantityLabel } from "@/lib/units";
 import { pantryLabel } from "@/lib/pantry";
+import { useShoppingDialog } from "./use-shopping-dialog";
 export function CookMeal({ meal, data, locale, onSave, onClose }: { meal: MealSlot; data: ShoppingWorkspace; locale: Locale; onSave: (m: ShoppingMutation) => Promise<void>; onClose: () => void }) {
   const recipe = data.recipes.find(r => r.id === meal.recipeId)!;
   const t = (fr: string, en: string) => locale === "fr" ? fr : en;
   const [portions, setPortions] = useState(recipe.servings), [optional, setOptional] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState("");
-  const dialog = useRef<HTMLDialogElement>(null), id = useRef(crypto.randomUUID());
+  const dialog = useShoppingDialog(), id = useRef(crypto.randomUUID());
   const preview = previewCooking(data, data, meal, portions > 0 && portions <= 100 ? portions : recipe.servings, optional);
-  useEffect(() => { dialog.current?.showModal(); }, []);
   async function save() {
     setBusy(true); setError("");
     try { await onSave({ action: "cook", id: id.current, meal, portions, includeOptional: optional }); onClose(); }
