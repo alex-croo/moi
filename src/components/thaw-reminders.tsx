@@ -26,7 +26,7 @@ export function ThawReminders({ data, locale, all = false, onSave }: { data: Sho
       catch { setError(t("Vos réserves ont peut-être changé. Rechargez avant de réessayer.", "Your pantry may have changed. Reload before retrying.")); }
       finally { setBusy(false); }
     }}>{t("Mis au réfrigérateur", "Moved to the fridge")}</button></div>)}
-    <details><summary>{t("À propos des rappels", "About these reminders")}</summary><p>{t("Avis dans Iamable 24 h avant le repas. Il se met à jour lorsque vous déplacez l’aliment au réfrigérateur ou changez le menu. Repères : déjeuner 8 h, dîner 12 h, souper 18 h; collations 10 h, 15 h et 21 h (heure de Toronto). La durée réelle de décongélation dépend du format.", "Iamable shows a reminder 24 hours before a meal. It updates when you move the food to the fridge or change the menu. Meal landmarks: breakfast 8 am, lunch noon, dinner 6 pm; snacks 10 am, 3 pm and 9 pm (Toronto time). Actual thawing time depends on package size.")}</p></details>
+    <details><summary>{t("À propos des rappels", "About these reminders")}</summary><p>{t("Avis dans Tred’meal 24 h avant le repas. Il se met à jour lorsque vous déplacez l’aliment au réfrigérateur ou changez le menu. Repères : déjeuner 8 h, dîner 12 h, souper 18 h; collations 10 h, 15 h et 21 h (heure de Toronto). La durée réelle de décongélation dépend du format.", "Tred’meal shows a reminder 24 hours before a meal. It updates when you move the food to the fridge or change the menu. Meal landmarks: breakfast 8 am, lunch noon, dinner 6 pm; snacks 10 am, 3 pm and 9 pm (Toronto time). Actual thawing time depends on package size.")}</p></details>
     {error && <p role="alert" className="form-error">{error}</p>}
   </section>;
 }

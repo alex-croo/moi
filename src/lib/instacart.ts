@@ -34,7 +34,7 @@ export function instacartMeasurement(q: Quantity) {
 }
 export function instacartListBody(input: Extract<InstacartInput, { action: "export" }>) {
   return {
-    title: input.locale === "fr" ? "Ma liste d’épicerie Iamable" : "My Iamable grocery list",
+    title: input.locale === "fr" ? "Ma liste d’épicerie Tred’meal" : "My Tred’meal grocery list",
     link_type: "shopping_list", expires_in: 7,
     line_items: input.items.map(item => ({
       name: item.name,

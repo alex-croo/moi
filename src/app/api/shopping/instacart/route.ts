@@ -4,7 +4,7 @@ import { handleInstacart, instacartConfig } from "@/lib/instacart-server";
 
 function handle(request: Request) {
   return handleInstacart(request, {
-    origin: trustedOrigin(),
+    origin: trustedOrigin(request),
     authorize: async () => !!await authorizedClient(),
     config: instacartConfig(), fetcher: fetch,
   });

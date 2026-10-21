@@ -42,7 +42,7 @@ export async function exportMenu(
       height: 792,
       color: rgb(0.98, 0.97, 0.94),
     });
-    page.drawText("i am able.", {
+    page.drawText("Tred’meal", {
       x: 44,
       y: 734,
       size: 28,
@@ -187,7 +187,7 @@ export async function exportMenu(
   );
   const a = document.createElement("a");
   a.href = url;
-  a.download = `iamable-menu-${plan.startDate}-${locale}.pdf`;
+  a.download = `tredmeal-menu-${plan.startDate}-${locale}.pdf`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }

@@ -206,7 +206,7 @@ export async function buildRecipePdf(
     const newPage = () => {
       const page = pdf.addPage([612, 792]);
       pages.push(page);
-      text(page, "i am able.", 30, 756, 14, serif, green);
+      text(page, "Tred’meal", 30, 756, 14, serif, green);
       const label = t(
         `CUISINER À LA MAISON / ${recipe.servings} PORTIONS`,
         `COOK AT HOME / ${recipe.servings} SERVINGS`,
@@ -569,7 +569,7 @@ export async function buildRecipePdf(
       });
       text(
         p,
-        t("i am able. · Mon livre de recettes", "i am able. · My recipe book"),
+        t("Tred’meal · Mon livre de recettes", "Tred’meal · My recipe book"),
         30,
         29,
         7,
@@ -607,7 +607,7 @@ export async function buildRecipePdf(
         : recipes[0].titleEn
       : t("Mon livre de recettes", "My recipe book"),
   );
-  pdf.setCreator("I am able");
+  pdf.setCreator("Tred’meal");
   return pdf.save();
 }
 
@@ -656,7 +656,7 @@ export async function exportRecipes(
   );
   const a = document.createElement("a");
   a.href = url;
-  a.download = `iamable-${recipes.length === 1 ? recipes[0].id : "recettes"}-${locale}.pdf`;
+  a.download = `tredmeal-${recipes.length === 1 ? recipes[0].id : "recettes"}-${locale}.pdf`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }

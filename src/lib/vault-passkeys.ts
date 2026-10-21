@@ -31,11 +31,11 @@ export async function createPasskeyMaterial(
   const credential = (await navigator.credentials.create({
     publicKey: {
       challenge: random(),
-      rp: { id: rpId, name: "I am able" },
+      rp: { id: rpId, name: "Tred’meal" },
       user: {
         id: new TextEncoder().encode(userId),
-        name: "Mon espace I am able",
-        displayName: "I am able",
+        name: "Mon espace Tred’meal",
+        displayName: "Tred’meal",
       },
       pubKeyCredParams: [
         { type: "public-key", alg: -7 },

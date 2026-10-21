@@ -1,4 +1,4 @@
-# Déploiement préparé : iamable.space / Vercel moi
+# Déploiement préparé : Tred’meal / tredmeal.com / Vercel moi
 
 ## État et accès nécessaires
 
@@ -34,7 +34,7 @@ ressources dans le compte du propriétaire lorsque l’intégration devient disp
    | -------------------------------------- | ------------------------------------------------ |
    | `NEXT_PUBLIC_SUPABASE_URL`             | URL HTTPS du projet Supabase                     |
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Clé publishable du projet; jamais `service_role` |
-   | `SITE_URL`                             | `https://iamable.space`                          |
+   | `SITE_URL`                             | `https://tredmeal.com`                          |
    | `ENABLE_DEMO`                          | `false`                                          |
 
 Les deux valeurs `NEXT_PUBLIC_*` décrivent le client public Supabase et ne donnent
@@ -49,8 +49,10 @@ L’application n’a pas besoin de clé Supabase d’administration.
    le fournisseur Google dans Supabase (`https://<projet>.supabase.co/auth/v1/callback`).
 2. Configurer ce client et son secret **dans Supabase Auth > Providers > Google**.
    Le secret ne doit jamais être envoyé dans une conversation ou commité.
-3. Dans Supabase Auth, Site URL = `https://iamable.space`. Autoriser précisément les
+3. Dans Supabase Auth, Site URL = `https://tredmeal.com`. Autoriser précisément les
    retours de l’application :
+   - `https://tredmeal.com/auth/callback?locale=fr`
+   - `https://tredmeal.com/auth/callback?locale=en`
    - `https://iamable.space/auth/callback?locale=fr`
    - `https://iamable.space/auth/callback?locale=en`
 4. Désactiver les fournisseurs inutilisés et les connexions anonymes. La seule
@@ -78,13 +80,13 @@ L’application n’a pas besoin de clé Supabase d’administration.
 L’échange OAuth utilise PKCE via Supabase SSR, le serveur vérifie l’utilisateur
 auprès de Supabase et contrôle sa liste d’accès. Chaque table exige à la fois cette
 autorisation et `owner_id = auth.uid()`. La déconnexion est un POST soumis au contrôle
-de l’origine. Les retours utilisent `SITE_URL`, jamais un host transmis arbitrairement.
+de l’origine. Les retours restent sur l’origine courante seulement si elle correspond exactement à `SITE_URL` ou à un alias explicite de `SITE_URL_ALIASES`. Aucun joker ou host arbitraire.
 Les cookies de session sont HttpOnly, SameSite=Lax et Secure sur Vercel/HTTPS;
 aucun client Supabase dans le navigateur n’a besoin de lire les jetons.
 
 ## 3. Domaine, préversions et recette distante
 
-Ajouter **iamable.space** au projet dans le workspace **moi**, puis suivre les
+Ajouter **tredmeal.com** au projet dans le workspace **moi**, puis suivre les
 enregistrements DNS exacts affichés par Vercel. Vérifier l’attribution au bon projet
 et la délivrance du certificat HTTPS. Aucun enregistrement DNS n’est présumé ici.
 
@@ -134,3 +136,16 @@ Références officielles :
 Les pages de documentation Vercel/Supabase ont été bloquées par la politique réseau
 de cette session. Les versions installées et leurs API TypeScript ont été vérifiées
 par compilation; les parcours externes restent à valider dans le compte réel.
+
+## Changement de nom — Tred’meal
+
+Le projet Vercel est renommé `tredmeal`, avec le même identifiant et la même base.
+`SITE_URL=https://tredmeal.com` et `SITE_URL_ALIASES=https://iamable.space`.
+`www.tredmeal.com` redirige vers l’apex. L’ancien domaine reste servi, sans
+redirection forcée : ses sessions et clés WebAuthn sont liées à son origine.
+Sur le nouveau domaine, les anciens coffres s’ouvrent avec le code de récupération
+ou via le lien vers l’ancienne adresse. Les clés cryptographiques et identifiants
+de stockage `iamable:v1` et `iamable:journal-recovery:v1` restent inchangés.
+Les brouillons locaux ne traversent pas les origines; synchroniser la page avant
+de changer de domaine, ou la reprendre sur iamable.space.
+Le nom et les fichiers PDF changent, pas les données ni les permissions.

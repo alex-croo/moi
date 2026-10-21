@@ -7,5 +7,5 @@ export async function POST(request: Request) {
   const locale = localeOf(String((await request.formData()).get("locale")));
   const db = await supabaseServer();
   if (db) await db.auth.signOut();
-  return NextResponse.redirect(`${trustedOrigin()}/${locale}`, 303);
+  return NextResponse.redirect(`${trustedOrigin(request)}/${locale}`, 303);
 }

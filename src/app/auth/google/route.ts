@@ -11,14 +11,14 @@ export async function POST(request: Request) {
   const { data, error } = await db.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${trustedOrigin()}/auth/callback?locale=${locale}`,
+      redirectTo: `${trustedOrigin(request)}/auth/callback?locale=${locale}`,
       scopes: "openid email profile",
       queryParams: { prompt: "select_account" },
     },
   });
   if (error || !data.url)
     return NextResponse.redirect(
-      `${trustedOrigin()}/${locale}?error=auth`,
+      `${trustedOrigin(request)}/${locale}?error=auth`,
       303,
     );
   return NextResponse.redirect(data.url, 303);

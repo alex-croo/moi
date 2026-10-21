@@ -1149,7 +1149,7 @@ export function Dashboard({
               <Sprout size={13} />
               {t("Votre parcours. Votre rythme.", "Your journey. Your pace.")}
             </span>
-            <span>i am able.</span>
+            <span>Tred’meal</span>
           </footer>
         </main>
       </div>

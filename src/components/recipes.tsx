@@ -402,8 +402,8 @@ export function RecipeSheet({
         </section>
         <footer className="recipe-source">
           {t(
-            "i am able. · Mon livre de recettes.",
-            "i am able. · My recipe book.",
+            "Tred’meal · Mon livre de recettes.",
+            "Tred’meal · My recipe book.",
           )}{" "}
           <a href={recipe.source} target="_blank" rel="noopener noreferrer">
             {t("Fiche d’origine dans Drive", "Original card in Drive")}

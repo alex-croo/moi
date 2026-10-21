@@ -6,7 +6,7 @@ export function Brand() {
         <Sprout size={24} strokeWidth={1.5} />
       </span>
       <span className="brand-name">
-        i am able<span className="brand-dot">.</span>
+        Tred<span className="brand-dot">’</span>meal
         <small>by Croo.Studio</small>
       </span>
     </span>

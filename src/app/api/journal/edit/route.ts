@@ -5,7 +5,7 @@ import { handleJournalEdit } from "@/lib/journal-ai";
 export const maxDuration = 60;
 export async function POST(request: Request) {
   return handleJournalEdit(request, {
-    origin: trustedOrigin(),
+    origin: trustedOrigin(request),
     authorize: async () => {
       const auth = await authorizedClient();
       if (!auth) return null;

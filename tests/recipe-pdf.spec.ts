@@ -86,7 +86,7 @@ test("individual, selected and weekly recipe PDFs download from their own entry 
     .getByRole("button", { name: "Télécharger la fiche PDF", exact: true })
     .click();
   file = await downloading;
-  expect(file.suggestedFilename()).toBe("iamable-demo-beef-fr.pdf");
+  expect(file.suggestedFilename()).toBe("tredmeal-demo-beef-fr.pdf");
   const single = await PDFDocument.load(await readFile((await file.path())!));
   expect(single.getTitle()).toBe("Bœuf et oignons");
   expect(single.getPageCount()).toBe(2);

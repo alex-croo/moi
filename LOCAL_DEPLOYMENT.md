@@ -8,8 +8,8 @@ sans déplacer ses identifiants vers le cloud.
 
 - Dépôt : `https://github.com/alex-croo/moi`, branche `main`.
 - Workspace Vercel : **moi** (vérifier son identifiant avec la connexion disponible).
-- Domaine : **iamable.space**, déjà acheté par le propriétaire.
-- Application : **I am able**, Next.js 16, Node.js 24, français/anglais.
+- Domaine principal : **tredmeal.com**. **iamable.space** reste un alias actif pour les sessions et clés d’accès existantes.
+- Application : **Tred’meal**, Next.js 16, Node.js 24, français/anglais.
 - Compte Google propriétaire : confirmé dans la conversation; ne pas l’inventer.
   L’adresse est conservée dans les instructions privées de l’environnement cloud.
 

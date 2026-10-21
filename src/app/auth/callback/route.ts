@@ -3,7 +3,7 @@ import { supabaseServer, authorizedClient } from "@/lib/supabase";
 import { trustedOrigin } from "@/lib/security";
 import { localeOf } from "@/lib/locale";
 export async function GET(request: Request) {
-  const origin = trustedOrigin();
+  const origin = trustedOrigin(request);
   if (!origin)
     return new Response("Authentication is not configured", { status: 503 });
   const url = new URL(request.url);

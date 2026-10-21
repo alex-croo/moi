@@ -253,7 +253,8 @@ export function PrivateWorkspace({
     setBusy(true);
     setError("");
     try {
-      const entry = envelope.passkeys?.[0];
+      const entry = envelope.passkeys?.find((item) => item.rpId === location.hostname);
+      if (usePasskey && !entry) throw Error("passkey_unavailable");
       const key =
         usePasskey && entry
           ? await unlockVaultWithPasskey(
@@ -337,7 +338,7 @@ export function PrivateWorkspace({
             if (state.current?.envelope)
               download(
                 JSON.stringify(state.current.envelope, null, 2),
-                "iamable-coffre-chiffre.json",
+                "tredmeal-coffre-chiffre.json",
                 "application/json",
               );
           },
@@ -354,7 +355,7 @@ export function PrivateWorkspace({
                 if (state.current?.envelope)
                   download(
                     JSON.stringify(state.current.envelope, null, 2),
-                    "iamable-coffre-chiffre.json",
+                    "tredmeal-coffre-chiffre.json",
                     "application/json",
                   );
               }}
@@ -365,6 +366,11 @@ export function PrivateWorkspace({
     );
   }
   const envelope = restore || loaded?.envelope;
+  const localPasskey = typeof window !== "undefined" &&
+    envelope?.passkeys?.some((item) => item.rpId === window.location.hostname);
+  const legacyPasskey = typeof window !== "undefined" &&
+    window.location.hostname === "tredmeal.com" &&
+    envelope?.passkeys?.some((item) => item.rpId === "iamable.space");
   return (
     <main className="vault-screen">
       <a href={`/${locale}`}>
@@ -399,7 +405,13 @@ export function PrivateWorkspace({
                     "You enabled enhanced protection. Unlock your data on this device.",
                   )}
             </p>
-            {!!envelope.passkeys?.length && (
+            {legacyPasskey && !localPasskey && (
+              <p className="notice">
+                {t("Votre clé d’accès est liée à l’ancienne adresse. Vous pouvez l’utiliser sur iamable.space, ou ouvrir cet espace ici avec votre code de récupération.", "Your passkey belongs to the previous address. Use it on iamable.space, or unlock here with your recovery code.")}
+                {" "}<a href={`https://iamable.space/${locale}/dashboard`}>{t("Ouvrir avec mon ancienne clé", "Use my existing passkey")}</a>
+              </p>
+            )}
+            {localPasskey && (
               <>
                 <button
                   className="primary"

@@ -217,8 +217,8 @@ export function PrivacySettings({
             disabled={busy}
             onClick={() => {
               download(
-                `I am able — ${userId}\n${pending.created.recoveryCode}\n`,
-                "iamable-code-de-recuperation.txt",
+                `Tred’meal — ${userId}\n${pending.created.recoveryCode}\n`,
+                "tredmeal-code-de-recuperation.txt",
                 "text/plain",
               );
               setSaved(true);

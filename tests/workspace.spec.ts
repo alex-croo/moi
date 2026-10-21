@@ -10,10 +10,10 @@ test("private pages and API deny unauthenticated access; production blocks demo"
   const privatePage = await request.get("/fr/dashboard", { maxRedirects: 0 });
   expect(privatePage.status()).toBe(307);
   expect(privatePage.headers().location).toBe("/fr");
-  expect((await request.get("/api/workspace")).status()).toBe(401);
+  expect((await request.get("/api/vault")).status()).toBe(401);
   expect(
     (
-      await request.post("/api/workspace", {
+      await request.post("/api/personal", {
         headers: { Origin: "http://127.0.0.1:3000" },
         data: {
           type: "weight",
@@ -24,7 +24,7 @@ test("private pages and API deny unauthenticated access; production blocks demo"
   ).toBe(401);
   expect(
     (
-      await request.post("/api/workspace", {
+      await request.post("/api/personal", {
         headers: { Origin: "https://attacker.example" },
         data: {},
       })
@@ -169,6 +169,7 @@ test("desktop and mobile layouts render without overflow or external calls", asy
     .getByRole("navigation")
     .getByRole("button", { name: "Mon journal" })
     .click();
+  await page.getByRole("button", { name: "Écrire aujourd’hui", exact: true }).click();
   await expect(page.getByLabel("Titre de la page")).toBeVisible();
   expect(external).toEqual([]);
 });
