@@ -19,11 +19,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .primary:hover { box-shadow:0 5px 18px #1d1d1f12; }
 .secondary { background:#f0eff2; border-color:transparent; color:var(--ink); }
 .text-button,.hero-journal { color:var(--accent); }
-.brand { font:600 25px var(--sans); letter-spacing:-1.25px; gap:10px; }
-.brand-symbol { background:var(--accent-soft); color:var(--accent); border-radius:11px; width:35px;height:35px; }
-.brand-dot { color:var(--accent); }
-.brand-name { display:block; line-height:1; }
-.brand-name small { display:block; font-size:9px; font-weight:500; letter-spacing:.055em; color:var(--muted); margin-top:7px; }
+.brand { display:inline-flex; max-width:100%; line-height:0; }
+.brand-logo { display:block; width:180px; max-width:100%; height:auto; }
+.app-footer .brand-logo { width:112px; }
+@media(max-width:1000px) { .sidebar .brand-logo { width:155px; } }
 .sidebar { background:#fff; border-color:var(--line); }
 .sidebar nav button,.sidebar-setting { color:#68636b; border-radius:10px; font-size:12px; }
 .sidebar nav button.active { background:var(--accent-soft); color:var(--accent); }

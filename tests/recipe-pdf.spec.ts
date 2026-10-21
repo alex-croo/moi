@@ -1,11 +1,23 @@
 import { test, expect } from "@playwright/test";
-import { PDFDocument, PDFName, PDFDict, PDFArray } from "pdf-lib";
+import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream } from "pdf-lib";
 import { readFile } from "node:fs/promises";
 import { buildRecipePdf } from "../src/lib/recipe-pdf";
 import { demoRecipes, demoIngredients } from "../src/lib/demo-recipes";
 import { defaultUnits } from "../src/lib/units";
 
 const loadFont = (path: string) => readFile(`public${path}`);
+
+function expectTransparentBrand(pdf: PDFDocument) {
+  expect(pdf.getCreator()).toBe("Tred’meal — by Croo.Studio");
+  for (const page of pdf.getPages()) {
+    const images = page.node.Resources()!.lookup(PDFName.of("XObject"), PDFDict);
+    const logo = images.entries().map(([, ref]) => pdf.context.lookup(ref))
+      .filter((image): image is PDFRawStream => image instanceof PDFRawStream)
+      .find((image) => image.dict.get(PDFName.of("Width"))?.toString() === "1903");
+    expect(logo, "Every page contains the approved full logo").toBeTruthy();
+    expect(logo!.dict.has(PDFName.of("SMask")), "Transparent logo stays transparent in PDF").toBe(true);
+  }
+}
 
 test("recipe book keeps separate Letter cards and rejects unavailable private images", async () => {
   const recipes = [
@@ -23,6 +35,7 @@ test("recipe book keeps separate Letter cards and rejects unavailable private im
     loadFont,
   );
   const pdf = await PDFDocument.load(bytes);
+  expectTransparentBrand(pdf);
   expect(pdf.getPageCount()).toBe(4);
   expect(pdf.getPages().map((p) => p.getSize())).toEqual(
     Array(4).fill({ width: 612, height: 792 }),
@@ -88,6 +101,7 @@ test("individual, selected and weekly recipe PDFs download from their own entry 
   file = await downloading;
   expect(file.suggestedFilename()).toBe("tredmeal-demo-beef-fr.pdf");
   const single = await PDFDocument.load(await readFile((await file.path())!));
+  expectTransparentBrand(single);
   expect(single.getTitle()).toBe("Bœuf et oignons");
   expect(single.getPageCount()).toBe(2);
   await page.getByRole("button", { name: /Fermer/ }).click();
@@ -112,4 +126,8 @@ test("individual, selected and weekly recipe PDFs download from their own entry 
       await PDFDocument.load(await readFile((await file.path())!))
     ).getPageCount(),
   ).toBe(2);
+  downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Exporter en PDF", exact: true }).click();
+  file = await downloading;
+  expectTransparentBrand(await PDFDocument.load(await readFile((await file.path())!)));
 });

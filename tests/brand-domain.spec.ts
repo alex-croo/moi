@@ -30,9 +30,18 @@ test("the new domain and explicit legacy alias keep separate same-origin boundar
 test("public and private layouts present Tred’meal without sidebar overflow", async ({ page }) => {
   await page.goto("/fr");
   await expect(page).toHaveTitle("Tred’meal — Un jour à la fois");
-  await expect(page.locator(".brand-name")).toContainText("Tred’meal");
+  await expect(page.getByRole("img", { name: "Tred’meal — by Croo.Studio" })).toBeVisible();
   await page.goto("/fr/demo");
-  await expect(page.locator(".brand-name")).toContainText("Tred’meal");
-  const width = await page.locator(".brand-name").evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
-  expect(width.scroll).toBeLessThanOrEqual(width.client);
+  const logo = page.locator(".sidebar .brand-logo");
+  for (const width of [1440, 900]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect(logo).toBeVisible();
+    const bounds = await logo.evaluate((el: HTMLImageElement) => ({
+      loaded: el.complete && el.naturalWidth > 0,
+      right: el.getBoundingClientRect().right,
+      sidebarRight: el.closest(".sidebar")!.getBoundingClientRect().right,
+    }));
+    expect(bounds.loaded).toBe(true);
+    expect(bounds.right).toBeLessThan(bounds.sidebarRight);
+  }
 });

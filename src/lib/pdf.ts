@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { MenuPlan } from "./types";
 import { tr, type Locale } from "./locale";
 import { mealTimes, mealLabel } from "./planner";
+import { pdfBrand } from "./pdf-brand";
 
 export async function exportMenu(
   plan: MenuPlan,
@@ -9,6 +10,7 @@ export async function exportMenu(
   demo: boolean,
 ) {
   const pdf = await PDFDocument.create();
+  const drawBrand = await pdfBrand(pdf);
   const sans = await pdf.embedFont(StandardFonts.Helvetica);
   const serif = await pdf.embedFont(StandardFonts.TimesRoman);
   const green = rgb(0.12, 0.26, 0.21);
@@ -42,13 +44,7 @@ export async function exportMenu(
       height: 792,
       color: rgb(0.98, 0.97, 0.94),
     });
-    page.drawText("Tred’meal", {
-      x: 44,
-      y: 734,
-      size: 28,
-      font: serif,
-      color: green,
-    });
+    drawBrand(page, 44, 724, 196);
     page.drawText(tr(locale, "UN JOUR À LA FOIS", "ONE DAY AT A TIME"), {
       x: 392,
       y: 741,

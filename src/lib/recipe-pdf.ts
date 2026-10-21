@@ -12,6 +12,7 @@ import {
 } from "pdf-lib";
 import type { Ingredient, Recipe, UnitPreferences } from "./types";
 import type { Locale } from "./locale";
+import { pdfBrand, loadPublicAsset } from "./pdf-brand";
 import {
   instructionText,
   quantityLabel,
@@ -28,20 +29,17 @@ export async function buildRecipePdf(
   units: UnitPreferences,
   locale: Locale,
   loadImage: RecipeImageLoader,
-  loadFont: RecipeImageLoader = async (path) => {
-    const response = await fetch(path);
-    if (!response.ok) throw new Error("font_unavailable");
-    return new Uint8Array(await response.arrayBuffer());
-  },
+  loadAsset: RecipeImageLoader = loadPublicAsset,
 ) {
   if (!recipes.length) throw new Error("empty_selection");
   const pdf = await PDFDocument.create();
+  const drawBrand = await pdfBrand(pdf, loadAsset);
   // Embed the reference card's typefaces: relying on PDF viewer substitutions
   // changes both the visual weight and the line breaks between devices.
   pdf.registerFontkit(fontkit);
   const [sans, bold, serif] = await Promise.all(
     ["DejaVuSans", "DejaVuSans-Bold", "DejaVuSerif-Bold"].map(async (name) =>
-      pdf.embedFont(await loadFont(`/fonts/${name}.ttf`), { subset: true }),
+      pdf.embedFont(await loadAsset(`/fonts/${name}.ttf`), { subset: true }),
     ),
   );
   const green = rgb(0.18, 0.39, 0.3),
@@ -206,7 +204,7 @@ export async function buildRecipePdf(
     const newPage = () => {
       const page = pdf.addPage([612, 792]);
       pages.push(page);
-      text(page, "Tred’meal", 30, 756, 14, serif, green);
+      drawBrand(page, 30, 751, 132);
       const label = t(
         `CUISINER À LA MAISON / ${recipe.servings} PORTIONS`,
         `COOK AT HOME / ${recipe.servings} SERVINGS`,
@@ -607,7 +605,6 @@ export async function buildRecipePdf(
         : recipes[0].titleEn
       : t("Mon livre de recettes", "My recipe book"),
   );
-  pdf.setCreator("Tred’meal");
   return pdf.save();
 }
 

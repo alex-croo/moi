@@ -1,14 +1,8 @@
-import { Sprout } from "lucide-react";
 export function Brand() {
   return (
     <span className="brand">
-      <span className="brand-symbol">
-        <Sprout size={24} strokeWidth={1.5} />
-      </span>
-      <span className="brand-name">
-        Tred<span className="brand-dot">’</span>meal
-        <small>by Croo.Studio</small>
-      </span>
+      <img className="brand-logo" src="/brand/tredmeal/logo.png"
+        alt="Tred’meal — by Croo.Studio" width={1903} height={442} />
     </span>
   );
 }
