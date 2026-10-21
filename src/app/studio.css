@@ -516,3 +516,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   .journal-meals h2 { font-size:13px;gap:6px; }
   .pending-order>div { flex-basis:100%; }
 }
+
+.pending-order-items small { display:block;font-size:10px;line-height:1.5;margin-top:3px; }
+.pending-order-items li>span:first-child { min-width:0;overflow-wrap:anywhere; }
+.pending-order-items li>span:last-child { text-align:right; }

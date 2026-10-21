@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Truck } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type { Purchase, ShoppingWorkspace } from "@/lib/shopping-types";
-import { shoppingState, type ShoppingMutation } from "@/lib/shopping";
+import { shoppingState, purchaseLineKey, type ShoppingMutation } from "@/lib/shopping";
 import { localToday, quantityLabel } from "@/lib/units";
 import { PurchaseEditor } from "./purchase-editor";
 
@@ -41,15 +41,16 @@ export function PendingOrders({ data, locale, onSave, showEmpty = false }: {
       : t("Aucune commande en attente. Vos prochains achats en ligne apparaîtront ici jusqu’à leur réception.", "No pending orders. Your next online purchases will appear here until you receive them.")}</p>
     {pending.map(order => <div className="pending-order" key={order.id}>
       <div><strong>{order.grocer || t("Commande en ligne", "Online order")}</strong>
-        <small>{order.fulfillment === "delivery" ? t("Livraison", "Delivery") : t("Cueillette", "Pickup")} · <time dateTime={order.expectedDate}>{dateLabel(order.expectedDate)}</time> · {order.lines.length} {t("articles", "items")}</small>
+        <small>{order.fulfillment === "delivery" ? t("Livraison", "Delivery") : t("Cueillette", "Pickup")} · <time dateTime={order.expectedDate}>{dateLabel(order.expectedDate)}</time>{order.deliveryWindow && ` · ${order.deliveryWindow.start}–${order.deliveryWindow.end}`} · {order.lines.length} {t("articles", "items")}</small>
         {order.expectedDate < localToday() && <small className="pending-order-overdue">{t("Date prévue dépassée · réception à confirmer", "Expected date passed · receipt still to confirm")}</small>}
       </div>
       <button className="secondary" disabled={busy} onClick={() => { setError(""); setStatus(""); setReceiving(order); }}>{t("J’ai reçu ma commande", "I received my order")}</button>
       <details><summary>{t("Détails et date", "Details and date")}</summary>
-        <ul className="pending-order-items">{order.lines.map(line => <li key={line.ingredientId}>
-          <span>{data.ingredients.find(i => i.id === line.ingredientId)?.[locale === "fr" ? "name" : "nameEn"] || line.ingredientId}</span>
-          <span>{quantityLabel(line.quantity, data.preferences, locale)}</span>
+        <ul className="pending-order-items">{order.lines.map(line => <li key={purchaseLineKey(line)}>
+          <span>{line.name || data.ingredients.find(i => i.id === line.ingredientId)?.[locale === "fr" ? "name" : "nameEn"] || line.ingredientId}{line.purchaseLabel && <small>{line.purchaseLabel}</small>}</span>
+          <span>{quantityLabel(line.quantity, data.preferences, locale)}{line.priceCents !== undefined && <small>{new Intl.NumberFormat(locale === "fr" ? "fr-CA" : "en-CA", { style: "currency", currency: "CAD" }).format(line.priceCents / 100)}</small>}</span>
         </li>)}</ul>
+        {order.lines.every(line => line.priceCents !== undefined) && <p className="shopping-note">{t("Sous-total des articles : ", "Items subtotal: ")}{new Intl.NumberFormat(locale === "fr" ? "fr-CA" : "en-CA", { style: "currency", currency: "CAD" }).format(order.lines.reduce((sum, line) => sum + line.priceCents!, 0) / 100)} · {t("Taxes et frais non inclus", "Taxes and fees not included")}</p>}
         <form onSubmit={e => { e.preventDefault(); const expectedDate = new FormData(e.currentTarget).get("expectedDate") as string; void save({ action: "reschedule", id: order.id, expectedDate }, t("La date prévue est mise à jour.", "The expected date is updated.")); }}>
           <label>{t("Nouvelle date", "New date")}<input type="date" name="expectedDate" key={order.expectedDate} defaultValue={order.expectedDate} required/></label>
           <button className="text-button" disabled={busy}>{t("Reporter", "Reschedule")}</button>

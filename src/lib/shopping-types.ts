@@ -6,11 +6,17 @@ export type Grocer = {
   id: string; name: string; url: string; fulfillment: "delivery" | "pickup"; favorite: boolean;
   categories?: GrocerCategory[];
 };
-export type PurchaseLine = { ingredientId: string; quantity: Quantity; location: PantryLocation };
+export type PurchaseLine = {
+  id?: string; ingredientId: string | null; name?: string;
+  quantity: Quantity; location: PantryLocation;
+  purchaseLabel?: string; priceCents?: number;
+};
+export type DeliveryWindow = { start: string; end: string; timeZone: "America/Toronto" };
 export type Purchase = {
   id: string; mode: "store" | "online"; grocer: string; expectedDate: string;
   fulfillment: "delivery" | "pickup"; status: "pending" | "received" | "cancelled";
   lines: PurchaseLine[]; received?: PurchaseLine[]; createdAt: string; receivedAt?: string;
+  deliveryWindow?: DeliveryWindow;
 };
 export type CookedMeal = {
   id: string; meal: MealSlot; portions: number; at: string; undone?: boolean;

@@ -7,8 +7,10 @@ import { grocerCategories, normalizePostalCode, postalCodePattern } from "./groc
 const id = z.string().regex(/^[a-z0-9-]{1,100}$/);
 const quantity = z.object({ kind: z.enum(["mass", "volume", "spoon", "count"]), value: z.number().finite().min(0).max(1000000), label: z.string().max(80).optional(), labelEn: z.string().max(80).optional() }).strict();
 const location = z.enum(["cupboard", "fridge", "freezer", "spices"]);
-const line = z.object({ ingredientId: id, quantity, location }).strict();
-const lines = z.array(line).min(1).max(300).refine(v => new Set(v.map(x => x.ingredientId)).size === v.length);
+export const purchaseLineKey = (line: PurchaseLine) => line.id || line.ingredientId!;
+const line = z.object({ id: z.uuid().optional(), ingredientId: id.nullable(), name: z.string().trim().min(1).max(160).optional(), quantity, location, purchaseLabel: z.string().trim().max(160).optional(), priceCents: z.number().int().min(0).max(100000000).optional() }).strict().refine(l => l.ingredientId !== null || !!l.id && !!l.name);
+const lines = z.array(line).min(1).max(300).refine(v => new Set(v.map(purchaseLineKey)).size === v.length);
+const deliveryWindow = z.object({ start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), timeZone: z.literal("America/Toronto") }).strict().refine(v => v.start < v.end);
 const range = z.object({ start: z.iso.date(), end: z.iso.date() }).strict().refine(v => v.start <= v.end && v.end <= addDays(v.start, 90));
 const meal = z.object({ date: z.iso.date(), slot: z.enum(["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner", "evening_snack"]), recipeId: id }).strict();
 export const shoppingMutation = z.discriminatedUnion("action", [
@@ -19,7 +21,7 @@ export const shoppingMutation = z.discriminatedUnion("action", [
     const categories = v.flatMap(g => g.categories || []);
     return new Set(v.map(x => x.id)).size === v.length && v.filter(x => x.favorite).length <= 1 && new Set(categories).size === categories.length;
   }) }).strict(),
-  z.object({ action: z.literal("order"), id: z.uuid(), mode: z.enum(["store", "online"]), grocer: z.string().trim().max(100), expectedDate: z.iso.date(), fulfillment: z.enum(["delivery", "pickup"]), lines }).strict(),
+  z.object({ action: z.literal("order"), id: z.uuid(), mode: z.enum(["store", "online"]), grocer: z.string().trim().max(100), expectedDate: z.iso.date(), fulfillment: z.enum(["delivery", "pickup"]), lines, deliveryWindow: deliveryWindow.optional() }).strict(),
   z.object({ action: z.literal("receive"), id: z.uuid(), lines }).strict(),
   z.object({ action: z.literal("cancel"), id: z.uuid() }).strict(),
   z.object({ action: z.literal("reschedule"), id: z.uuid(), expectedDate: z.iso.date() }).strict(),
@@ -151,10 +153,10 @@ export function previewCooking(data: ShoppingPersonal, catalog: ShoppingCatalog,
 }
 function addStock(pantry: PantryItem[], line: PurchaseLine, catalog: ShoppingCatalog) {
   if (line.quantity.value <= 0) return;
-  const existing = pantry.find(p => p.ingredientId === line.ingredientId && p.location === line.location && p.quantity && compatible(p.quantity, line.quantity));
+  const existing = pantry.find(p => p.ingredientId === line.ingredientId && (line.ingredientId !== null || p.name === line.name) && p.location === line.location && p.quantity && compatible(p.quantity, line.quantity));
   if (existing?.quantity) {
     existing.quantity.value = clean((existing.inStock ? existing.quantity.value : 0) + line.quantity.value); existing.inStock = true;
-  } else pantry.push({ id: crypto.randomUUID(), ingredientId: line.ingredientId, name: catalog.ingredients.find(i => i.id === line.ingredientId)?.name || line.ingredientId, location: line.location, quantity: { ...line.quantity }, inStock: true, note: "" });
+  } else pantry.push({ id: crypto.randomUUID(), ingredientId: line.ingredientId, name: catalog.ingredients.find(i => i.id === line.ingredientId)?.name || line.name || line.ingredientId!, location: line.location, quantity: { ...line.quantity }, inStock: true, note: line.purchaseLabel || "" });
 }
 export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value: object, catalog: ShoppingCatalog): T {
   const input = shoppingMutation.parse(value), state = structuredClone(shoppingState(data));
@@ -171,10 +173,10 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
     case "grocers": state.grocers = input.grocers; break;
     case "order": {
       if (state.orders.some(o => o.id === input.id)) return data;
-      if (input.lines.some(l => !catalog.ingredients.some(i => i.id === l.ingredientId)) || !input.lines.some(l => l.quantity.value > 0)) throw Error("invalid_order");
+      if (input.lines.some(l => l.ingredientId !== null && !catalog.ingredients.some(i => i.id === l.ingredientId)) || !input.lines.some(l => l.quantity.value > 0)) throw Error("invalid_order");
       const purchase = { ...input, status: input.mode === "store" ? "received" as const : "pending" as const, createdAt: now };
       state.orders.unshift({ id: purchase.id, mode: purchase.mode, grocer: purchase.grocer, expectedDate: purchase.expectedDate, fulfillment: purchase.fulfillment, lines: purchase.lines, status: purchase.status, createdAt: now,
-        ...(input.mode === "store" ? { received: input.lines, receivedAt: now } : {}) });
+        ...(input.deliveryWindow ? { deliveryWindow: input.deliveryWindow } : {}), ...(input.mode === "store" ? { received: input.lines, receivedAt: now } : {}) });
       if (input.mode === "store") for (const line of input.lines) addStock(next.pantry, line, catalog);
       for (const key of Object.keys(state.selections)) state.selections[key] = state.selections[key].filter(id => !input.lines.some(l => l.ingredientId === id));
       break;
@@ -183,9 +185,11 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
       const order = state.orders.find(o => o.id === input.id);
       if (!order || order.status === "cancelled") throw Error("order_unavailable");
       if (order.status === "received") return data;
-      if (input.lines.length !== order.lines.length || input.lines.some(l => !order.lines.some(original => original.ingredientId === l.ingredientId && compatible(original.quantity, l.quantity)))) throw Error("invalid_receipt");
-      for (const line of input.lines) addStock(next.pantry, line, catalog);
-      order.status = "received"; order.received = input.lines; order.receivedAt = now;
+      if (input.lines.length !== order.lines.length || input.lines.some(l => !order.lines.some(original => purchaseLineKey(original) === purchaseLineKey(l) && original.ingredientId === l.ingredientId && compatible(original.quantity, l.quantity)))) throw Error("invalid_receipt");
+      // Product identities and prices come from the order; receipt edits only amount and storage.
+      const received = input.lines.map(l => ({ ...order.lines.find(original => purchaseLineKey(original) === purchaseLineKey(l))!, quantity: l.quantity, location: l.location }));
+      for (const line of received) addStock(next.pantry, line, catalog);
+      order.status = "received"; order.received = received; order.receivedAt = now;
       break;
     }
     case "cancel": case "reschedule": {
