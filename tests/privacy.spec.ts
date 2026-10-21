@@ -432,6 +432,7 @@ test("standard data is isolated, activation migrates all data atomically and rej
       ).rows[0].v;
     const personal = {
       journal: [{ text: "All existing private data" }],
+      shopping: { grocers: [{ name: "Private grocer" }], orders: [{ id: "private-order", status: "pending" }], cooked: [{ id: "private-cooking" }], selections: {} },
       weights: [{ value: 80 }],
       plans: [],
       slots: [],
@@ -458,6 +459,8 @@ test("standard data is isolated, activation migrates all data atomically and rej
       rpc("save_standard_workspace", [0, JSON.stringify(personal)]),
     ).rejects.toThrow(/Workspace changed/);
     const sealed = await createVault(b, pass, personal);
+    expect(JSON.stringify(sealed.envelope)).not.toContain("Private grocer");
+    expect(await decryptVault(sealed.key, sealed.envelope, b)).toEqual(personal);
     await expect(
       rpc("activate_personal_vault", [0, JSON.stringify(sealed.envelope)]),
     ).rejects.toThrow(/Workspace changed/);

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { dailyCalories, mealTimes } from "../src/lib/planner";
 import { weeklyGroceries } from "../src/lib/groceries";
 import { pantryFactor, pantryForIngredient } from "../src/lib/pantry";
-import { defaultUnits } from "../src/lib/units";
+import { defaultUnits, addDays } from "../src/lib/units";
 import { demoIngredients, demoRecipes } from "../src/lib/demo-recipes";
 import { mutationSchema } from "../src/lib/validation";
 
@@ -139,14 +139,12 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
     .locator(".grocery-item")
     .filter({ hasText: "Bœuf haché extra maigre" });
   await expect(beef).toContainText(
-    "Dans vos réserves · Congélateur · 500 g · Deux portions",
+    "500 g en réserve",
   );
   await expect(beef.getByRole("checkbox")).not.toBeChecked();
   await expect(beef.locator(".grocery-quantity")).toHaveText(/1\s?000 g/);
   await beef.getByRole("checkbox").check();
-  await expect(page.getByRole("status")).toContainText(
-    "enregistrée pour cette semaine",
-  );
+  await expect(beef.getByRole("checkbox")).toBeChecked();
   await nav.getByRole("button", { name: "Mes menus", exact: true }).click();
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
@@ -158,29 +156,19 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
     })
     .check();
   await expect(beef.getByRole("checkbox")).toBeChecked();
-  await page
-    .getByRole("button", { name: "Semaine suivante", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Choisir mes repas", exact: true })
-    .click();
+  const initialStart = await page.getByLabel("Début des courses").inputValue();
+  const selectPeriod = async (start: string) => {
+    await page.getByLabel("Début des courses").fill(start);
+    await page.getByLabel("Fin des courses").fill(addDays(start, 6));
+    await page.getByRole("button", { name: "Afficher", exact: true }).click();
+  };
+  await selectPeriod(addDays(initialStart, 7));
+  await page.getByRole("button", { name: "Choisir mes repas", exact: true }).click();
   await page.locator(".empty-slot").first().click();
-  await page
-    .getByRole("button", { name: "Choisir cette recette", exact: true })
-    .click();
-  await nav
-    .getByRole("button", { name: "Liste d’épicerie", exact: true })
-    .click();
-  await page
-    .getByRole("checkbox", {
-      name: "Afficher les aliments déjà prêts",
-      exact: true,
-    })
-    .check();
+  await page.getByRole("button", { name: "Choisir cette recette", exact: true }).click();
+  await nav.getByRole("button", { name: "Liste d’épicerie", exact: true }).click();
   await expect(beef.getByRole("checkbox")).not.toBeChecked();
-  await page
-    .getByRole("button", { name: "Semaine précédente", exact: true })
-    .click();
+  await selectPeriod(initialStart);
   await expect(beef.getByRole("checkbox")).toBeChecked();
   await page.getByRole("button", { name: "Préférences", exact: true }).click();
   await page

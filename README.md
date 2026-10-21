@@ -20,6 +20,46 @@ pour **iamable.space**, workspace Vercel **moi**.
 - Migration PostgreSQL : tables privées par utilisateur, RLS et liste d’accès explicite.
 - Aucun traceur, police distante, image distante ou secret dans le navigateur.
 
+## Épiciers préférés et export Instacart
+
+Dans **Préférences**, chaque utilisateur peut enregistrer son code postal canadien,
+ses commerces et les catégories achetées chez chacun. Les catégories précises
+(bœuf, porc, volaille) passent avant la catégorie viandes; l’épicier favori sert
+de choix par défaut. Un commerce local peut être enregistré sans être présent
+sur Instacart. Les préférences suivent la sauvegarde privée existante, y compris
+le coffre chiffré; aucune nouvelle table n’est nécessaire.
+
+Dans **Liste d’épicerie → Acheter avec Instacart**, l’utilisateur révise les
+articles manquants (ou les articles cochés), puis exporte toute la liste ou le
+groupe associé à un fournisseur. Seuls les noms et les quantités sont envoyés
+à la création du lien. Les quantités restent en grammes et millilitres canoniques,
+indépendamment des unités affichées. Un conditionnement inconnu reste dans le
+texte à vérifier, sans être assimilé à un produit entier. Les liens restent en
+mémoire pendant l’ouverture de la fenêtre et sont réutilisés si la liste ne change pas.
+
+Le magasin est choisi **sur Instacart** : l’API standard ne permet pas d’imposer
+le fournisseur enregistré. Le client y vérifie les produits, formats, quantités,
+prix et disponibilités, puis paie. La création du lien ne crée aucune commande
+attendue et ne modifie pas les réserves. Après paiement, **Commander en ligne**
+permet d’enregistrer les articles confirmés; la réception reste manuelle.
+
+Configuration serveur nécessaire : `INSTACART_API_KEY` et
+`INSTACART_ENVIRONMENT=development|production` dans l’environnement privé du serveur.
+Obtenir la clé auprès d’Instacart; ne jamais la préfixer `NEXT_PUBLIC_`.
+Le mode production Vercel refuse une configuration de développement. Sans clé,
+les préférences et la copie de liste fonctionnent; l’export reste indisponible.
+La recherche des enseignes transmet le code postal seulement à la demande explicite.
+Les routes exigent une session autorisée; les écritures exigent l’origine de confiance.
+
+Cette version ne compare pas les prix et ne récupère pas les circulaires.
+La connexion réelle, la couverture par code postal et un achat doivent encore
+être validés avec un compte développeur Instacart autorisé. Les essais automatisés
+du fournisseur utilisent des réponses simulées et ne prouvent pas un achat réel.
+
+Références : [listes Instacart](https://docs.instacart.com/developer_platform_api/api/products/create_shopping_list_page),
+[enseignes canadiennes](https://docs.instacart.com/developer_platform_api/api/retailers/get_nearby_retailers),
+[choix du magasin et limites](https://docs.instacart.com/developer_platform_api/faq).
+
 Le déploiement privé utilise Vercel, Supabase et Google OAuth avec une liste d'accès explicite.
 La synchronisation automatique Google Drive n'est pas activée; les recettes sont publiées par Codex.
 L'IA utilise Vercel AI Gateway avec l'identité OIDC du projet et requiert son activation dans le workspace.

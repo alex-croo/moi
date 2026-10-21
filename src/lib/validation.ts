@@ -10,7 +10,9 @@ export const pantrySchema = z.object({
   quantity: z
     .object({
       kind: z.enum(["mass", "volume", "spoon", "count"]),
-      value: z.number().positive().max(1000000),
+      value: z.number().min(0).max(1000000),
+      label: z.string().max(80).optional(),
+      labelEn: z.string().max(80).optional(),
     })
     .nullable(),
   note: z.string().trim().max(160),

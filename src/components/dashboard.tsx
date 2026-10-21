@@ -37,6 +37,10 @@ import type { PrivateActions, JournalPrompt } from "@/lib/private-types";
 import { JournalEditor } from "./journal-editor";
 import { UnitSettings } from "./unit-settings";
 import { GroceryList } from "./groceries";
+import { GrocerSettings } from "./grocer-settings";
+import { CookMeal } from "./cook-meal";
+import { applyShoppingMutation, shoppingState, type ShoppingMutation } from "@/lib/shopping";
+import type { ShoppingWorkspace as WorkspaceData } from "@/lib/shopping-types";
 import { Pantry } from "./pantry";
 import { bodyWeight, monday, addDays } from "@/lib/units";
 import type {
@@ -50,7 +54,7 @@ import type {
 import { Brand } from "./brand";
 import { tr, type Locale } from "@/lib/locale";
 import { documentSchema } from "@/lib/validation";
-import type { WorkspaceData, MenuPlan } from "@/lib/types";
+import type { MenuPlan } from "@/lib/types";
 
 type View =
   | "overview"
@@ -91,6 +95,7 @@ export function Dashboard({
   const [journalNavigation, setJournalNavigation] = useState<{ id: number; date?: string }>({ id: 0 });
   const [locale, setLocale] = useState(initialLocale);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [cooking, setCooking] = useState<MealSlot | null>(null);
   const [view, setView] = useState<View>("overview");
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [view]);
   const [selectedWeek, setSelectedWeek] = useState(() => monday(today()));
@@ -281,6 +286,7 @@ export function Dashboard({
       | "journal"
       | "groceryCheck"
       | "pantry"
+      | "shopping"
       | "pantryDelete",
     value: object,
   ): Promise<WorkspaceData> {
@@ -289,6 +295,7 @@ export function Dashboard({
       next = await privateActions.mutate(type, value);
     } else if (demo) {
       next = { ...data };
+      if (type === "shopping") next = applyShoppingMutation(data, value, data);
       if (type === "groceryCheck") {
         const check = value as GroceryCheck;
         next.groceryChecks = [
@@ -357,6 +364,9 @@ export function Dashboard({
         units={data.preferences}
         locale={locale}
         onOpen={setSelectedRecipe}
+        cooked={shoppingState(data).cooked}
+        onCook={setCooking}
+        onUndoCook={async id => { await mutate("shopping", { action: "undoCook", id }); }}
         onSave={async (value) => {
           await mutate("slot", value);
         }}
@@ -863,20 +873,13 @@ export function Dashboard({
           )}
           {view === "groceries" && (
             <GroceryList
-              recipes={data.recipes}
-              ingredients={data.ingredients}
-              slots={data.slots}
-              units={data.preferences}
+              data={data}
               locale={locale}
               week={selectedWeek}
-              onWeekChange={setSelectedWeek}
-              onPlan={() => go("menus")}
+              onPlan={() => { setSelectedWeek(monday(shoppingState(data).range?.start || selectedWeek)); go("menus"); }}
               onOpen={setSelectedRecipe}
-              checks={data.groceryChecks}
-              pantry={data.pantry}
-              onCheck={async (value) => {
-                await mutate("groceryCheck", value);
-              }}
+              onSave={async (value: ShoppingMutation) => { await mutate("shopping", value); }}
+              onSettings={() => go("settings")}
               onPantry={() => go("pantry")}
             />
           )}
@@ -1071,6 +1074,7 @@ export function Dashboard({
                 <h1>{t("Mes préférences.", "My preferences.")}</h1>
               </div>
               {privateActions?.privacyPanel(locale)}
+              <GrocerSettings grocers={shoppingState(data).grocers} postalCode={shoppingState(data).postalCode} locale={locale} onSave={async grocers => { await mutate("shopping", { action: "grocers", grocers }); }} onPostalCode={async postalCode => { await mutate("shopping", { action: "postalCode", postalCode }); }} />
               <div className="settings-card card">
                 <div>
                   <div>
@@ -1154,6 +1158,7 @@ export function Dashboard({
           </button>
         </div>
       )}
+      {cooking && <CookMeal meal={cooking} data={data} locale={locale} onClose={() => setCooking(null)} onSave={async m => { await mutate("shopping", m); }} />}
       {selectedRecipe && (
         <RecipeSheet
           key={selectedRecipe.id}

@@ -127,7 +127,7 @@ export function PrivateWorkspace({
               next =
                 type === "program"
                   ? { ...current.data, program: value as PersonalData["program"] }
-                  : applyPrivateMutation(current.data, type, mutation);
+                  : applyPrivateMutation(current.data, type, mutation, loaded?.catalog);
               const envelope = await encryptVault(
                 current.key,
                 current.envelope,

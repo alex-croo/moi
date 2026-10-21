@@ -1,0 +1,28 @@
+import type { Ingredient, MealSlot, PantryItem, PantryLocation, Quantity, Recipe, WorkspaceData } from "./types";
+import type { Aisle } from "./grocery-aisles";
+
+export type GrocerCategory = Aisle | "beef" | "pork" | "poultry";
+export type Grocer = {
+  id: string; name: string; url: string; fulfillment: "delivery" | "pickup"; favorite: boolean;
+  categories?: GrocerCategory[];
+};
+export type PurchaseLine = { ingredientId: string; quantity: Quantity; location: PantryLocation };
+export type Purchase = {
+  id: string; mode: "store" | "online"; grocer: string; expectedDate: string;
+  fulfillment: "delivery" | "pickup"; status: "pending" | "received" | "cancelled";
+  lines: PurchaseLine[]; received?: PurchaseLine[]; createdAt: string; receivedAt?: string;
+};
+export type CookedMeal = {
+  id: string; meal: MealSlot; portions: number; at: string; undone?: boolean;
+  deductions: { item: PantryItem; amount: number }[];
+  missing: { ingredientId: string; quantity: Quantity }[];
+};
+export type ShoppingState = {
+  grocers: Grocer[]; orders: Purchase[]; cooked: CookedMeal[];
+  range?: { start: string; end: string };
+  selections: Record<string, string[]>;
+  postalCode?: string;
+};
+export type ShoppingWorkspace = WorkspaceData & { shopping?: ShoppingState };
+export type ShoppingCatalog = { recipes: Recipe[]; ingredients: Ingredient[] };
+export type ShoppingPersonal = Pick<ShoppingWorkspace, "pantry" | "slots" | "groceryChecks" | "shopping">;

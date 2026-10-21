@@ -1,11 +1,18 @@
 import { mutationSchema } from "./validation";
 import type { PersonalData } from "./private-types";
 import { progressWithJournal } from "./program-journal";
+import { applyShoppingMutation, shoppingState } from "./shopping";
+import type { ShoppingCatalog } from "./shopping-types";
 export function applyPrivateMutation(
   current: PersonalData,
   type: string,
   value: object,
+  catalog?: ShoppingCatalog,
 ): PersonalData {
+  if (type === "shopping") {
+    if (!catalog) throw Error("catalog_required");
+    return applyShoppingMutation(current, value, catalog);
+  }
   const parsed = mutationSchema.parse({ type, data: value }),
     next = { ...current };
   switch (parsed.type) {
@@ -31,6 +38,7 @@ export function applyPrivateMutation(
       next.preferences = parsed.data;
       break;
     case "slot":
+      if (shoppingState(current).cooked.some(c => !c.undone && c.meal.date === parsed.data.date && c.meal.slot === parsed.data.slot)) throw Error("cooked_meal");
       next.slots = current.slots.filter(
         (x) => x.date !== parsed.data.date || x.slot !== parsed.data.slot,
       );

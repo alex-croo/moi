@@ -131,7 +131,7 @@ export function Pantry({
             editing.quantity.kind === kind &&
             amount === oldAmount
           ? editing.quantity
-          : { kind, value: Number(amount) * pantryFactor(kind, units) };
+          : { ...(editing.quantity?.kind === kind ? editing.quantity : {}), kind, value: Number(amount) * pantryFactor(kind, units) };
     const parsed = pantrySchema.safeParse({ ...editing, quantity });
     if (!parsed.success) {
       setError(

@@ -28,6 +28,7 @@ import {
   recipeNutrition,
 } from "@/lib/units";
 import { mealTimes, mealLabel, dailyCalories } from "@/lib/planner";
+import type { CookedMeal } from "@/lib/shopping-types";
 
 export function RecipeImage({
   recipe,
@@ -422,6 +423,9 @@ export function WeeklyPlanner({
   onSave,
   onOpen,
   full = false,
+  cooked = [],
+  onCook,
+  onUndoCook,
 }: {
   week: string;
   onWeekChange: (week: string) => void;
@@ -438,6 +442,9 @@ export function WeeklyPlanner({
   }) => Promise<void>;
   onOpen: (r: Recipe) => void;
   full?: boolean;
+  cooked?: CookedMeal[];
+  onCook?: (meal: MealSlot) => void;
+  onUndoCook?: (id: string) => Promise<void>;
 }) {
   const [pick, setPick] = useState<{
     date: string;
@@ -586,6 +593,7 @@ export function WeeklyPlanner({
                       ?.recipeId,
                 );
                 const macros = r && recipeNutrition(r, ingredients);
+                const prepared = cooked.find(c => !c.undone && c.meal.date === d && c.meal.slot === slot && c.meal.recipeId === r?.id);
                 const label = mealLabel(slot, locale);
                 const snack = slot.endsWith("snack");
                 return (
@@ -614,7 +622,7 @@ export function WeeklyPlanner({
                         </button>
                         <div className="slot-actions">
                           <button
-                            disabled={busy}
+                            disabled={busy || !!prepared}
                             onClick={() => {
                               setError("");
                               setPick({ date: d, slot });
@@ -623,13 +631,18 @@ export function WeeklyPlanner({
                             {t("Changer", "Change")}
                           </button>
                           <button
-                            disabled={busy}
+                            disabled={busy || !!prepared}
                             onClick={() => void choose(null, { date: d, slot })}
                             aria-label={`${t("Retirer", "Remove")} ${label} ${d}`}
                           >
                             <X size={13} />
                           </button>
                         </div>
+                        {onCook && <div className="cook-slot-action">{prepared ? <><span>{t("Cuisiné", "Cooked")} · {prepared.portions} {t("portions", "servings")}</span><button disabled={busy} onClick={async () => {
+                          if (!onUndoCook) return;
+                          setBusy(true); setError("");
+                          try { await onUndoCook(prepared.id); } catch { setError(t("L’annulation n’a pas été confirmée. Rechargez si votre espace a changé.", "Undo was not confirmed. Reload if your workspace changed.")); } finally { setBusy(false); }
+                        }}>{t("Annuler la préparation", "Undo cooking")}</button></> : <button disabled={busy} onClick={() => onCook({ date: d, slot, recipeId: r.id })}>{t("J’ai cuisiné", "I cooked this")}</button>}</div>}
                       </>
                     ) : (
                       <button

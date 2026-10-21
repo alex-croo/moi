@@ -29,6 +29,7 @@ const schema = z
             sourceLabel: text,
             sourceDescription: text,
             estimated: z.boolean(),
+            aisle: z.enum(["produce", "meat", "fish", "dairy", "bakery", "dry", "seasoning", "frozen", "other"]).optional(),
           })
           .strict(),
       )

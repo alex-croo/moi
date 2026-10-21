@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const next =
       input.type === "program"
         ? { ...current.standard, program: progress.parse(input.value) }
-        : applyPrivateMutation(current.standard, input.type, input.value);
+        : applyPrivateMutation(current.standard, input.type, input.value, current.catalog);
     const { data: revision, error: saveError } = await auth.db.rpc(
       "save_standard_workspace",
       { expected_revision: input.expectedRevision, personal: next },

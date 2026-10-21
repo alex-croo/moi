@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { weeklyGroceries } from "../src/lib/groceries";
-import { defaultUnits, quantityLabel } from "../src/lib/units";
+import { defaultUnits, quantityLabel, addDays } from "../src/lib/units";
 import { demoIngredients, demoRecipes } from "../src/lib/demo-recipes";
 import type { Recipe, RecipeIngredient } from "../src/lib/types";
 
@@ -210,27 +210,22 @@ test("sidebar grocery list follows planner weeks, meal edits, units and language
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();
   await expect(beef.locator(".grocery-quantity")).toHaveText("17,64 oz");
-  await page
-    .getByRole("button", { name: "Semaine suivante", exact: true })
-    .click();
+  const initialStart = await page.getByLabel("Début des courses").inputValue();
+  const selectPeriod = async (start: string) => {
+    await page.getByLabel("Début des courses").fill(start);
+    await page.getByLabel("Fin des courses").fill(addDays(start, 6));
+    await page.getByRole("button", { name: "Afficher", exact: true }).click();
+  };
+  await selectPeriod(addDays(initialStart, 7));
   await expect(page.locator(".grocery-item")).toHaveCount(0);
-  const selectedWeek = await page
-    .locator(".week-navigation strong")
-    .innerText();
-  await page
-    .getByRole("button", { name: "Voir les repas", exact: true })
-    .click();
-  await expect(page.locator(".week-navigation strong")).toHaveText(
-    selectedWeek,
-  );
+  await page.getByRole("button", { name: "Voir les repas", exact: true }).click();
   await expect(page.locator(".planned-recipe")).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Semaine précédente", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Semaine précédente", exact: true }).click();
   await page.getByRole("button", { name: /Retirer Déjeuner/ }).click();
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();
+  await selectPeriod(initialStart);
   await expect(beef.locator(".grocery-quantity")).toHaveText("8,82 oz");
   await page.getByRole("button", { name: "EN", exact: true }).click();
   await expect(

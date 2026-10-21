@@ -1,4 +1,4 @@
-import type { WorkspaceData } from "./types";
+import type { ShoppingWorkspace as WorkspaceData } from "./shopping-types";
 export type ProgramProgress = {
   completed: Record<string, string>;
   reflections: Record<string, string>;
