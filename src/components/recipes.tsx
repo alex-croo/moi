@@ -28,6 +28,8 @@ import {
   recipeNutrition,
 } from "@/lib/units";
 import { mealTimes, mealLabel, dailyCalories } from "@/lib/planner";
+import { MealAvailability } from "./meal-availability";
+import { mealKey, type MealAvailability as Availability } from "@/lib/shopping";
 import type { CookedMeal } from "@/lib/shopping-types";
 
 export function RecipeImage({
@@ -424,6 +426,7 @@ export function WeeklyPlanner({
   onOpen,
   full = false,
   cooked = [],
+  availability = {},
   onCook,
   onUndoCook,
 }: {
@@ -443,6 +446,7 @@ export function WeeklyPlanner({
   onOpen: (r: Recipe) => void;
   full?: boolean;
   cooked?: CookedMeal[];
+  availability?: Record<string, Availability>;
   onCook?: (meal: MealSlot) => void;
   onUndoCook?: (id: string) => Promise<void>;
 }) {
@@ -602,7 +606,7 @@ export function WeeklyPlanner({
                     key={slot}
                     data-meal={slot}
                   >
-                    <span className="eyebrow">{label}</span>
+                    <div className="planner-slot-heading"><span className="eyebrow">{label}</span>{r && !prepared && availability[mealKey({ date: d, slot, recipeId: r.id })] && <MealAvailability availability={availability[mealKey({ date: d, slot, recipeId: r.id })]} ingredients={ingredients} units={units} locale={locale}/>}</div>
                     {r ? (
                       <>
                         <button

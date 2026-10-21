@@ -40,8 +40,9 @@ import { GroceryList } from "./groceries";
 import { GrocerSettings } from "./grocer-settings";
 import { PendingOrders } from "./pending-orders";
 import { JournalMeals } from "./journal-meals";
+import { ThawReminders } from "./thaw-reminders";
 import { CookMeal } from "./cook-meal";
-import { applyShoppingMutation, shoppingState, type ShoppingMutation } from "@/lib/shopping";
+import { applyShoppingMutation, shoppingState, shoppingNeeds, type ShoppingMutation } from "@/lib/shopping";
 import type { ShoppingWorkspace as WorkspaceData } from "@/lib/shopping-types";
 import { Pantry } from "./pantry";
 import { bodyWeight, monday, addDays } from "@/lib/units";
@@ -367,6 +368,7 @@ export function Dashboard({
         locale={locale}
         onOpen={setSelectedRecipe}
         cooked={shoppingState(data).cooked}
+        availability={shoppingNeeds(data, data, selectedWeek, addDays(selectedWeek, 6)).availability}
         onCook={setCooking}
         onUndoCook={async id => { await mutate("shopping", { action: "undoCook", id }); }}
         onSave={async (value) => {
@@ -647,6 +649,7 @@ export function Dashboard({
           </div>
         </header>
         <main id="main-content" className="main-content">
+          <ThawReminders data={data} locale={locale} all={view === "pantry"} onSave={async m => { await mutate("shopping", m); }}/>
           {privateActions && view === "program" && (
             <DailyProgram
               locale={locale}
@@ -883,6 +886,7 @@ export function Dashboard({
               onSave={async (value: ShoppingMutation) => { await mutate("shopping", value); }}
               onSettings={() => go("settings")}
               onPantry={() => go("pantry")}
+              onPantrySave={async item => { await mutate("pantry", item); }}
             />
           )}
           {view === "pantry" && (

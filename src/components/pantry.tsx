@@ -1,6 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import { Archive, Check, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Archive, Check, Pencil, Plus, Search, Trash2, Snowflake } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type {
   Ingredient,
@@ -312,6 +312,8 @@ export function Pantry({
               />
             </label>
           </div>
+          <label className="shopping-checkbox"><input type="checkbox" checked={editing.location === "freezer"} disabled={busy} onChange={e => setEditing({ ...editing, location: e.target.checked ? "freezer" : "fridge" })}/>{t("Cet aliment est congelé", "This food is frozen")}</label>
+          {editing.location === "freezer" && <p className="shopping-note">{t("Un rappel de décongélation sera proposé pour les repas qui utilisent cet aliment.", "A thawing reminder will appear for meals using this food.")}</p>}
           {!editing.ingredientId && (
             <p className="grocery-explanation">
               {t(
@@ -417,7 +419,7 @@ export function Pantry({
                       className={item.inStock ? "" : "pantry-empty-item"}
                     >
                       <div className="pantry-item-copy">
-                        <h3>{pantryName(item, ingredients, locale)}</h3>
+                        <h3>{item.location === "freezer" && <Snowflake size={14} aria-label={t("Congelé", "Frozen")}/>} {pantryName(item, ingredients, locale)}</h3>
                         {item.quantity && (
                           <span>
                             {quantityLabel(item.quantity, units, locale)}

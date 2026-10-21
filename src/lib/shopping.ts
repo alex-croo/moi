@@ -23,6 +23,7 @@ export const shoppingMutation = z.discriminatedUnion("action", [
   }) }).strict(),
   z.object({ action: z.literal("order"), id: z.uuid(), mode: z.enum(["store", "online"]), grocer: z.string().trim().max(100), expectedDate: z.iso.date(), fulfillment: z.enum(["delivery", "pickup"]), lines, deliveryWindow: deliveryWindow.optional() }).strict(),
   z.object({ action: z.literal("receive"), id: z.uuid(), lines }).strict(),
+  z.object({ action: z.literal("thaw"), id: z.uuid(), itemId: z.uuid(), amount: z.number().positive().max(1000000) }).strict(),
   z.object({ action: z.literal("cancel"), id: z.uuid() }).strict(),
   z.object({ action: z.literal("reschedule"), id: z.uuid(), expectedDate: z.iso.date() }).strict(),
   z.object({ action: z.literal("cook"), id: z.uuid(), meal, portions: z.number().positive().max(100), includeOptional: z.boolean() }).strict(),
@@ -57,39 +58,56 @@ function conversion(from: Quantity, need: Need): number | null {
   if (need.quantity.kind === "mass") return null;
   return null;
 }
-type Stock = { ingredientId: string | null; quantity: Quantity | null; available: number; date: string; pending: boolean; index: number };
-function take(stock: Stock[], need: Need, date: string) {
+export const mealHours: Record<MealSlot["slot"], string> = { breakfast: "08:00", morning_snack: "10:00", lunch: "12:00", afternoon_snack: "15:00", dinner: "18:00", evening_snack: "21:00" };
+export type OrderSource = { id: string; grocer: string; date: string };
+type Stock = { source?: OrderSource; time?: string; ingredientId: string | null; quantity: Quantity | null; available: number; date: string; pending: boolean; index: number };
+function take(stock: Stock[], need: Need, date: string, time = "23:59") {
   let remaining = need.quantity.value, onHand = 0, pending = 0, check = false, estimated = false;
   const deductions: { index: number; amount: number }[] = [];
+  const sources = new Map<string, OrderSource>(), uncertainSources = new Map<string, OrderSource>();
+  let pendingCheck = false;
   for (const entry of stock) {
-    if (entry.ingredientId !== need.ingredientId || entry.date > date) continue;
+    if (entry.ingredientId !== need.ingredientId || entry.date > date || entry.date === date && (entry.time || "00:00") > time) continue;
     if (!entry.quantity) { check = true; continue; }
     const factor = conversion(entry.quantity, need);
-    if (factor === null) { if (entry.available > 0) check = true; continue; }
+    if (factor === null) {
+      if (entry.available > 0 && remaining > 1e-8) { check = true; if (entry.source) { pendingCheck = true; uncertainSources.set(entry.source.id, entry.source); } }
+      continue;
+    }
     if (remaining <= 1e-8 || entry.available <= 1e-8) continue;
     const used = Math.min(remaining, entry.available * factor);
     entry.available = clean(entry.available - used / factor);
     remaining = clean(remaining - used);
-    if (entry.pending) pending += used; else onHand += used;
+    if (entry.pending) { pending += used; if (entry.source) sources.set(entry.source.id, entry.source); } else onHand += used;
     deductions.push({ index: entry.index, amount: used / factor });
     estimated ||= factor !== 1;
   }
-  return { remaining, onHand, pending, check, estimated, deductions };
+  if (remaining > 1e-8) for (const source of uncertainSources.values()) sources.set(source.id, source);
+  return { remaining, onHand, pending, check: check && remaining > 1e-8, pendingCheck: pendingCheck && remaining > 1e-8, estimated, deductions, sources: [...sources.values()] };
 }
 function stockFrom(pantry: PantryItem[]): Stock[] {
   return pantry.map((p, index) => ({ ingredientId: p.ingredientId, quantity: p.quantity, available: p.inStock ? p.quantity?.value || 0 : 0, date: "0000-01-01", pending: false, index }))
-    .filter((_, index) => pantry[index].inStock);
+    .filter((_, index) => pantry[index].inStock)
+    .sort((a, b) => Number(pantry[a.index].location === "freezer") - Number(pantry[b.index].location === "freezer"));
 }
 export type ShoppingItem = {
   ingredient: ShoppingCatalog["ingredients"][number]; quantity: Quantity; required: number; onHand: number; pending: number;
+  sources: OrderSource[]; awaitingConfirmation: number;
   estimated: boolean; needsStockCheck: boolean; uses: { recipe: ShoppingCatalog["recipes"][number]; meals: number }[];
 };
+export type MealAvailability = {
+  meal: MealSlot; sources: OrderSource[]; complete: boolean;
+  missing: { ingredientId: string; quantity: Quantity; check: boolean }[];
+  frozen: { itemId: string; ingredientId: string; quantity: Quantity }[];
+};
+export const toBuyQuantity = (item: ShoppingItem) => ({ ...item.quantity, value: clean(item.quantity.value - item.awaitingConfirmation) });
 export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, start: string, end: string, includeOptional = false) {
   const state = shoppingState(data), stock = stockFrom(data.pantry);
   for (const order of state.orders.filter(o => o.status === "pending").sort((a, b) => a.expectedDate.localeCompare(b.expectedDate)))
-    for (const line of order.lines) stock.push({ ingredientId: line.ingredientId, quantity: line.quantity, available: line.quantity.value, date: order.expectedDate, pending: true, index: -1 });
+    for (const line of order.lines) stock.push({ ingredientId: line.ingredientId, quantity: line.quantity, available: line.quantity.value, date: order.expectedDate, time: order.deliveryWindow?.end, source: { id: order.id, grocer: order.grocer, date: order.expectedDate }, pending: true, index: -1 });
   const result = new Map<string, ShoppingItem>();
-  const grams = new Map<string, { required: number; remaining: number; onHand: number; pending: number }>();
+  const grams = new Map<string, { required: number; remaining: number; onHand: number; pending: number; awaitingConfirmation: number }>();
+  const availability: Record<string, MealAvailability> = {};
   let meals = 0, missing = 0;
   // Allocate across all unfinished meals, including those before this period.
   // Changing the visible dates must not reserve the same stock twice.
@@ -100,16 +118,24 @@ export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, 
     const recipe = catalog.recipes.find(r => r.id === slot.recipeId);
     if (!recipe) { if (visible) missing++; continue; }
     if (visible) meals++;
+    const report: MealAvailability = { meal: slot, sources: [], complete: true, missing: [], frozen: [] };
+    availability[mealKey(slot)] = report;
     const seen = new Set<string>();
     for (const line of recipe.ingredients) {
       if (line.optional && !includeOptional || line.ingredientId === "eau") continue;
       const ingredient = catalog.ingredients.find(i => i.id === line.ingredientId);
-      if (!ingredient) { if (visible) missing++; continue; }
-      const allocation = take(stock, demand(line), slot.date);
+      if (!ingredient) { if (visible) missing++; report.complete = false; report.missing.push({ ingredientId: line.ingredientId, quantity: line.quantity, check: true }); continue; }
+      const allocation = take(stock, demand(line), slot.date, mealHours[slot.slot]);
+      for (const source of allocation.sources) if (!report.sources.some(s => s.id === source.id)) report.sources.push(source);
+      if (allocation.remaining > 1e-8) { report.complete = false; report.missing.push({ ingredientId: ingredient.id, quantity: { ...line.quantity, value: allocation.remaining }, check: allocation.check }); }
+      for (const d of allocation.deductions) {
+        const item = data.pantry[d.index];
+        if (item?.location === "freezer" && item.quantity) report.frozen.push({ itemId: item.id, ingredientId: ingredient.id, quantity: { ...item.quantity, value: d.amount } });
+      }
       if (!visible) continue;
       let item = result.get(ingredient.id);
       if (!item) {
-        item = { ingredient, quantity: { ...line.quantity, value: 0 }, required: 0, onHand: 0, pending: 0, estimated: false, needsStockCheck: false, uses: [] };
+        item = { ingredient, quantity: { ...line.quantity, value: 0 }, required: 0, onHand: 0, pending: 0, estimated: false, needsStockCheck: false, awaitingConfirmation: 0, sources: [], uses: [] };
         result.set(ingredient.id, item);
       }
       // Keep a single canonical row; mixed recipe units use their gram equivalents.
@@ -117,7 +143,7 @@ export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, 
         if (item.quantity.kind !== "mass") {
           const totals = grams.get(ingredient.id)!;
           item.quantity = { kind: "mass", value: totals.remaining };
-          item.required = totals.required; item.onHand = totals.onHand; item.pending = totals.pending;
+          item.required = totals.required; item.onHand = totals.onHand; item.pending = totals.pending; item.awaitingConfirmation = totals.awaitingConfirmation;
         }
         item.estimated = true;
       }
@@ -126,9 +152,11 @@ export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, 
       item.required += line.quantity.value * factor; item.onHand += allocation.onHand * factor; item.pending += allocation.pending * factor;
       item.estimated ||= allocation.estimated;
       item.needsStockCheck ||= allocation.check;
-      const prior = grams.get(ingredient.id) || { required: 0, remaining: 0, onHand: 0, pending: 0 };
+      item.awaitingConfirmation = clean(item.awaitingConfirmation + (allocation.pendingCheck ? allocation.remaining * factor : 0));
+      for (const source of allocation.sources) if (!item.sources.some(s => s.id === source.id)) item.sources.push(source);
+      const prior = grams.get(ingredient.id) || { required: 0, remaining: 0, onHand: 0, pending: 0, awaitingConfirmation: 0 };
       const g = line.quantity.value > 0 ? line.grams / line.quantity.value : 0;
-      grams.set(ingredient.id, { required: prior.required + line.grams, remaining: prior.remaining + allocation.remaining * g, onHand: prior.onHand + allocation.onHand * g, pending: prior.pending + allocation.pending * g });
+      grams.set(ingredient.id, { required: prior.required + line.grams, remaining: prior.remaining + allocation.remaining * g, onHand: prior.onHand + allocation.onHand * g, pending: prior.pending + allocation.pending * g, awaitingConfirmation: prior.awaitingConfirmation + (allocation.pendingCheck ? allocation.remaining * g : 0) });
       if (!seen.has(ingredient.id)) {
         const use = item.uses.find(u => u.recipe.id === recipe.id);
         if (use) use.meals++; else item.uses.push({ recipe, meals: 1 });
@@ -136,7 +164,7 @@ export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, 
       }
     }
   }
-  return { items: [...result.values()], meals, missing };
+  return { items: [...result.values()], meals, missing, availability };
 }
 function timeOrder(slot: MealSlot["slot"]) { return ["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner", "evening_snack"].indexOf(slot); }
 export function previewCooking(data: ShoppingPersonal, catalog: ShoppingCatalog, meal: MealSlot, portions: number, includeOptional: boolean) {
@@ -190,6 +218,16 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
       const received = input.lines.map(l => ({ ...order.lines.find(original => purchaseLineKey(original) === purchaseLineKey(l))!, quantity: l.quantity, location: l.location }));
       for (const line of received) addStock(next.pantry, line, catalog);
       order.status = "received"; order.received = received; order.receivedAt = now;
+      break;
+    }
+    case "thaw": {
+      if (state.thawed?.includes(input.id)) return data;
+      const item = next.pantry.find(p => p.id === input.itemId);
+      if (!item || !item.inStock || item.location !== "freezer" || !item.quantity || input.amount > item.quantity.value) throw Error("frozen_stock_changed");
+      const moved = { ...item.quantity, value: input.amount };
+      item.quantity.value = clean(item.quantity.value - input.amount); item.inStock = item.quantity.value > 0;
+      addStock(next.pantry, { ingredientId: item.ingredientId, name: item.name, quantity: moved, location: "fridge", purchaseLabel: item.note }, catalog);
+      state.thawed = [...(state.thawed || []), input.id];
       break;
     }
     case "cancel": case "reschedule": {

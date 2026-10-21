@@ -42,6 +42,15 @@ test("real database persists receipt and cooking together with stock, survives r
     const readback = (await db.query<{ envelope: typeof updated }>("select envelope from public.personal_vaults")).rows[0].envelope;
     expect(JSON.stringify(readback)).not.toContain("Private grocer");
     expect((await decryptVault<PersonalData>(sealed.key, readback, owner)).pantry[0].quantity?.value).toBe(500);
+    const thaw = { action: "thaw", id: crypto.randomUUID(), itemId: undone.pantry[0].id, amount: 200 };
+    const thawed = applyPrivateMutation(undone, "shopping", thaw, catalog);
+    const thawEnvelope = await encryptVault(sealed.key, updated, thawed);
+    await db.query("select public.save_personal_vault($1,$2)", [2, JSON.stringify(thawEnvelope)]);
+    const reloadedThaw = (await db.query<{ envelope: typeof thawEnvelope }>("select envelope from public.personal_vaults")).rows[0].envelope;
+    const thawReadback = await decryptVault<PersonalData>(sealed.key, reloadedThaw, owner);
+    expect(thawReadback.pantry.find(p => p.location === "freezer")?.quantity?.value).toBe(300);
+    expect(thawReadback.pantry.find(p => p.location === "fridge")?.quantity?.value).toBe(200);
+    expect(thawReadback.shopping?.thawed).toContain(thaw.id);
     await asUser(admin); expect((await db.query("select envelope from public.personal_vaults")).rows).toHaveLength(0);
   } finally { await db.close(); }
 });

@@ -30,3 +30,15 @@ Les épiciers préférés sont enregistrés dans les préférences. L’ouvertur
 Les opérations de stock et leur état sont enregistrés atomiquement par `save_standard_workspace`, ou dans une seule enveloppe chiffrée. Les révisions refusent les écritures provenant d’une page périmée; les identifiants d’opération évitent de rejouer une réception ou une préparation. Aucun contenu de courses n’est enregistré dans les journaux serveur.
 
 Les tests `shopping.spec.ts`, `shopping-persistence.spec.ts` et `privacy.spec.ts` couvrent les périodes qui se chevauchent, livraisons tardives/partielles, unités, déductions/annulations, doubles confirmations, sauvegarde/relecture et refus interutilisateur, y compris administrateur.
+
+## Disponibilité et décongélation
+
+Les noms d’épiciers affichés dans la liste proviennent uniquement des commandes qui contribuent au besoin. Un épicier préféré ne devient pas une preuve d’achat. Les ingrédients déjà couverts sont cochés et masqués par défaut; ils réapparaissent avec « Déjà couverts ». Un format de commande incompatible avec l’unité de recette reste explicitement à vérifier, hors des achats automatiques, sans promettre une quantité suffisante.
+
+Le rond vert du repas exige une couverture complète de chaque ingrédient obligatoire. Le rond rouge détaille les manquants ou les quantités à vérifier. Le même calcul réserve le stock chronologiquement dans les menus et les courses; une livraison dont le créneau se termine après le repas ne le couvre pas. Les explications fonctionnent au survol, au clavier et au toucher.
+
+Le menu « … → Déjà en réserve » ajoute la quantité réellement présente, son rangement et une note, avec les préférences d’unités. Le congélateur indique explicitement que l’aliment est congelé.
+
+Les rappels de décongélation sont calculés localement, y compris pour un espace chiffré. Les réserves montrent les prochaines décongélations; un avis apparaît partout dans l’application dans les 24 heures précédant le repas. Repères horaires Toronto : 8 h / 10 h / 12 h / 15 h / 18 h / 21 h. La durée de décongélation nécessaire dépend du format; ce rappel n’est pas une garantie sanitaire. « Mis au réfrigérateur » déplace uniquement la quantité indiquée, sans la consommer; l’opération est idempotente et le frais est utilisé avant le congelé.
+
+Les avis restent uniquement dans Iamable, conformément au choix du propriétaire : aucun envoi externe ni rappel calendrier. Ils apparaissent lors de l’ouverture de l’application ou automatiquement pendant qu’elle est ouverte, pendant les 24 heures précédant le repas, avec recalcul lors des changements de stock ou de menu.

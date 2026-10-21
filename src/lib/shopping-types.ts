@@ -28,6 +28,7 @@ export type ShoppingState = {
   range?: { start: string; end: string };
   selections: Record<string, string[]>;
   postalCode?: string;
+  thawed?: string[];
 };
 export type ShoppingWorkspace = WorkspaceData & { shopping?: ShoppingState };
 export type ShoppingCatalog = { recipes: Recipe[]; ingredients: Ingredient[] };
