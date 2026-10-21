@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   BookOpen,
@@ -40,8 +40,10 @@ export function JournalEditor({
   ownerId = "demo",
   recoveryKey = null,
   syncBridge,
+  renderMeals,
 }: {
   entries: JournalEntry[];
+  renderMeals?: (date: string) => ReactNode;
   ownerId?: string;
   recoveryKey?: CryptoKey | null;
   syncBridge?: JournalSyncBridge;
@@ -651,6 +653,7 @@ export function JournalEditor({
         {sync.recoveryError && <p className="journal-sync-message" role="alert">{t("La copie de récupération de cet onglet n’est pas disponible. Attendez l’indication « Enregistré » avant de fermer ou de rafraîchir la page.", "Recovery storage is unavailable in this tab. Wait for ‘Saved’ before closing or refreshing the page.")}</p>}
         {error && <p role="alert">{error}</p>}
         {status && <p role="status">{status}</p>}
+        {renderMeals?.(date)}
       </div>
       </>}
     </section>

@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
-import { ArrowRight, Copy, PackageCheck, ShoppingBasket, Truck } from "lucide-react";
+import { ArrowRight, Copy, PackageCheck, ShoppingBasket } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type { Recipe } from "@/lib/types";
-import type { ShoppingWorkspace, Purchase, PurchaseLine } from "@/lib/shopping-types";
+import type { ShoppingWorkspace, PurchaseLine } from "@/lib/shopping-types";
 import { shoppingNeeds, shoppingState, periodKey, type ShoppingMutation } from "@/lib/shopping";
 import { aisles, ingredientAisle, aisleLabel, suggestedLocation } from "@/lib/grocery-aisles";
 import { quantityLabel, addDays, localToday } from "@/lib/units";
+import { PendingOrders } from "./pending-orders";
 import { PurchaseEditor } from "./purchase-editor";
 import { InstacartExport } from "./instacart-export";
 import { preferredGrocer } from "@/lib/grocer-preferences";
@@ -19,13 +20,12 @@ export function GroceryList({ data, locale, week, onPlan, onOpen, onPantry, onSe
   const shopping = shoppingState(data), range = shopping.range || { start: week, end: addDays(week, 6) };
   const [dates, setDates] = useState(range), [optional, setOptional] = useState(false), [showReady, setShowReady] = useState(false);
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [status, setStatus] = useState("");
-  const [editing, setEditing] = useState<{ mode: "store" | "online" | "receive"; lines: PurchaseLine[]; order?: Purchase } | null>(null);
+  const [editing, setEditing] = useState<{ mode: "store" | "online"; lines: PurchaseLine[] } | null>(null);
   const [exporting, setExporting] = useState(false);
   const result = shoppingNeeds(data, data, range.start, range.end, optional);
   const items = result.items.sort((a, b) => (locale === "fr" ? a.ingredient.name : a.ingredient.nameEn).localeCompare(locale === "fr" ? b.ingredient.name : b.ingredient.nameEn, locale));
   const selected = shopping.selections[periodKey(range.start, range.end)] || [];
   const needs = items.filter(i => i.quantity.value > 0), picked = needs.filter(i => selected.includes(i.ingredient.id));
-  const pending = shopping.orders.filter(o => o.status === "pending");
   const name = (i: (typeof items)[number]) => locale === "fr" ? i.ingredient.name : i.ingredient.nameEn;
   async function perform(value: ShoppingMutation, message = "") {
     setBusy(true); setError(""); setStatus("");
@@ -64,11 +64,7 @@ export function GroceryList({ data, locale, week, onPlan, onOpen, onPantry, onSe
       <div className="grocery-toolbar"><label className="shopping-checkbox"><input type="checkbox" aria-label={t("Afficher les aliments déjà prêts", "Show foods already ready")} checked={showReady} onChange={e => setShowReady(e.target.checked)}/>{t("Déjà couverts", "Already covered")}</label><label className="shopping-checkbox"><input type="checkbox" aria-label={t("Inclure les ingrédients facultatifs", "Include optional ingredients")} checked={optional} onChange={e => setOptional(e.target.checked)}/>{t("Facultatifs", "Optional")}</label></div>
     </div>
     {error && <p className="form-error" role="alert">{error}</p>}{status && <p className="grocery-status" role="status">{status}</p>}
-    {!!pending.length && <section className="pending-orders" aria-label={t("Commandes attendues", "Expected orders")}><h2><Truck size={17}/>{t("En route vers ma cuisine", "On the way to my kitchen")} <span>{pending.length}</span></h2>{pending.map(order => <div className="pending-order" key={order.id}>
-      <div><strong>{order.grocer || t("Commande en ligne", "Online order")}</strong><small>{order.fulfillment === "delivery" ? t("Livraison", "Delivery") : t("Cueillette", "Pickup")} · {order.expectedDate} · {order.lines.length} {t("articles", "items")}</small></div>
-      <button className="secondary" disabled={busy} onClick={() => setEditing({ mode: "receive", lines: order.lines, order })}>{t("J’ai reçu ma commande", "I received my order")}</button>
-      <details><summary>{t("Gérer", "Manage")}</summary><form onSubmit={e => { e.preventDefault(); const date = new FormData(e.currentTarget).get("expectedDate") as string; void perform({ action: "reschedule", id: order.id, expectedDate: date }); }}><label>{t("Nouvelle date", "New date")}<input type="date" name="expectedDate" defaultValue={order.expectedDate} required/></label><button className="text-button" disabled={busy}>{t("Reporter", "Reschedule")}</button></form><button className="text-button" disabled={busy} onClick={() => void perform({ action: "cancel", id: order.id }, t("Commande annulée dans votre liste. Vérifiez aussi l’annulation auprès de l’épicier.", "Order cancelled in your list. Also check cancellation with your grocer."))}>{t("Annuler le suivi de commande", "Cancel order tracking")}</button></details>
-    </div>)}</section>}
+    <PendingOrders data={data} locale={locale} onSave={onSave}/>
     {!!result.missing && <p role="alert" className="form-error">{t("La liste est incomplète : une recette ou un ingrédient est indisponible.", "This list is incomplete: a recipe or ingredient is unavailable.")}</p>}
     {items.length ? <div className="grocery-paper"><header className="grocery-summary"><div className="grocery-summary-title"><ShoppingBasket size={20}/><div><h2>{t("Ce qu’il me manque", "What I still need")}</h2><p>{result.meals} {t("repas prévus", "planned meals")} · {needs.length} {t("ingrédients à acheter", "ingredients to buy")}{picked.length ? ` · ${picked.length} ${t("cochés", "checked")}` : ""}</p></div></div><button className="secondary" onClick={() => void copy()}><Copy size={15}/>{t("Copier la liste", "Copy list")}</button></header>
       <div className="shopping-purchase-bar"><div><button className="secondary" disabled={busy || !needs.length} onClick={() => prepare("store")}>{t("Ranger mes achats", "Put my groceries away")}</button><button className="secondary" disabled={busy || !needs.length} onClick={() => prepare("online")}>{t("Commander en ligne", "Order online")}</button><button className="primary" disabled={busy || !needs.length} onClick={() => setExporting(true)}>{t("Acheter avec Instacart", "Shop with Instacart")}</button></div><button className="text-button" onClick={onSettings}>{t("Mes épiciers", "My grocers")}</button></div>

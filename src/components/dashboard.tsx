@@ -38,6 +38,8 @@ import { JournalEditor } from "./journal-editor";
 import { UnitSettings } from "./unit-settings";
 import { GroceryList } from "./groceries";
 import { GrocerSettings } from "./grocer-settings";
+import { PendingOrders } from "./pending-orders";
+import { JournalMeals } from "./journal-meals";
 import { CookMeal } from "./cook-meal";
 import { applyShoppingMutation, shoppingState, type ShoppingMutation } from "@/lib/shopping";
 import type { ShoppingWorkspace as WorkspaceData } from "@/lib/shopping-types";
@@ -885,6 +887,7 @@ export function Dashboard({
           )}
           {view === "pantry" && (
             <Pantry
+              deliveries={<PendingOrders data={data} locale={locale} showEmpty onSave={async value => { await mutate("shopping", value); }}/>}
               items={data.pantry}
               ingredients={data.ingredients}
               units={data.preferences}
@@ -936,6 +939,7 @@ export function Dashboard({
           <div hidden={view !== "journal"}>
             <JournalEditor
               entries={data.journal}
+              renderMeals={date => <JournalMeals key={date} data={data} date={date} locale={locale} onCook={setCooking} onUndo={async id => { await mutate("shopping", { action: "undoCook", id }); }} onOpen={setSelectedRecipe} onPlan={() => { setSelectedWeek(monday(date)); go("menus"); }}/>}
               ownerId={privateActions?.userId || "demo"}
               recoveryKey={privateActions?.journalKey || null}
               syncBridge={privateActions?.journalSync}

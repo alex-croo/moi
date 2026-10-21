@@ -482,3 +482,37 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   .grocer-settings>header { flex-wrap:wrap; }.grocer-form { grid-template-columns:1fr; }.grocer-settings { padding:16px; }
   .shopping-purchase-bar { flex-wrap:wrap; }.shopping-purchase-bar>div { flex:1 1 100%; }.shopping-purchase-bar>div>button { flex:1; }
 }
+
+/* Deliveries stay visible beyond the selected shopping period. */
+.pending-orders-note { font-size:11px;line-height:1.6;color:var(--muted);margin:4px 0 8px; }
+.pending-order>div { min-width:0;flex-basis:200px;overflow-wrap:anywhere; }
+.pending-order .secondary { font-size:12px;min-height:36px;padding:8px 12px; }
+.pending-order small.pending-order-overdue { color:#8b591d; }
+.pending-order-items { list-style:none;margin:4px 0 8px;padding:0;max-width:540px; }
+.pending-order-items li { display:flex;justify-content:space-between;gap:16px;padding:5px 0;border-bottom:1px solid var(--line); }
+.pending-order-items li>span:last-child { flex:none; }
+.pending-order form { flex-wrap:wrap; }
+.pending-order form label { display:grid;gap:5px;margin:0;font-size:11px; }
+.journal-meals { margin-top:26px;padding-top:14px;border-top:1px solid var(--line); }
+.journal-meals>header { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+.journal-meals h2 { display:flex;align-items:center;gap:8px;font:600 14px/1.5 var(--sans);letter-spacing:0;margin:0; }
+.journal-meals h2>span { font-size:11px;color:var(--muted);font-weight:400; }
+.journal-meals>p { font-size:11px;line-height:1.6;color:var(--muted);margin:5px 0 10px; }
+.journal-meals>header .text-button { font-size:11px;min-height:36px;flex:none; }
+.journal-meals ul { padding:0;margin:0;list-style:none; }
+.journal-meals li { display:grid;grid-template-columns:110px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:44px;padding:6px 0;border-bottom:1px solid var(--line); }
+.journal-meal-time { color:var(--muted);font-size:11px; }
+.journal-meal-recipe { min-width:0;display:grid;gap:3px; }
+.journal-meal-recipe button { border:0;background:transparent;padding:3px 0;text-align:left;font:500 13px/1.5 var(--sans);color:var(--ink);overflow-wrap:anywhere; }
+.journal-meal-recipe button:hover { color:var(--accent); }
+.journal-meal-recipe small { color:var(--muted);font-size:10px;line-height:1.5; }
+.journal-meal-check { display:flex;flex-direction:row;align-items:center;gap:7px;min-height:36px;margin:0;font-size:12px;cursor:pointer; }
+.journal-meal-check input { margin:0;width:18px;height:18px;accent-color:var(--accent); }
+.journal-meals .is-cooked .journal-meal-check { color:var(--accent); }
+@media(max-width:600px) {
+  .journal-meals li { grid-template-columns:minmax(0,1fr) auto;gap:1px 12px;padding:8px 0; }
+  .journal-meal-time { grid-column:1; }.journal-meal-recipe { grid-column:1; }
+  .journal-meal-check { grid-column:2;grid-row:1 / span 2; }
+  .journal-meals h2 { font-size:13px;gap:6px; }
+  .pending-order>div { flex-basis:100%; }
+}

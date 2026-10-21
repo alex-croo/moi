@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Archive, Check, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type {
@@ -27,6 +27,7 @@ export function Pantry({
   onSave,
   onDelete,
   onGroceries,
+  deliveries,
 }: {
   items: PantryItem[];
   ingredients: Ingredient[];
@@ -35,6 +36,7 @@ export function Pantry({
   onSave: (item: PantryItem) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onGroceries: () => void;
+  deliveries?: ReactNode;
 }) {
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
   const [query, setQuery] = useState("");
@@ -162,6 +164,7 @@ export function Pantry({
           )}
         </p>
       </div>
+      {deliveries}
       <div className="pantry-toolbar">
         <button
           className="primary"
