@@ -463,8 +463,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .grocer-form { display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-top:14px;border-top:1px solid var(--line); }
 .grocer-form .shopping-buttons { grid-column:1/-1;justify-content:flex-end; }
 .grocer-postal { display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-top:16px; }
-.grocer-postal label,.instacart-group { display:grid;gap:6px;font-size:12px; }
-.grocer-postal input,.instacart-group select { padding:9px;border:1px solid var(--line);border-radius:7px;background:white;color:var(--ink);font:inherit;min-height:38px;max-width:100%; }
 .grocer-categories { grid-column:1/-1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:12px; }
 .grocer-categories legend { font-size:13px; }.grocer-categories p { margin:0 0 10px; }
 .grocer-categories>div { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px; }
@@ -473,12 +471,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .grocer-list li>span { min-width:0;overflow-wrap:anywhere; }
 .shopping-purchase-bar>div { flex-wrap:wrap; }
 .grocery-supplier { font-size:11px;color:var(--muted);margin:4px 0 0;overflow-wrap:anywhere; }
-.instacart-content { padding:0 22px 18px; }.instacart-group select { width:100%; }
-.instacart-items { list-style:none;padding:0;margin:16px 0; }.instacart-items li { display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px; }
-.instacart-items li>span { min-width:0;overflow-wrap:anywhere; }.instacart-items small { display:block;color:var(--muted);font-size:11px;margin-top:4px; }.instacart-items strong { flex:none;font-weight:500; }
-.instacart-result { padding:14px;border:1px solid var(--line);border-radius:8px;font-size:13px; }.instacart-result a { display:inline-flex;text-decoration:none; }
-.instacart-content footer { flex-wrap:wrap; }.instacart-content footer button { max-width:100%; }
-@media(max-width:600px) { .instacart-content { padding:0 14px 14px; }.instacart-content footer .primary { flex-basis:100%; }.grocer-postal>label { flex-basis:100%; } }
 .cooking-deductions { list-style:none;padding:0; }.cooking-deductions li { display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding:8px 0;font-size:12px; }
 .cooking-deductions small { display:block;color:var(--muted);font-size:10px;margin-top:4px; }
 .cooking-deductions strong { font-weight:500; }
@@ -622,3 +614,73 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .thaw-reminder>div{min-width:0}.thaw-reminder strong{font-size:12px;font-weight:500}.thaw-reminder small{display:block;font-size:11px;color:var(--muted);margin-top:3px}
 .thaw-reminder>button{flex-shrink:0}.thaw-reminders details{font-size:11px;color:var(--muted)}.thaw-reminders details p{max-width:900px}
 @media(max-width:560px){.thaw-reminder{align-items:flex-start;flex-direction:column}}
+
+/* Shared Tred’meal forms: one visual language for every dialog and picker. */
+dialog { font-family:var(--sans);color:var(--ink);border-color:var(--line);border-radius:22px;box-shadow:0 24px 90px #21182726,0 4px 18px #2118270d; }
+dialog::backdrop { background:#211b2b66;backdrop-filter:blur(5px); }
+dialog h2 { font-family:var(--sans);letter-spacing:-.035em; }
+dialog .icon-button { border-radius:50%;color:var(--muted); }
+dialog .icon-button:hover { background:var(--accent-soft);color:var(--accent); }
+.shopping-dialog { border-radius:22px; }
+.shopping-dialog>header { padding:22px 26px;background:linear-gradient(115deg,#fff,#fbf8fb); }
+.shopping-dialog>form { padding:4px 26px 24px; }
+.shopping-dialog .shopping-note { line-height:1.65;margin:14px 0 20px; }
+.shopping-dialog footer { margin-top:18px;padding-top:18px;border-top:1px solid var(--line);gap:12px; }
+.shopping-dialog footer .primary { padding:12px 20px;min-height:44px; }
+.dialog-eyebrow { display:block;color:var(--accent);font-size:9px;font-weight:650;letter-spacing:.14em;margin-bottom:7px; }
+.shopping-dialog label { font-size:12px;font-weight:500;line-height:1.5;color:var(--muted); }
+.shopping-dialog input:not([type=checkbox]):not([type=hidden]),dialog input:not([type=checkbox]):not([type=hidden]),dialog textarea {
+  background:#f8f7f9;border:1px solid #e3dfe7;border-radius:11px;color:var(--ink);padding:11px 12px;min-height:44px;font-family:var(--sans);box-shadow:none;
+}
+.shopping-dialog input:focus-visible,dialog input:focus-visible,dialog textarea:focus-visible { outline:2px solid #d900781f;outline-offset:2px;border-color:var(--accent);background:white; }
+.purchase-options { align-items:end;gap:14px; }
+.purchase-options>label { flex:1;min-width:130px; }
+.purchase-lines { border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:20px; }
+.purchase-line { padding:14px 16px;background:#fff; }
+.purchase-line:first-child { border-top:0; }
+.purchase-line:nth-child(even) { background:#fbfafc; }
+.purchase-line>span { font-weight:500; }
+.purchase-line small { font-weight:400;font-size:11px; }
+.personal-grocery-dialog { width:min(560px,calc(var(--dialog-width,100vw) - 24px)); }
+.personal-grocery-fields { display:grid;grid-template-columns:1fr 1fr; }
+.personal-grocery-dialog>form>label { display:grid;gap:6px; }
+.app-select { display:block;position:relative;min-width:0;max-width:100%; }
+.app-select-trigger { display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0;min-height:44px;padding:10px 12px;background:#f8f7f9;border:1px solid #e3dfe7;border-radius:11px;color:var(--ink);font:500 13px/1.4 var(--sans);text-align:left;cursor:pointer;box-shadow:none; }
+.app-select-trigger>span { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.app-select-trigger>svg { flex:none;color:#8a808e;transition:transform .15s; }
+.app-select-trigger[aria-expanded=true]>svg { transform:rotate(180deg);color:var(--accent); }
+.app-select-trigger:hover { background:#f2eef3;border-color:#d1c7d4; }
+.app-select-trigger:focus-visible,.app-select-trigger[aria-expanded=true] { outline:2px solid #d900781f;outline-offset:2px;border-color:var(--accent);background:white; }
+.app-select-trigger:disabled { cursor:default;opacity:.55; }
+.app-select-menu { position:fixed;inset:auto;margin:0;padding:6px;overflow:auto;overscroll-behavior:contain;border:1px solid #e4dce7;border-radius:14px;background:#fff;color:var(--ink);box-shadow:0 14px 40px #26162d22;font:500 13px/1.4 var(--sans); }
+.app-select-menu::backdrop { background:transparent; }
+.app-select-menu [role=option] { display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:40px;padding:9px 11px;border-radius:9px;cursor:pointer; }
+.app-select-menu [role=option]>svg { flex:none; }
+.app-select-menu [role=option][data-active] { background:#f5f1f6; }
+.app-select-menu [role=option][aria-selected=true] { background:#faeaf3;color:var(--accent); }
+.app-select-menu [role=option][aria-disabled=true] { opacity:.45;cursor:default; }
+.grocery-column-headings { align-items:center; }
+.grocery-select-all { width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer; }
+.grocery-selection-status { min-height:18px;font-size:11px;color:var(--muted);margin:3px 0; }
+.grocery-selection-status:empty { display:none; }
+.grocery-personal-label { padding:8px 0;color:var(--muted);font-size:11px; }
+.grocery-personal-remove { flex:none; }
+@media(max-width:600px) {
+  dialog,.shopping-dialog { border-radius:18px; }
+  .shopping-dialog>header { padding:16px; }
+  .shopping-dialog>form { padding:0 16px 16px; }
+  .shopping-dialog .shopping-note { margin:12px 0 16px;font-size:12px; }
+  .purchase-line { padding:12px;gap:12px; }
+  .purchase-options>label { min-width:0;flex-basis:calc(50% - 14px); }
+  .personal-grocery-fields { gap:12px; }
+  .app-select-trigger { font-size:16px;min-height:46px; }
+  .app-select-menu { font-size:15px; }
+  .app-select-menu [role=option] { min-height:44px; }
+  .grocery-column-headings>.grocery-select-all { display:block; }
+}
+@media(prefers-reduced-motion:reduce) { .app-select-trigger>svg { transition:none; } }
+
+@media(max-width:767px), (pointer:coarse) { .app-select-trigger {font-size:16px;} }
+
+.grocery-page .grocery-actions { min-width:0;max-width:100%;flex-shrink:1; }
+@media(max-width:480px) { .personal-grocery-fields { grid-template-columns:minmax(0,1fr); } }

@@ -6,10 +6,12 @@ export type Grocer = {
   id: string; name: string; url: string; fulfillment: "delivery" | "pickup"; favorite: boolean;
   categories?: GrocerCategory[];
 };
+export type PersonalShoppingItem = { id: string; name: string; aisle: Aisle; quantity: Quantity };
 export type PurchaseLine = {
   id?: string; ingredientId: string | null; name?: string;
   quantity: Quantity; location: PantryLocation;
   purchaseLabel?: string; priceCents?: number;
+  personalItemId?: string; aisle?: Aisle;
 };
 export type DeliveryWindow = { start: string; end: string; timeZone: "America/Toronto" };
 export type Purchase = {
@@ -29,6 +31,7 @@ export type ShoppingState = {
   selections: Record<string, string[]>;
   postalCode?: string;
   thawed?: string[];
+  personalItems?: PersonalShoppingItem[];
 };
 export type ShoppingWorkspace = WorkspaceData & { shopping?: ShoppingState };
 export type ShoppingCatalog = { recipes: Recipe[]; ingredients: Ingredient[] };

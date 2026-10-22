@@ -1,3 +1,4 @@
+import { selectAppOption } from "./select-helper";
 import { test, expect } from "@playwright/test";
 import { groceriesAfterPantry, type GroceryItem } from "../src/lib/groceries";
 import { demoIngredients } from "../src/lib/demo-recipes";
@@ -102,8 +103,8 @@ test("grocery list hides covered items and copies only the missing quantity in c
     await page
       .getByRole("button", { name: "Ajouter un aliment", exact: true })
       .click();
-    await page.getByLabel("Aliment", { exact: true }).selectOption(id);
-    await page.getByLabel("Mesure", { exact: true }).selectOption("mass");
+    await selectAppOption(page.getByLabel("Aliment", { exact: true }), id);
+    await selectAppOption(page.getByLabel("Mesure", { exact: true }), "mass");
     await page.getByLabel(/Quantité \(facultatif\)/).fill(quantity);
     await page
       .getByRole("button", { name: "Garder dans mes réserves", exact: true })
@@ -121,9 +122,8 @@ test("grocery list hides covered items and copies only the missing quantity in c
   expect(copied).toContain("Bœuf haché extra maigre : 150 g");
   expect(copied).not.toContain("Oignon");
   await page.getByRole("button", { name: "Préférences", exact: true }).click();
-  await page
-    .getByLabel("Poids des ingrédients", { exact: true })
-    .selectOption("oz");
+  await selectAppOption(page
+    .getByLabel("Poids des ingrédients", { exact: true }), "oz");
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();

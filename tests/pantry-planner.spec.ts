@@ -1,3 +1,4 @@
+import { selectAppOption } from "./select-helper";
 import { test, expect } from "@playwright/test";
 import { dailyCalories, mealTimes } from "../src/lib/planner";
 import { weeklyGroceries } from "../src/lib/groceries";
@@ -114,11 +115,10 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await page
     .getByRole("button", { name: "Ajouter un aliment", exact: true })
     .click();
-  await page.getByLabel("Aliment", { exact: true }).selectOption("beef-95-raw");
-  await page
-    .getByLabel("Où le ranger", { exact: true })
-    .selectOption("freezer");
-  await page.getByLabel("Mesure", { exact: true }).selectOption("mass");
+  await selectAppOption(page.getByLabel("Aliment", { exact: true }), "beef-95-raw");
+  await selectAppOption(page
+    .getByLabel("Où le ranger", { exact: true }), "freezer");
+  await selectAppOption(page.getByLabel("Mesure", { exact: true }), "mass");
   await page.getByLabel(/Quantité \(facultatif\)/).fill("500");
   await page
     .getByLabel("Petit repère (facultatif)", { exact: true })
@@ -172,9 +172,8 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await selectPeriod(initialStart);
   await expect(beef.getByRole("checkbox")).toBeChecked();
   await page.getByRole("button", { name: "Préférences", exact: true }).click();
-  await page
-    .getByLabel("Poids des ingrédients", { exact: true })
-    .selectOption("oz");
+  await selectAppOption(page
+    .getByLabel("Poids des ingrédients", { exact: true }), "oz");
   await nav.getByRole("button", { name: "Mes réserves", exact: true }).click();
   await expect(page.locator(".pantry-group")).toContainText("17,64 oz");
   await page

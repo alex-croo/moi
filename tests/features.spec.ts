@@ -1,3 +1,4 @@
+import { selectAppOption } from "./select-helper";
 import { test, expect } from "@playwright/test";
 import {
   recipeNutrition,
@@ -82,14 +83,13 @@ test("granular settings convert recipes, steps, current weight and history indep
 }) => {
   await page.goto("/fr/demo");
   await page.getByRole("button", { name: "Préférences", exact: true }).click();
-  await page.getByLabel("Poids corporel", { exact: true }).selectOption("kg");
-  await page
-    .getByLabel("Poids des ingrédients", { exact: true })
-    .selectOption("oz");
-  await page.getByLabel("Volumes et liquides").selectOption("cup");
-  await page.getByLabel("Petites quantités et cuillères").selectOption("ml");
-  await page.getByLabel("Température de cuisson").selectOption("F");
-  await page.getByLabel("Dimensions et épaisseurs").selectOption("in");
+  await selectAppOption(page.getByLabel("Poids corporel", { exact: true }), "kg");
+  await selectAppOption(page
+    .getByLabel("Poids des ingrédients", { exact: true }), "oz");
+  await selectAppOption(page.getByLabel("Volumes et liquides"), "cup");
+  await selectAppOption(page.getByLabel("Petites quantités et cuillères"), "ml");
+  await selectAppOption(page.getByLabel("Température de cuisson"), "F");
+  await selectAppOption(page.getByLabel("Dimensions et épaisseurs"), "in");
   await page
     .getByRole("navigation")
     .getByRole("button", { name: "Mon parcours" })
@@ -97,7 +97,7 @@ test("granular settings convert recipes, steps, current weight and history indep
   await expect(page.locator(".weight-value")).toContainText("84,2");
   await expect(page.locator(".history")).toContainText("kg");
   await page.getByRole("button", { name: "Noter mon poids" }).click();
-  await expect(page.getByLabel("Unité", { exact: true })).toHaveValue("kg");
+  await expect(page.getByLabel("Unité", { exact: true })).toHaveAttribute("data-value", "kg");
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Fermer", exact: true })
@@ -110,7 +110,7 @@ test("granular settings convert recipes, steps, current weight and history indep
   await expect(page.locator(".ingredient-list")).toContainText("8,82 oz");
   await expect(page.locator(".recipe-steps")).toContainText("160 °F");
   await expect(page.locator(".recipe-note")).toContainText("15 ml");
-  await expect(page.locator(".recipe-note")).toContainText("1,01 tasse US");
+  await expect(page.locator(".recipe-note")).toContainText("≈ 1 tasse US");
   await expect(page.locator(".nutrition-calories")).toContainText("191");
 });
 

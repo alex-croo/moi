@@ -1,4 +1,5 @@
 "use client";
+import { AppSelect } from "./app-select";
 import { useState, type ReactNode } from "react";
 import { Archive, Check, Pencil, Plus, Search, Trash2, Snowflake, X } from "lucide-react";
 import type { Locale } from "@/lib/locale";
@@ -231,7 +232,7 @@ export function Pantry({
           <div className="pantry-fields">
             <label>
               {t("Aliment", "Food")}
-              <select
+              <AppSelect
                 aria-label={t("Aliment", "Food")}
                 value={editing.ingredientId || "custom"}
                 disabled={busy}
@@ -254,7 +255,7 @@ export function Pantry({
                     {locale === "fr" ? i.name : i.nameEn}
                   </option>
                 ))}
-              </select>
+              </AppSelect>
             </label>
             {!editing.ingredientId && (
               <label>
@@ -271,13 +272,13 @@ export function Pantry({
               </label>
             )}
             <label>{t("Rayon", "Aisle")}
-              <select aria-label={t("Rayon", "Aisle")} value={pantryAisle(editing, ingredients)} disabled={busy} onChange={e => setEditing({ ...editing, aisle: e.target.value as Aisle })}>
+              <AppSelect aria-label={t("Rayon", "Aisle")} value={pantryAisle(editing, ingredients)} disabled={busy} onChange={e => setEditing({ ...editing, aisle: e.target.value as Aisle })}>
                 {aisles.map(aisle => <option key={aisle} value={aisle}>{aisleLabel(aisle, locale)}</option>)}
-              </select>
+              </AppSelect>
             </label>
             <label>
               {t("Où le ranger", "Where it belongs")}
-              <select
+              <AppSelect
                 aria-label={t("Où le ranger", "Where it belongs")}
                 value={editing.location}
                 disabled={busy}
@@ -293,11 +294,11 @@ export function Pantry({
                     {pantryLabel(l, locale)}
                   </option>
                 ))}
-              </select>
+              </AppSelect>
             </label>
             <label>
               {t("Mesure", "Measure")}
-              <select
+              <AppSelect
                 aria-label={t("Mesure", "Measure")}
                 value={kind}
                 disabled={busy}
@@ -315,14 +316,14 @@ export function Pantry({
                 <option value="count">
                   {t("Nombre d’unités", "Item count")}
                 </option>
-              </select>
+              </AppSelect>
             </label>
             {kind === "count" && <label>{t("Unité comptée", "Counted unit")}
               {countMeasures(editing.ingredientId).length > 0
-                ? <select aria-label={t("Unité comptée", "Counted unit")} value={countMeasure(editing.ingredientId, { kind: "count", value: 1, label: countUnit })?.label || ""} disabled={busy} onChange={e => setCountUnit(e.target.value)}>
+                ? <AppSelect aria-label={t("Unité comptée", "Counted unit")} value={countMeasure(editing.ingredientId, { kind: "count", value: 1, label: countUnit })?.label || ""} disabled={busy} onChange={e => setCountUnit(e.target.value)}>
                     <option value="">{t("Unités non précisées", "Unspecified items")}</option>
                     {countMeasures(editing.ingredientId).map(m => <option key={m.label} value={m.label}>{locale === "fr" ? m.label : m.labelEn}</option>)}
-                  </select>
+                  </AppSelect>
                 : <input maxLength={80} value={countUnit} disabled={busy} placeholder={t("pièces, paquets…", "pieces, packs…")} onChange={e => setCountUnit(e.target.value)}/>}
             </label>}
             <label>

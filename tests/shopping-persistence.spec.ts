@@ -22,7 +22,11 @@ test("real database persists receipt and cooking together with stock, survives r
     const orderId = crypto.randomUUID(), cookId = crypto.randomUUID();
     await asUser(owner);
     personal = applyPrivateMutation(personal, "shopping", { action: "order", id: orderId, mode: "store", grocer: "Private grocer", expectedDate: "2026-10-25", fulfillment: "pickup", lines: [{ ingredientId: "beef-95-raw", quantity: { kind: "mass", value: 500 }, location: "freezer" }] }, catalog);
+    const personalFood = { id: crypto.randomUUID(), name: "Private yogurt", aisle: "dairy", quantity: { kind: "volume", value: 500 } };
+    personal = applyPrivateMutation(personal, "shopping", { action: "personalItem", item: personalFood }, catalog);
+    personal = applyPrivateMutation(personal, "shopping", { action: "selectMany", range: { start: "2026-10-25", end: "2026-10-31" }, updates: [{ ingredientId: personalFood.id, checked: true }] }, catalog);
     await save(0, personal);
+    expect((await reload()).data.shopping?.personalItems).toEqual([personalFood]);
     const received = await reload(); expect(received.data.pantry[0].quantity?.value).toBe(500); expect(received.data.shopping?.orders[0].status).toBe("received");
     personal = applyPrivateMutation(received.data, "shopping", { action: "cook", id: cookId, meal: personal.slots[0], portions: 2, includeOptional: false }, catalog);
     await save(1, personal);
@@ -36,6 +40,8 @@ test("real database persists receipt and cooking together with stock, survives r
     await db.query("select public.activate_personal_vault($1,$2)", [2, JSON.stringify(sealed.envelope)]);
     expect(await reload()).toBeUndefined();
     const opened = await decryptVault<PersonalData>(sealed.key, sealed.envelope, owner);
+    expect(opened.shopping?.personalItems).toEqual([personalFood]);
+    expect(JSON.stringify(sealed.envelope)).not.toContain("Private yogurt");
     const undone = applyPrivateMutation(opened, "shopping", { action: "undoCook", id: cookId }, catalog);
     const updated = await encryptVault(sealed.key, sealed.envelope, undone);
     await db.query("select public.save_personal_vault($1,$2)",[1, JSON.stringify(updated)]);

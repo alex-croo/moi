@@ -1,3 +1,4 @@
+import { selectAppOption } from "./select-helper";
 import { test, expect, type Page } from "@playwright/test";
 
 test.use({ hasTouch: true });
@@ -22,7 +23,7 @@ async function assertDialogFits(page: Page, width: number, height: number, top =
 test("mobile pantry shortcut defaults to volume, respects units and stays inside narrow screens", async ({ page }) => {
   await page.goto("/fr/demo");
   await page.getByRole("button", { name: "Préférences", exact: true }).click();
-  await page.getByLabel("Volumes et liquides", { exact: true }).selectOption("cup");
+  await selectAppOption(page.getByLabel("Volumes et liquides", { exact: true }), "cup");
   await expect(page.getByLabel("Volumes et liquides", { exact: true })).toBeEnabled();
   await planGroceries(page);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -34,7 +35,7 @@ test("mobile pantry shortcut defaults to volume, respects units and stays inside
   await expect(page.getByRole("button", { name: "Options pour Oignon", exact: true })).toBeHidden();
   await shortcut.click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog.getByRole("combobox", { name: "Mesure", exact: true })).toHaveValue("volume");
+  await expect(dialog.getByRole("combobox", { name: "Mesure", exact: true })).toHaveAttribute("data-value", "volume");
   const amount = dialog.getByLabel("Quantité en réserve · tasses US", { exact: true });
   // A recipe's required grams must never be silently relabelled as millilitres/cups.
   await expect(amount).toHaveValue("");
@@ -44,7 +45,7 @@ test("mobile pantry shortcut defaults to volume, respects units and stays inside
     await page.setViewportSize({ width, height });
     await expect.poll(() => dialog.evaluate(el => el.style.getPropertyValue("--dialog-width"))).toBe(`${width}px`);
     await assertDialogFits(page, width, height);
-    const sizes = await dialog.locator("input,select").evaluateAll(fields => fields.map(field => parseFloat(getComputedStyle(field).fontSize)));
+    const sizes = await dialog.locator("input:not([type=hidden]),[role=combobox]").evaluateAll(fields => fields.map(field => parseFloat(getComputedStyle(field).fontSize)));
     expect(sizes.every(size => size >= 16)).toBe(true);
     await expect(amount).toHaveValue("1.5");
   }
@@ -69,7 +70,7 @@ test("pantry dialog follows keyboard viewport and keeps fields, scrolling and ca
   const dialog = page.getByRole("dialog");
   const amount = dialog.getByLabel("Quantité en réserve", { exact: false });
   await expect(amount).toHaveValue("");
-  await dialog.getByRole("combobox", { name: "Mesure", exact: true }).selectOption("mass");
+  await selectAppOption(dialog.getByRole("combobox", { name: "Mesure", exact: true }), "mass");
   await amount.fill("500");
   await page.evaluate(() => {
     Object.assign(window.visualViewport!, { height: 310, offsetTop: 94 });
@@ -93,7 +94,7 @@ test("pantry dialog follows keyboard viewport and keeps fields, scrolling and ca
     window.visualViewport!.dispatchEvent(new Event("resize"));
   });
   await page.getByRole("button", { name: "Déjà en réserve : Bœuf haché extra maigre", exact: true }).click();
-  await expect(dialog.getByRole("combobox", { name: "Mesure", exact: true })).toHaveValue("volume");
+  await expect(dialog.getByRole("combobox", { name: "Mesure", exact: true })).toHaveAttribute("data-value", "volume");
   await expect(dialog.getByLabel("Quantité en réserve", { exact: false })).toHaveValue("");
   await assertDialogFits(page, 390, 844);
 });

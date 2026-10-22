@@ -1,3 +1,4 @@
+import { selectAppOption } from "./select-helper";
 import { test, expect } from "@playwright/test";
 import { applyShoppingMutation, shoppingNeeds, shoppingState, previewCooking } from "../src/lib/shopping";
 import type { ShoppingWorkspace } from "../src/lib/shopping-types";
@@ -95,7 +96,7 @@ test("shopping UI covers suppliers, free dates, receipts, cooking and compact fo
   await page.getByRole("button", { name: "Ajouter un épicier", exact: true }).click();
   await page.getByLabel("Nom de l’épicier", { exact: true }).fill("Épicier test");
   await page.getByLabel("Site Web (facultatif)").fill("https://example.com");
-  await page.getByLabel("Réception habituelle").selectOption("pickup");
+  await selectAppOption(page.getByLabel("Réception habituelle"), "pickup");
   await page.getByRole("button", { name: "Enregistrer l’épicier", exact: true }).click();
   await nav.getByRole("button", { name: "Mes menus", exact: true }).click();
   await page.locator(".empty-slot").first().click();
@@ -104,8 +105,8 @@ test("shopping UI covers suppliers, free dates, receipts, cooking and compact fo
   await expect(page.locator(".grocery-aisle>h2")).toHaveText(["Fruits et légumes 1", "Viandes et volailles 1"]);
   await page.getByRole("button", { name: "Commander en ligne", exact: true }).click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog.getByLabel("Épicier", { exact: true })).not.toHaveValue("");
-  await expect(dialog.getByLabel("Mode de réception", { exact: true })).toHaveValue("pickup");
+  await expect(dialog.getByLabel("Épicier", { exact: true })).not.toHaveAttribute("data-value", "");
+  await expect(dialog.getByLabel("Mode de réception", { exact: true })).toHaveAttribute("data-value", "pickup");
   const start = await page.getByLabel("Début des courses").inputValue();
   await dialog.getByLabel("Réception prévue").fill(start);
   await dialog.getByLabel("Quantité Bœuf haché extra maigre", { exact: true }).fill("500");

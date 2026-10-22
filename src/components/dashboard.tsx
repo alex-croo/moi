@@ -1,4 +1,5 @@
 "use client";
+import { AppSelect } from "./app-select";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -104,6 +105,7 @@ export function Dashboard({
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [view]);
   const [selectedWeek, setSelectedWeek] = useState(() => monday(today()));
   const [data, setData] = useState(initialData);
+  const latestData = useRef(data); latestData.current = data;
   const [modal, setModal] = useState<Modal>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
@@ -300,7 +302,7 @@ export function Dashboard({
       next = await privateActions.mutate(type, value);
     } else if (demo) {
       next = { ...data };
-      if (type === "shopping") next = applyShoppingMutation(data, value, data);
+      if (type === "shopping") next = applyShoppingMutation(latestData.current, value, latestData.current);
       if (type === "groceryCheck") {
         const check = value as GroceryCheck;
         next.groceryChecks = [
@@ -352,6 +354,7 @@ export function Dashboard({
       if (!refresh.ok) throw new Error("refresh");
       next = await refresh.json();
     }
+    latestData.current = next;
     setData(next);
     return next;
   }
@@ -1086,7 +1089,7 @@ export function Dashboard({
                 <h1>{t("Mes préférences.", "My preferences.")}</h1>
               </div>
               {privateActions?.privacyPanel(locale)}
-              <GrocerSettings grocers={shoppingState(data).grocers} postalCode={shoppingState(data).postalCode} locale={locale} onSave={async grocers => { await mutate("shopping", { action: "grocers", grocers }); }} onPostalCode={async postalCode => { await mutate("shopping", { action: "postalCode", postalCode }); }} />
+              <GrocerSettings grocers={shoppingState(data).grocers} locale={locale} onSave={async grocers => { await mutate("shopping", { action: "grocers", grocers }); }} />
               <div className="settings-card card">
                 <div>
                   <div>
@@ -1098,14 +1101,14 @@ export function Dashboard({
                       )}
                     </p>
                   </div>
-                  <select
+                  <AppSelect
                     aria-label={t("Langue de l’espace", "Workspace language")}
                     value={locale}
                     onChange={(e) => changeLanguage(e.target.value as Locale)}
                   >
                     <option value="fr">Français</option>
                     <option value="en">English</option>
-                  </select>
+                  </AppSelect>
                 </div>
                 <UnitSettings
                   units={data.preferences}
@@ -1253,14 +1256,14 @@ export function Dashboard({
               </label>
               <label>
                 {t("Unité", "Unit")}
-                <select
+                <AppSelect
                   name="unit"
                   aria-label={t("Unité", "Unit")}
                   defaultValue={data.preferences.bodyMass}
                 >
                   <option value="lb">lb</option>
                   <option value="kg">kg</option>
-                </select>
+                </AppSelect>
               </label>
             </div>
             <button className="primary full-width" disabled={busy}>
@@ -1316,12 +1319,12 @@ export function Dashboard({
             </label>
             <label>
               {t("Catégorie", "Category")}
-              <select name="kind">
+              <AppSelect name="kind">
                 <option value="menu">{t("Menu", "Menu")}</option>
                 <option value="recipe">{t("Recette", "Recipe")}</option>
                 <option value="journal">{t("Journal", "Journal")}</option>
                 <option value="other">{t("Autre", "Other")}</option>
-              </select>
+              </AppSelect>
             </label>
             <button className="primary full-width" disabled={busy}>
               {t("Ajouter le document", "Add document")}

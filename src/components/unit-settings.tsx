@@ -1,4 +1,5 @@
 "use client";
+import { AppSelect } from "./app-select";
 import { useState } from "react";
 import type { Locale } from "@/lib/locale";
 import type { UnitPreferences } from "@/lib/types";
@@ -91,7 +92,7 @@ export function UnitSettings({
         {fields.map((field) => (
           <label key={field.id}>
             <span>{field.name}</span>
-            <select
+            <AppSelect
               aria-label={field.name}
               value={units[field.id]}
               disabled={busy}
@@ -118,7 +119,7 @@ export function UnitSettings({
                   {label}
                 </option>
               ))}
-            </select>
+            </AppSelect>
           </label>
         ))}
       </div>

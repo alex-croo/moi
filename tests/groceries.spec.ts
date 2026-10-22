@@ -1,3 +1,4 @@
+import { selectAppOption } from "./select-helper";
 import { test, expect } from "@playwright/test";
 import { weeklyGroceries } from "../src/lib/groceries";
 import { defaultUnits, quantityLabel, addDays } from "../src/lib/units";
@@ -172,7 +173,7 @@ test("sidebar grocery list follows planner weeks, meal edits, units and language
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();
   await expect(
-    page.getByText("Votre épicerie commence par vos repas.", { exact: true }),
+    page.getByText("De quoi remplir votre cuisine.", { exact: true }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Choisir mes repas", exact: true })
@@ -203,9 +204,8 @@ test("sidebar grocery list follows planner weeks, meal edits, units and language
     "Bœuf haché extra maigre : 500 g",
   );
   await page.getByRole("button", { name: "Préférences", exact: true }).click();
-  await page
-    .getByLabel("Poids des ingrédients", { exact: true })
-    .selectOption("oz");
+  await selectAppOption(page
+    .getByLabel("Poids des ingrédients", { exact: true }), "oz");
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
     .click();

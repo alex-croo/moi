@@ -3,14 +3,17 @@ import type { MealSlot, PantryItem, Quantity, RecipeIngredient } from "./types";
 import type { ShoppingCatalog, ShoppingPersonal, ShoppingState, PurchaseLine, CookedMeal } from "./shopping-types";
 import { addDays } from "./units";
 import { grocerCategories, normalizePostalCode, postalCodePattern } from "./grocer-preferences";
+import { aisles, suggestedLocation, type ShoppingIngredient } from "./grocery-aisles";
+import type { PantryEntry } from "./pantry";
 import { countMeasure } from "./ingredient-measures";
 
 const id = z.string().regex(/^[a-z0-9-]{1,100}$/);
 const quantity = z.object({ kind: z.enum(["mass", "volume", "spoon", "count"]), value: z.number().finite().min(0).max(1000000), label: z.string().max(80).optional(), labelEn: z.string().max(80).optional() }).strict();
 const location = z.enum(["cupboard", "fridge", "freezer", "spices"]);
 export const purchaseLineKey = (line: PurchaseLine) => line.id || line.ingredientId!;
-const line = z.object({ id: z.uuid().optional(), ingredientId: id.nullable(), name: z.string().trim().min(1).max(160).optional(), quantity, location, purchaseLabel: z.string().trim().max(160).optional(), priceCents: z.number().int().min(0).max(100000000).optional() }).strict().refine(l => l.ingredientId !== null || !!l.id && !!l.name);
+const line = z.object({ id: z.uuid().optional(), ingredientId: id.nullable(), name: z.string().trim().min(1).max(160).optional(), quantity, location, personalItemId: z.uuid().optional(), aisle: z.enum(aisles).optional(), purchaseLabel: z.string().trim().max(160).optional(), priceCents: z.number().int().min(0).max(100000000).optional() }).strict().refine(l => l.ingredientId !== null || !!l.id && !!l.name);
 const lines = z.array(line).min(1).max(300).refine(v => new Set(v.map(purchaseLineKey)).size === v.length);
+const personalItem = z.object({ id: z.uuid(), name: z.string().trim().min(1).max(160), aisle: z.enum(aisles), quantity: quantity.refine(q => q.value > 0) }).strict();
 const deliveryWindow = z.object({ start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), timeZone: z.literal("America/Toronto") }).strict().refine(v => v.start < v.end);
 const range = z.object({ start: z.iso.date(), end: z.iso.date() }).strict().refine(v => v.start <= v.end && v.end <= addDays(v.start, 90));
 const meal = z.object({ date: z.iso.date(), slot: z.enum(["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner", "evening_snack"]), recipeId: id }).strict();
@@ -18,6 +21,9 @@ export const shoppingMutation = z.discriminatedUnion("action", [
   z.object({ action: z.literal("postalCode"), postalCode: z.string().max(12).transform(normalizePostalCode).refine(v => v === "" || postalCodePattern.test(v)) }).strict(),
   z.object({ action: z.literal("range"), range }).strict(),
   z.object({ action: z.literal("select"), range, ingredientId: id, checked: z.boolean() }).strict(),
+  z.object({ action: z.literal("selectMany"), range, updates: z.array(z.object({ ingredientId: id, checked: z.boolean() }).strict()).max(600) }).strict(),
+  z.object({ action: z.literal("personalItem"), item: personalItem }).strict(),
+  z.object({ action: z.literal("removePersonalItem"), id: z.uuid() }).strict(),
   z.object({ action: z.literal("grocers"), grocers: z.array(z.object({ id: z.uuid(), name: z.string().trim().min(1).max(100), url: z.union([z.literal(""), z.url().max(2048).refine(v => { const u = new URL(v); return u.protocol === "https:" && !u.username && !u.password; })]), favorite: z.boolean(), fulfillment: z.enum(["delivery", "pickup"]), categories: z.array(z.enum(grocerCategories)).max(grocerCategories.length).optional() }).strict()).max(20).refine(v => {
     const categories = v.flatMap(g => g.categories || []);
     return new Set(v.map(x => x.id)).size === v.length && v.filter(x => x.favorite).length <= 1 && new Set(categories).size === categories.length;
@@ -94,7 +100,7 @@ function stockFrom(pantry: PantryItem[]): Stock[] {
     .sort((a, b) => Number(pantry[a.index].location === "freezer") - Number(pantry[b.index].location === "freezer"));
 }
 export type ShoppingItem = {
-  ingredient: ShoppingCatalog["ingredients"][number]; quantity: Quantity; required: number; onHand: number; pending: number;
+  ingredient: ShoppingIngredient; personalItemId?: string; quantity: Quantity; required: number; onHand: number; pending: number;
   sources: OrderSource[]; awaitingConfirmation: number;
   estimated: boolean; needsStockCheck: boolean; uses: { recipe: ShoppingCatalog["recipes"][number]; meals: number }[];
 };
@@ -104,6 +110,11 @@ export type MealAvailability = {
   frozen: { itemId: string; ingredientId: string; quantity: Quantity }[];
 };
 export const toBuyQuantity = (item: ShoppingItem) => ({ ...item.quantity, value: clean(item.quantity.value - item.awaitingConfirmation) });
+export function shoppingPurchaseLine(item: ShoppingItem): PurchaseLine {
+  return { ingredientId: item.personalItemId ? null : item.ingredient.id,
+    ...(item.personalItemId ? { id: item.personalItemId, personalItemId: item.personalItemId, name: item.ingredient.name, aisle: item.ingredient.aisle } : {}),
+    quantity: { ...item.quantity }, location: suggestedLocation(item.ingredient) };
+}
 export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, start: string, end: string, includeOptional = false) {
   const state = shoppingState(data), stock = stockFrom(data.pantry);
   for (const order of state.orders.filter(o => o.status === "pending").sort((a, b) => a.expectedDate.localeCompare(b.expectedDate)))
@@ -167,6 +178,26 @@ export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, 
       }
     }
   }
+  // Personal purchases are a to-buy intention, not a recipe demand. They remain
+  // visible across date ranges; receiving them never reserves the same pantry twice.
+  for (const personal of state.personalItems || []) {
+    let received = 0, pending = 0;
+    const sources: OrderSource[] = [];
+    for (const order of state.orders) {
+      if (order.status === "cancelled") continue;
+      const matched = (order.status === "received" ? order.received || order.lines : order.lines)
+        .filter(l => l.personalItemId === personal.id && compatible(l.quantity, personal.quantity));
+      const amount = matched.reduce((sum, l) => sum + l.quantity.value, 0);
+      if (order.status === "received") received += amount;
+      else if (amount > 0) { pending += amount; sources.push({ id: order.id, grocer: order.grocer, date: order.expectedDate }); }
+    }
+    result.set(personal.id, {
+      personalItemId: personal.id, ingredient: { id: personal.id, name: personal.name, nameEn: personal.name, aisle: personal.aisle },
+      quantity: { ...personal.quantity, value: clean(personal.quantity.value - received - pending) },
+      required: personal.quantity.value, onHand: Math.min(received, personal.quantity.value), pending,
+      sources, awaitingConfirmation: 0, estimated: false, needsStockCheck: false, uses: [],
+    });
+  }
   return { items: [...result.values()], meals, missing, availability };
 }
 function timeOrder(slot: MealSlot["slot"]) { return ["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner", "evening_snack"].indexOf(slot); }
@@ -182,12 +213,12 @@ export function previewCooking(data: ShoppingPersonal, catalog: ShoppingCatalog,
   }
   return { deductions, missing };
 }
-function addStock(pantry: PantryItem[], line: PurchaseLine, catalog: ShoppingCatalog) {
+function addStock(pantry: PantryEntry[], line: PurchaseLine, catalog: ShoppingCatalog) {
   if (line.quantity.value <= 0) return;
   const existing = pantry.find(p => p.ingredientId === line.ingredientId && (line.ingredientId !== null || p.name === line.name) && p.location === line.location && p.quantity && compatible(p.quantity, line.quantity));
   if (existing?.quantity) {
-    existing.quantity.value = clean((existing.inStock ? existing.quantity.value : 0) + line.quantity.value); existing.inStock = true;
-  } else pantry.push({ id: crypto.randomUUID(), ingredientId: line.ingredientId, name: catalog.ingredients.find(i => i.id === line.ingredientId)?.name || line.name || line.ingredientId!, location: line.location, quantity: { ...line.quantity }, inStock: true, note: line.purchaseLabel || "" });
+    existing.quantity.value = clean((existing.inStock ? existing.quantity.value : 0) + line.quantity.value); existing.inStock = true; if (line.aisle) existing.aisle = line.aisle;
+  } else pantry.push({ id: crypto.randomUUID(), ingredientId: line.ingredientId, name: catalog.ingredients.find(i => i.id === line.ingredientId)?.name || line.name || line.ingredientId!, location: line.location, quantity: { ...line.quantity }, inStock: true, ...(line.aisle ? { aisle: line.aisle } : {}), note: line.purchaseLabel || "" });
 }
 export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value: object, catalog: ShoppingCatalog): T {
   const input = shoppingMutation.parse(value), state = structuredClone(shoppingState(data));
@@ -201,15 +232,39 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
       state.selections[key] = input.checked ? [...new Set([...selected, input.ingredientId])] : selected.filter(i => i !== input.ingredientId);
       break;
     }
+    case "selectMany": {
+      const key = periodKey(input.range.start, input.range.end), selected = new Set(state.selections[key] || []);
+      for (const update of input.updates) update.checked ? selected.add(update.ingredientId) : selected.delete(update.ingredientId);
+      state.selections[key] = [...selected];
+      break;
+    }
+    case "personalItem": {
+      const previous = state.personalItems || [];
+      if (previous.some(i => i.id === input.item.id)) return data;
+      if (previous.length >= 500) throw Error("personal_list_full");
+      state.personalItems = [...previous, input.item];
+      break;
+    }
+    case "removePersonalItem": {
+      state.personalItems = (state.personalItems || []).filter(i => i.id !== input.id);
+      for (const key of Object.keys(state.selections)) state.selections[key] = state.selections[key].filter(id => id !== input.id);
+      break;
+    }
     case "grocers": state.grocers = input.grocers; break;
     case "order": {
       if (state.orders.some(o => o.id === input.id)) return data;
       if (input.lines.some(l => l.ingredientId !== null && !catalog.ingredients.some(i => i.id === l.ingredientId)) || !input.lines.some(l => l.quantity.value > 0)) throw Error("invalid_order");
+      for (const line of input.lines) if (line.personalItemId) {
+        const item = state.personalItems?.find(i => i.id === line.personalItemId);
+        if (!item || line.ingredientId !== null || !compatible(item.quantity, line.quantity)) throw Error("invalid_personal_item");
+        // Use the user's saved identity and aisle, not arbitrary receipt metadata.
+        line.name = item.name; line.aisle = item.aisle;
+      }
       const purchase = { ...input, status: input.mode === "store" ? "received" as const : "pending" as const, createdAt: now };
       state.orders.unshift({ id: purchase.id, mode: purchase.mode, grocer: purchase.grocer, expectedDate: purchase.expectedDate, fulfillment: purchase.fulfillment, lines: purchase.lines, status: purchase.status, createdAt: now,
         ...(input.deliveryWindow ? { deliveryWindow: input.deliveryWindow } : {}), ...(input.mode === "store" ? { received: input.lines, receivedAt: now } : {}) });
       if (input.mode === "store") for (const line of input.lines) addStock(next.pantry, line, catalog);
-      for (const key of Object.keys(state.selections)) state.selections[key] = state.selections[key].filter(id => !input.lines.some(l => l.ingredientId === id));
+      for (const key of Object.keys(state.selections)) state.selections[key] = state.selections[key].filter(id => !input.lines.some(l => (l.ingredientId === id || l.personalItemId === id) && l.quantity.value > 0));
       break;
     }
     case "receive": {
@@ -229,7 +284,7 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
       if (!item || !item.inStock || item.location !== "freezer" || !item.quantity || input.amount > item.quantity.value) throw Error("frozen_stock_changed");
       const moved = { ...item.quantity, value: input.amount };
       item.quantity.value = clean(item.quantity.value - input.amount); item.inStock = item.quantity.value > 0;
-      addStock(next.pantry, { ingredientId: item.ingredientId, name: item.name, quantity: moved, location: "fridge", purchaseLabel: item.note }, catalog);
+      addStock(next.pantry, { ingredientId: item.ingredientId, name: item.name, quantity: moved, location: "fridge", purchaseLabel: item.note, aisle: (item as PantryEntry).aisle }, catalog);
       state.thawed = [...(state.thawed || []), input.id];
       break;
     }

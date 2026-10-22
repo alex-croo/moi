@@ -54,3 +54,13 @@ Mes réserves reprend les rayons de l’épicerie, indépendamment de l’emplac
 Un ingrédient déjà en réserve ouvre d’abord ses entrées existantes depuis la liste d’épicerie. « Modifier cette réserve » conserve son identifiant; l’ajout d’un autre lot est explicite. Une quantité non comparable affiche la quantité enregistrée et un lien de correction, plutôt qu’un avertissement ambigu.
 
 Pour l’ail frais, les unités gousses et têtes sont explicites : 3 g par gousse et 24 g par tête, selon [Santé Canada, FCÉN, aliment 2394](https://food-nutrition.canada.ca/cnf-fce/serving-portion?id=2394). Le besoin de la recette utilise son équivalent en grammes documenté. Les conversions sont estimées; des unités sans libellé ou des paquets ne sont jamais convertis automatiquement. La même conversion sert aux courses, à la disponibilité des repas et à « J’ai cuisiné », avec une annulation exacte des déductions.
+
+## Aliments personnels et sélections
+
+« Ajouter un aliment » ajoute un besoin d’achat indépendant des recettes et des dates affichées. Son rayon et sa quantité restent dans les données privées. Une commande en attente couvre la quantité commandée, mais n’augmente pas les réserves. La réception conserve le rayon, ajoute seulement la quantité reçue et laisse le solde à acheter. Une annulation remet le besoin dans la liste; une confirmation répétée n’ajoute pas deux fois le stock. Les achats terminés restent accessibles dans « Déjà couverts »; consommer ensuite le stock ne relance pas automatiquement cet achat.
+
+Les coches réagissent immédiatement. Une file sérialise et regroupe les écritures en conservant le dernier choix de chaque article. Les autres cases restent utilisables pendant une sauvegarde. En cas d’échec, les choix sont conservés à l’écran avec une action « Réessayer »; ils ne sont pas présentés comme enregistrés. « Tout sélectionner » ne sélectionne que les articles à acheter.
+
+Les épiciers et les commandes restent gérés manuellement : copie de liste, ouverture de la boutique, puis confirmation d’achat ou de réception dans Tred’meal. Aucun export de panier ni connexion Instacart n’est proposé.
+
+Les listes déroulantes utilisent un composant commun aux couleurs de l’application, placé au-dessus de la fenêtre et ajusté à l’écran. Navigation au clavier, recherche par frappe et touche Échap sont disponibles. Les champs mobiles conservent leur police de 16 px et le clavier décimal.

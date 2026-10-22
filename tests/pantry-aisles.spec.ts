@@ -1,3 +1,4 @@
+import { selectAppOption } from "./select-helper";
 import { test, expect } from "@playwright/test";
 import { demoData } from "../src/lib/demo";
 import { applyPrivateMutation } from "../src/lib/private-mutations";
@@ -57,10 +58,10 @@ test("compact pantry groups personal foods by aisle, keeps location and preserve
   await page.getByRole("navigation").getByRole("button", { name: "Mes réserves", exact: true }).click();
   await page.getByRole("button", { name: "Ajouter un aliment personnel", exact: true }).click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog.getByLabel("Mesure", { exact: true })).toHaveValue("volume");
+  await expect(dialog.getByLabel("Mesure", { exact: true })).toHaveAttribute("data-value", "volume");
   await dialog.getByLabel("Nom de l’aliment", { exact: true }).fill("Yogourt maison");
-  await dialog.getByLabel("Rayon", { exact: true }).selectOption("dairy");
-  await dialog.getByLabel("Où le ranger", { exact: true }).selectOption("fridge");
+  await selectAppOption(dialog.getByLabel("Rayon", { exact: true }), "dairy");
+  await selectAppOption(dialog.getByLabel("Où le ranger", { exact: true }), "fridge");
   await dialog.getByLabel(/Quantité \(facultatif\)/).fill("500");
   await dialog.getByRole("button", { name: "Garder dans mes réserves", exact: true }).click();
   const section = page.getByRole("region", { name: "Produits laitiers et œufs", exact: true });
@@ -81,7 +82,7 @@ test("compact pantry groups personal foods by aisle, keeps location and preserve
   await expect.poll(() => page.locator(".sidebar").evaluate(el => el.getBoundingClientRect().right)).toBeLessThanOrEqual(0);
   await page.screenshot({ path: "artifacts/pantry-aisles-mobile.png", fullPage: true });
   await page.getByRole("button", { name: "Modifier Yogourt maison", exact: true }).click();
-  await expect(dialog.getByLabel("Rayon", { exact: true })).toHaveValue("dairy");
+  await expect(dialog.getByLabel("Rayon", { exact: true })).toHaveAttribute("data-value", "dairy");
   await expect(dialog.getByLabel(/Quantité \(facultatif\)/)).toHaveValue("500");
   await dialog.getByRole("button", { name: "Garder dans mes réserves", exact: true }).click();
   await expect(row).toHaveCount(1);
@@ -96,8 +97,8 @@ test("a mismatched saved stock is edited from groceries instead of silently addi
   await nav.getByRole("button", { name: "Mes réserves", exact: true }).click();
   await page.getByRole("button", { name: "Ajouter un aliment", exact: true }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Aliment", { exact: true }).selectOption("beef-95-raw");
-  await dialog.getByLabel("Mesure", { exact: true }).selectOption("count");
+  await selectAppOption(dialog.getByLabel("Aliment", { exact: true }), "beef-95-raw");
+  await selectAppOption(dialog.getByLabel("Mesure", { exact: true }), "count");
   await dialog.getByLabel(/Quantité \(facultatif\)/).fill("20");
   await dialog.getByRole("button", { name: "Garder dans mes réserves", exact: true }).click();
   await nav.getByRole("button", { name: "Liste d’épicerie", exact: true }).click();
@@ -107,7 +108,7 @@ test("a mismatched saved stock is edited from groceries instead of silently addi
   await dialog.getByRole("button", { name: "Modifier cette réserve", exact: true }).click();
   await expect(dialog).toHaveAccessibleName("Modifier un aliment");
   await expect(dialog.getByLabel(/Quantité \(facultatif\)/)).toHaveValue("20");
-  await dialog.getByLabel("Mesure", { exact: true }).selectOption("mass");
+  await selectAppOption(dialog.getByLabel("Mesure", { exact: true }), "mass");
   await dialog.getByLabel(/Quantité \(facultatif\)/).fill("250");
   await dialog.getByRole("button", { name: "Garder dans mes réserves", exact: true }).click();
   await expect(page.locator(".pantry-group li")).toHaveCount(1);

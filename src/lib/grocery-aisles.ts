@@ -21,11 +21,12 @@ for (const [aisle, ids] of Object.entries({
   dry: "spaghetti-secs marinara panko sucre-blanc haricots-rouges-conserve-liquide tomates-conserve-jus cassonade pate-tomate bouillon-boeuf-concentre",
   seasoning: "sel poivre-noir origan-seche basilic-seche marjolaine-sechee ail-poudre romarin-seche persil-seche laurier-moulu mayonnaise sauce-bbq vinaigre-balsamique huile-canola paprika-fume chili-poudre cumin-moulu chipotle paprika-doux oignon-poudre coriandre-graines cayenne vinaigrette-cesar moutarde-graines celeri-graines thym-seche sauce-raifort moutarde-ancienne aneth-graines piment-flocons vinaigre-vin-rouge moutarde-dijon guacamole",
 })) for (const id of ids.split(" ")) known[id] = aisle as Aisle;
-export function ingredientAisle(ingredient: Ingredient): Aisle {
+export type ShoppingIngredient = Pick<Ingredient, "id" | "name" | "nameEn"> & { aisle?: Aisle };
+export function ingredientAisle(ingredient: Pick<ShoppingIngredient, "id" | "aisle">): Aisle {
   const explicit = (ingredient as Ingredient & { aisle?: Aisle }).aisle;
   return explicit && aisles.includes(explicit) ? explicit : known[ingredient.id] || "other";
 }
-export function suggestedLocation(ingredient: Ingredient): PantryLocation {
+export function suggestedLocation(ingredient: Pick<ShoppingIngredient, "id" | "aisle">): PantryLocation {
   const aisle = ingredientAisle(ingredient);
   return aisle === "frozen" ? "freezer" : ["produce", "meat", "fish", "dairy"].includes(aisle) ? "fridge" : aisle === "seasoning" ? "spices" : "cupboard";
 }

@@ -1,4 +1,5 @@
 "use client";
+import { AppSelect } from "./app-select";
 import { useEffect, useState } from "react";
 import { Heart, Users, Plus } from "lucide-react";
 import type { Locale } from "@/lib/locale";
@@ -263,7 +264,7 @@ export function Community({
             </div>
             <label>
               {t("Un mot à partager", "Something to share")}
-              <select
+              <AppSelect
                 value={kind}
                 onChange={(e) => {
                   setKind(e.target.value);
@@ -275,7 +276,7 @@ export function Community({
                     {t(...words)}
                   </option>
                 ))}
-              </select>
+              </AppSelect>
             </label>
             {confirmShare ? (
               <div className="share-confirm">

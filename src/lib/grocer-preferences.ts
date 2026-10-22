@@ -1,4 +1,4 @@
-import { aisles, aisleLabel, ingredientAisle } from "./grocery-aisles";
+import { aisles, aisleLabel, ingredientAisle, type ShoppingIngredient } from "./grocery-aisles";
 import type { Ingredient } from "./types";
 import type { Grocer, GrocerCategory } from "./shopping-types";
 import type { Locale } from "./locale";
@@ -15,7 +15,7 @@ export function grocerCategoryLabel(category: GrocerCategory, locale: Locale) {
   if (category === "poultry") return locale === "fr" ? "Volaille" : "Poultry";
   return aisleLabel(category, locale);
 }
-export function ingredientGrocerCategory(ingredient: Ingredient): GrocerCategory {
+export function ingredientGrocerCategory(ingredient: ShoppingIngredient): GrocerCategory {
   const aisle = ingredientAisle(ingredient);
   if (aisle !== "meat") return aisle;
   const name = `${ingredient.id} ${ingredient.name} ${ingredient.nameEn}`.toLowerCase();
@@ -24,7 +24,7 @@ export function ingredientGrocerCategory(ingredient: Ingredient): GrocerCategory
   if (/poulet|chicken|dinde|turkey|volaille|poultry/.test(name)) return "poultry";
   return aisle;
 }
-export function preferredGrocer(ingredient: Ingredient, grocers: Grocer[]): Grocer | undefined {
+export function preferredGrocer(ingredient: ShoppingIngredient, grocers: Grocer[]): Grocer | undefined {
   const category = ingredientGrocerCategory(ingredient);
   return grocers.find(g => g.categories?.includes(category))
     || grocers.find(g => g.categories?.includes(ingredientAisle(ingredient)))
