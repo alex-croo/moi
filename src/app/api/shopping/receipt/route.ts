@@ -2,9 +2,10 @@ import { authorizedClient } from "@/lib/supabase";
 import { sameOrigin } from "@/lib/security";
 import { boundedJson, privateReply as reply } from "@/lib/private-http";
 import { fireworksText, requirePrivateFireworks } from "@/lib/fireworks";
-import { prepareReceipt, receiptInput, receiptInstructions } from "@/lib/receipt";
+import { prepareReceipt, receiptInput, receiptInstructions, receiptOutput } from "@/lib/receipt";
 import type { Purchase } from "@/lib/shopping-types";
 import type { Ingredient } from "@/lib/types";
+import { z } from "zod";
 
 export const maxDuration = 180;
 export async function POST(request: Request) {
@@ -35,9 +36,14 @@ export async function POST(request: Request) {
       locale: input.locale, receipt: input.text,
       expected: order.lines.map((l, index) => ({ index, name: l.name || ingredients.find(i => i.id === l.ingredientId)?.name, ingredientId: l.ingredientId })),
       catalog: ingredients.map(i => ({ id: i.id, name: i.name, nameEn: i.nameEn })),
-    }, true, true, auth.user.id, { maxTokens: 16000, maxCharacters: 100000, timeoutMs: 150000, reasoning: "none" });
+    }, true, true, auth.user.id, { maxTokens: 16000, maxCharacters: 100000, timeoutMs: 150000, reasoning: "none", schema: z.toJSONSchema(receiptOutput) });
     try { return reply(prepareReceipt(JSON.parse(output), input.text, order, ingredients, input.locale)); }
-    catch { return reply({ error: "incomplete_receipt" }, 502); }
+    catch (error) {
+      const known = ["ungrounded_item", "duplicate_item", "unknown_ingredient", "unknown_order_line", "invalid_quantity"];
+      const category = error instanceof z.ZodError ? error.issues.slice(0, 10).map(i => `${i.path.join(".")}:${i.code}`).join(",") : error instanceof Error && known.includes(error.message) ? error.message : "invalid_structure";
+      console.warn("receipt_validation_failed", category);
+      return reply({ error: "incomplete_receipt" }, 502);
+    }
   } catch (error) {
     // Only machine categories are logged, never receipt content or provider response bodies.
     const message = error instanceof Error ? error.message : "";

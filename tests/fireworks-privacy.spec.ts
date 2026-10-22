@@ -41,6 +41,11 @@ test('journal inference fails closed before sending content when retention is mi
   expect(JSON.parse(calls[0].init.body as string).reasoning_effort).toBeUndefined();
   await api.fireworksText('Extract',{receipt:'2 x milk 1 L'},true,true,env.FIREWORKS_PRIVATE_PILOT_OWNER,{maxTokens:16000,maxCharacters:100000,timeoutMs:150000,reasoning:'none'});
   expect(JSON.parse(calls.at(-1)!.init.body as string)).toMatchObject({store:false,reasoning_effort:'none',max_tokens:16000,response_format:{type:'json_object'}});
+  const schema={type:'object',properties:{quantity:{type:'number'}},required:['quantity'],additionalProperties:false};
+  await api.fireworksText('Extract',{receipt:'2 x milk 1 L'},true,true,env.FIREWORKS_PRIVATE_PILOT_OWNER,{reasoning:'none',schema});
+  const structured=JSON.parse(calls.at(-1)!.init.body as string);
+  expect(structured.response_format).toEqual({type:'json_schema',json_schema:{name:'result',schema}});
+  expect(structured.messages[0].content).toContain(JSON.stringify(schema));
   calls.length=0;
   await assert.rejects(()=>api.fireworksText('Edit',{},true,false,'22222222-2222-4222-8222-222222222222'),/retention_unverified/);
   await assert.rejects(()=>api.fireworksText('Edit',{}),/retention_unverified/);
