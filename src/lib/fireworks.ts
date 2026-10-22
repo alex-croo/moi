@@ -21,18 +21,18 @@ export async function requirePrivateFireworks(ownerId?: string) {
   const enforcement = p?.inference?.enforcement;
   if (!(enforcement === "ENFORCED" || (p?.defaultEnforced === true && (!enforcement || enforcement === "INHERIT" || enforcement === "ENFORCEMENT_UNSPECIFIED")))) throw Error("retention_unverified");
 }
-export async function fireworksText(instructions: string, input: unknown, privateData = true, json = false, ownerId?: string, limits: { maxTokens?: number; maxCharacters?: number } = {}) {
+export async function fireworksText(instructions: string, input: unknown, privateData = true, json = false, ownerId?: string, limits: { maxTokens?: number; maxCharacters?: number; timeoutMs?: number; reasoning?: "none" } = {}) {
   if (privateData) await requirePrivateFireworks(ownerId);
   if (!process.env.FIREWORKS_API_KEY) throw Error("provider_unavailable");
   const model = fireworksStatus().model;
   const r = await fetch("https://api.fireworks.ai/inference/v1/chat/completions", {
-    method: "POST", cache: "no-store", signal: AbortSignal.timeout(50000),
+    method: "POST", cache: "no-store", signal: AbortSignal.timeout(limits.timeoutMs ?? 50000),
     headers: { Authorization: `Bearer ${process.env.FIREWORKS_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model, store: false, stream: false, max_tokens: limits.maxTokens ?? 4000, ...(json ? {response_format:{type:"json_object"}} : {}), messages: [
+    body: JSON.stringify({ model, store: false, stream: false, max_tokens: limits.maxTokens ?? 4000, ...(limits.reasoning ? { reasoning_effort: limits.reasoning } : {}), ...(json ? {response_format:{type:"json_object"}} : {}), messages: [
       { role: "system", content: instructions }, { role: "user", content: JSON.stringify(input) },
     ] }),
   });
-  if (!r.ok) throw Error("provider_unavailable");
+  if (!r.ok) throw Error(`provider_http_${r.status}`);
   const result = await r.json();
   if (result.model !== model) throw Error("unexpected_model");
   if (result.choices?.[0]?.finish_reason !== "stop") throw Error("incomplete_output");

@@ -6,7 +6,7 @@ import { prepareReceipt, receiptInput, receiptInstructions } from "@/lib/receipt
 import type { Purchase } from "@/lib/shopping-types";
 import type { Ingredient } from "@/lib/types";
 
-export const maxDuration = 60;
+export const maxDuration = 180;
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return reply({ error: "forbidden" }, 403);
   const auth = await authorizedClient();
@@ -35,11 +35,14 @@ export async function POST(request: Request) {
       locale: input.locale, receipt: input.text,
       expected: order.lines.map((l, index) => ({ index, name: l.name || ingredients.find(i => i.id === l.ingredientId)?.name, ingredientId: l.ingredientId })),
       catalog: ingredients.map(i => ({ id: i.id, name: i.name, nameEn: i.nameEn })),
-    }, true, true, auth.user.id, { maxTokens: 16000, maxCharacters: 100000 });
+    }, true, true, auth.user.id, { maxTokens: 16000, maxCharacters: 100000, timeoutMs: 150000, reasoning: "none" });
     try { return reply(prepareReceipt(JSON.parse(output), input.text, order, ingredients, input.locale)); }
     catch { return reply({ error: "incomplete_receipt" }, 502); }
-  } catch {
-    // Never expose receipt text, payment details or provider errors in logs/responses.
+  } catch (error) {
+    // Only machine categories are logged, never receipt content or provider response bodies.
+    const message = error instanceof Error ? error.message : "";
+    const category = error instanceof Error && error.name === "TimeoutError" ? "timeout" : /^(provider_http_\d{3}|retention_unverified|unexpected_model|incomplete_output|invalid_output)$/.test(message) ? message : "unavailable";
+    console.warn("receipt_analysis_failed", category);
     return reply({ error: "ai_unavailable" }, 503);
   }
 }
