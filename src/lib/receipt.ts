@@ -6,7 +6,13 @@ import { compatible } from "./shopping";
 
 export const receiptUnits = ["g", "kg", "oz", "lb", "ml", "l", "fl_oz", "cup", "tsp", "tbsp", "count"] as const;
 export type ReceiptUnit = typeof receiptUnits[number];
-export const receiptInput = z.object({ orderId: z.uuid(), text: z.string().trim().min(3).max(20000), locale: z.enum(["fr", "en"]) }).strict();
+export const receiptImageLimit = 1050000;
+export const receiptImageCount = 3;
+// Inline images only: no external URLs, SVGs, or persistent upload locations.
+export const receiptImage = z.string().max(receiptImageLimit).regex(/^data:image\/(?:jpeg|png);base64,(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)
+  .refine(value => value.startsWith("data:image/jpeg;base64,/9j/") || value.startsWith("data:image/png;base64,iVBORw0KGgo"));
+export const receiptInput = z.object({ orderId: z.uuid(), text: z.string().trim().max(20000).default(""), images: z.array(receiptImage).max(receiptImageCount).default([]), locale: z.enum(["fr", "en"]) }).strict()
+  .refine(value => value.text.length >= 3 || value.images.length > 0);
 // The model extracts package counts and sizes; arithmetic stays deterministic.
 export const receiptOutput = z.object({ items: z.array(z.object({
   name: z.string().trim().min(1).max(160), source: z.string().trim().min(1).max(500),
@@ -16,6 +22,9 @@ export const receiptOutput = z.object({ items: z.array(z.object({
   location: z.enum(["cupboard", "fridge", "freezer", "spices"]), aisle: z.enum(aisles),
   review: z.string().max(250),
 }).strict()).max(100), note: z.string().max(600) }).strict();
+// Transcription is checked for internal consistency, then shown for human review;
+// it is not treated as independent proof of the image's contents.
+export const receiptPhotoOutput = receiptOutput.extend({ transcription: z.string().max(30000) }).strict();
 export type ReceiptDraft = { line: PurchaseLine; review: string; source: string; needsQuantity: boolean };
 export type ReceiptPreview = { items: ReceiptDraft[]; note: string };
 

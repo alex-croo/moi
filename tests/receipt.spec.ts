@@ -55,6 +55,7 @@ test("receipt API verifies owner, origin, vault and quota; previews never write 
   const require = createRequire(process.cwd() + "/package.json");
   let authorized = true, origin = true, vault = false, exists = true, permitted = true, calls = 0;
   let output: unknown = { items: [item()], note: "" };
+  let imagePayload: string[] = [];
   const queries: string[] = [];
   const db = { from: (table: string) => {
     const query = { select: (columns: string) => { queries.push(`${table}:${columns}`); return query; }, eq: (column: string, value: string) => { expect(column).toBe("owner_id"); expect(value).toBe("owner"); return query; }, maybeSingle: async () => ({ data: table === "personal_vaults" ? vault ? { revision: 1 } : null : { shopping: { orders: exists ? [order] : [] } }, error: null }), then: (resolve: (value: unknown) => unknown) => resolve({ data: demoData.ingredients.map(i => ({ id: i.id, details: i })), error: null }) }; return query;
@@ -65,7 +66,7 @@ test("receipt API verifies owner, origin, vault and quota; previews never write 
     if (name.endsWith("/security")) return { sameOrigin: () => origin };
     if (name.endsWith("/private-http")) return http;
     if (name.endsWith("/receipt")) return receiptModule;
-    if (name.endsWith("/fireworks")) return { requirePrivateFireworks: async (id: string) => expect(id).toBe("owner"), fireworksText: async (_: string, input: any, privateData: boolean, json: boolean, id: string) => { calls++; expect(privateData).toBe(true); expect(json).toBe(true); expect(id).toBe("owner"); expect(Object.keys(input).sort()).toEqual(["catalog", "expected", "locale", "receipt"]); return JSON.stringify(output); } };
+    if (name.endsWith("/fireworks")) return { requirePrivateFireworks: async (id: string) => expect(id).toBe("owner"), fireworksText: async (_: string, input: any, privateData: boolean, json: boolean, id: string, options: any) => { calls++; imagePayload = options.images; expect(privateData).toBe(true); expect(json).toBe(true); expect(id).toBe("owner"); expect(Object.keys(input).sort()).toEqual(["catalog", "expected", "locale", "receipt"]); return JSON.stringify(output); } };
     return require(name);
   } });
   const request = (payload: unknown = { orderId: order.id, text: "4 x bœuf 500 g", locale: "fr" }) => new Request("https://tredmeal.com/api/shopping/receipt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -82,6 +83,19 @@ test("receipt API verifies owner, origin, vault and quota; previews never write 
   expect(queries).toContain("standard_workspaces:shopping:data->shopping");
   expect(queries.some(q => /journal|data,|\*/.test(q))).toBe(false);
   output = { items: [item({ source: "invented" })], note: "" }; expect((await post()).status).toBe(502);
+  const pixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1cAAAAASUVORK5CYII=";
+  const invalidBefore = calls;
+  for (const images of [["https://private.example/receipt.png"], ["data:image/svg+xml;base64,PHN2Zz4="], [pixel.repeat(20000)], [pixel, pixel, pixel, pixel], ["data:image/png;base64,YWJj"]]) {
+    expect((await post({ orderId: order.id, images, locale: "fr" })).status).toBe(400);
+  }
+  expect(calls).toBe(invalidBefore);
+  output = { items: [item()], note: "", transcription: "4 x bœuf 500 g" };
+  const photo = await post({ orderId: order.id, images: [pixel], locale: "fr" });
+  expect(photo.status).toBe(200); expect(imagePayload).toEqual([pixel]);
+  const photoBody = await photo.json(); expect(photoBody.items[0].line.quantity.value).toBe(2000);
+  expect(JSON.stringify(photoBody)).not.toContain("base64");
+  output = { items: [item()], note: "", transcription: "unrelated text" };
+  expect((await post({ orderId: order.id, images: [pixel], locale: "fr" })).status).toBe(502);
 });
 
 test("pasted receipt is reviewed, can recover from AI error, and updates pantry plus receipt history", async ({ page }) => {
@@ -130,4 +144,64 @@ test("pasted receipt is reviewed, can recover from AI error, and updates pantry 
   await nav.getByRole("button", { name: "Mes réserves", exact: true }).click();
   await expect(page.getByRole("region", { name: "Épicerie sèche et conserves", exact: true })).toContainText("Pâtes artisanales");
   await expect(page.locator(".pantry-groups")).toContainText("2 000 g");
+});
+
+test("receipt photo works alone; errors, cancellation and timeout preserve attachments without updating stock", async ({ page }) => {
+  // An original synthetic fixture, also usable for the real vision smoke test.
+  await page.setContent(`<main style="width:650px;padding:42px;background:white;color:#111;font:22px/1.6 monospace"><h1>RECU DE TEST</h1><p>Exemple fictif — aucune commande reelle</p><hr><p>4 x Boeuf hache extra maigre - 500 g</p><p>2 x Lait 2% - 1 L</p><p>1 x Oeufs - boite de 12</p><p>1 x Spaghetti - format non precise</p><hr><p>Tomates : annulees / non livrees</p><p>Frais livraison : 5,00 $</p></main>`);
+  const photo = await page.locator("main").screenshot({ path: "artifacts/synthetic-receipt.png" });
+  await page.goto("/fr/demo");
+  const nav = page.getByRole("navigation");
+  await nav.getByRole("button", { name: "Mes menus", exact: true }).click();
+  await page.locator(".empty-slot").first().click();
+  await page.getByRole("button", { name: "Choisir cette recette", exact: true }).click();
+  await nav.getByRole("button", { name: "Liste d’épicerie", exact: true }).click();
+  await page.getByRole("button", { name: "Commander en ligne", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "J’ai passé ma commande", exact: true }).click();
+  await page.getByRole("button", { name: "J’ai reçu ma commande", exact: true }).click();
+  const upload = dialog.getByLabel("Photos du reçu", { exact: true });
+  await upload.setInputFiles({ name: "bad.svg", mimeType: "image/svg+xml", buffer: Buffer.from("<svg/>") });
+  await expect(dialog.getByRole("alert")).toContainText("ne peut pas être lue");
+  await upload.setInputFiles({ name: "receipt.png", mimeType: "image/png", buffer: photo });
+  await expect(dialog.getByAltText("Reçu 1", { exact: true })).toBeVisible();
+  const prepare = dialog.getByRole("button", { name: "Préparer ma réception", exact: true });
+  await expect(prepare).toBeEnabled();
+  await expect(dialog.getByLabel("Ce que j’ai reçu", { exact: true })).toHaveValue("");
+  let mode: "hang" | "error" | "success" = "hang";
+  let release: (() => void) | undefined;
+  await page.route("**/api/shopping/receipt", async route => {
+    const payload = route.request().postDataJSON();
+    expect(payload.text).toBe(""); expect(payload.images).toHaveLength(1);
+    expect(payload.images[0]).toMatch(/^data:image\/jpeg;base64,/);
+    expect(payload.images[0].length).toBeLessThanOrEqual(receiptModule.receiptImageLimit);
+    if (mode === "hang") { await new Promise<void>(resolve => { release = resolve; }); return route.abort().catch(() => {}); }
+    if (mode === "error") return route.fulfill({ status: 503, json: { error: "ai_unavailable" } });
+    return route.fulfill({ json: prepareReceipt({ items: [item()], note: "" }, "4 x bœuf 500 g", order, demoData.ingredients, "fr") });
+  });
+  await prepare.click(); await expect(dialog.getByRole("status")).toContainText("Lecture");
+  await dialog.getByRole("button", { name: "Arrêter", exact: true }).click();
+  release?.(); await expect(prepare).toBeEnabled();
+  await expect(dialog.getByRole("alert")).toContainText("Analyse arrêtée");
+  await expect(dialog.getByAltText("Reçu 1", { exact: true })).toBeVisible();
+  // Advance only the test clock; a stalled connection must return control.
+  await page.clock.install();
+  await prepare.click(); await expect(dialog.getByRole("status")).toBeVisible();
+  await page.clock.fastForward(166000);
+  await expect(dialog.getByRole("alert")).toContainText("prend trop de temps");
+  release?.(); await expect(prepare).toBeEnabled();
+  mode = "error";
+  await prepare.click(); await expect(dialog.getByRole("alert")).toContainText("Rien n’a été ajouté");
+  await expect(dialog.getByAltText("Reçu 1", { exact: true })).toBeVisible();
+  await page.screenshot({ path: "artifacts/receipt-photo-retry.png" });
+  mode = "success";
+  await prepare.click(); await expect(dialog.getByLabel("Quantité Bœuf haché extra maigre", { exact: true })).toHaveValue("2000");
+  await dialog.getByRole("button", { name: "Revenir au reçu", exact: true }).click();
+  await expect(dialog.getByAltText("Reçu 1", { exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await dialog.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await dialog.getByRole("button", { name: "Retirer la photo 1", exact: true }).click();
+  await expect(prepare).toBeDisabled();
+  await dialog.getByRole("button", { name: "Fermer", exact: true }).click();
+  await expect(page.locator(".pending-order")).toHaveCount(1);
 });

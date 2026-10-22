@@ -46,6 +46,11 @@ test('journal inference fails closed before sending content when retention is mi
   const structured=JSON.parse(calls.at(-1)!.init.body as string);
   expect(structured.response_format).toEqual({type:'json_schema',json_schema:{name:'result',schema}});
   expect(structured.messages[0].content).toContain(JSON.stringify(schema));
+  await api.fireworksText('Extract',{receipt:''},true,true,env.FIREWORKS_PRIVATE_PILOT_OWNER,{images:['data:image/jpeg;base64,/9j/'],signal:new AbortController().signal,reasoning:'none',schema});
+  const vision=JSON.parse(calls.at(-1)!.init.body as string);
+  expect(vision.store).toBe(false);
+  expect(vision.messages[1].content).toEqual([{type:'text',text:'{"receipt":""}'},{type:'image_url',image_url:{url:'data:image/jpeg;base64,/9j/'}}]);
+  expect(calls.at(-1)!.init.cache).toBe('no-store');
   calls.length=0;
   await assert.rejects(()=>api.fireworksText('Edit',{},true,false,'22222222-2222-4222-8222-222222222222'),/retention_unverified/);
   await assert.rejects(()=>api.fireworksText('Edit',{}),/retention_unverified/);
