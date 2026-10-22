@@ -3,6 +3,7 @@ import ts from 'typescript';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 
 test('journal inference fails closed before sending content when retention is missing or withdrawn', async () => {
   const source = readFileSync('src/lib/fireworks.ts', 'utf8').replace('import "server-only";', '');
@@ -29,4 +30,29 @@ test('journal inference fails closed before sending content when retention is mi
   returnedModel=env.FIREWORKS_MODEL;finish='length';await assert.rejects(()=>api.fireworksText('Edit',{}),/incomplete_output/);
   enforced=false;calls.length=0;await assert.rejects(()=>api.fireworksText('Edit',{}),/retention_unverified/);
   expect(calls).toHaveLength(1);expect(calls[0].url).toContain('policySettings');
+});
+
+test('editorial drafts preserve approved metadata and reject unexpected AI fields', async () => {
+  const compile=(path:string)=>ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+  const validation:any={};
+  vm.runInNewContext(compile('src/lib/learning-validation.ts'),{exports:validation,require:createRequire(process.cwd()+'/package.json')});
+  const content=JSON.parse(readFileSync('content/program/habitudes-v1.json','utf8')).documents[0].draft;
+  const rewrite={title:'Une raison qui vous appartient',body:'Une petite action peut partir de ce qui compte pour vous. Prenez un instant pour choisir un repère personnel.',action:'Nommez une raison personnelle.',question:'Que souhaitez-vous rendre plus agréable dans votre journée?'};
+  let output:unknown=rewrite, callCount=0;
+  const route:any={};
+  vm.runInNewContext(compile('src/app/api/learning/admin/draft/route.ts'),{exports:route,Error,require:(name:string)=>{
+    if(name==='zod')return createRequire(process.cwd()+'/package.json')(name);
+    if(name.endsWith('/learning-validation'))return validation;
+    if(name.endsWith('/supabase'))return {authorizedClient:async()=>({db:{rpc:async()=>({data:true})}})};
+    if(name.endsWith('/security'))return {sameOrigin:()=>true};
+    if(name.endsWith('/private-http'))return {boundedJson:(r:Request)=>r.json(),privateReply:(data:unknown,status=200)=>Response.json(data,{status})};
+    if(name.endsWith('/fireworks'))return {fireworksText:async(_:string,input:any,privateData:boolean)=>{callCount++;expect(privateData).toBe(false);expect(input.content).toEqual(content);return JSON.stringify(output);}};
+    throw Error('Unexpected dependency');
+  }});
+  const request=(c=content)=>new Request('https://example.test/api/learning/admin/draft',{method:'POST',body:JSON.stringify({content:c,profile:'Profil fictif'})});
+  const response=await route.POST(request());expect(response.status).toBe(200);
+  expect((await response.json()).content).toEqual({...content,...rewrite});
+  output={...rewrite,sources:[]};expect((await route.POST(request())).status).toBe(502);
+  output={content:rewrite};expect((await route.POST(request())).status).toBe(502);
+  const before=callCount;expect((await route.POST(request({...content,body:''}))).status).toBe(400);expect(callCount).toBe(before);
 });
