@@ -3,7 +3,6 @@ import { AppSelect } from "./app-select";
 
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowDownToLine,
   ArrowRight,
   BookOpen,
   Archive,
@@ -58,7 +57,6 @@ import type {
 import { Brand } from "./brand";
 import { tr, type Locale } from "@/lib/locale";
 import { documentSchema } from "@/lib/validation";
-import type { MenuPlan } from "@/lib/types";
 
 type View =
   | "overview"
@@ -263,23 +261,6 @@ export function Dashboard({
         t(
           "L’enregistrement n’a pas pu être confirmé. Votre saisie est conservée ici; réessayez.",
           "Saving could not be confirmed. Your entry is still here; please try again.",
-        ),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function download(plan: MenuPlan) {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const { exportMenu } = await import("@/lib/pdf");
-      await exportMenu(plan, locale, demo);
-    } catch {
-      setNotice(
-        t(
-          "L’export n’a pas abouti. Veuillez réessayer.",
-          "The export did not complete. Please try again.",
         ),
       );
     } finally {
@@ -870,15 +851,6 @@ export function Dashboard({
           {view === "menus" && (
             <div className="wide-content">
               {menuSection(true)}
-              <div className="info-note">
-                <FileText size={20} />
-                <p>
-                  {t(
-                    "Retrouvez vos plans ici et téléchargez-les en PDF au format Lettre. Les sept jours sont disponibles.",
-                    "Find your plans here and download them as Letter-size PDFs. All seven days are available.",
-                  )}
-                </p>
-              </div>
             </div>
           )}
           {view === "groceries" && (
@@ -982,8 +954,6 @@ export function Dashboard({
               </div>
               <RecipeLibrary
                 recipes={data.recipes}
-                ingredients={data.ingredients}
-                units={data.preferences}
                 locale={locale}
                 onOpen={setSelectedRecipe}
               />
@@ -1027,26 +997,6 @@ export function Dashboard({
                 </span>
               </div>
               <div className="document-grid">
-                {data.plans.map((p) => (
-                  <button
-                    className="document-card"
-                    key={p.id}
-                    onClick={() => void download(p)}
-                  >
-                    <span className="document-cover">
-                      <Brand />
-                      <CalendarDays size={37} strokeWidth={1} />
-                      <strong>{t("Mon menu", "My menu")}</strong>
-                      <small>{dateLabel(p.startDate)}</small>
-                    </span>
-                    <span className="document-title">
-                      {locale === "fr" ? p.title : p.titleEn}
-                    </span>
-                    <span className="muted small">
-                      {t("Menu · PDF disponible", "Menu · PDF available")}
-                    </span>
-                  </button>
-                ))}
                 {data.documents.map((d) => (
                   <a
                     className="document-card"
@@ -1067,7 +1017,7 @@ export function Dashboard({
                   </a>
                 ))}
               </div>
-              {!data.plans.length && !data.documents.length && (
+              {!data.documents.length && (
                 <div className="empty-state">
                   <FolderOpen size={32} />
                   <h3>
@@ -1096,8 +1046,8 @@ export function Dashboard({
                     <h3>{t("Langue de l’espace", "Workspace language")}</h3>
                     <p>
                       {t(
-                        "L’interface et les exports suivent votre choix.",
-                        "The interface and exports follow your choice.",
+                        "L’interface suit votre choix.",
+                        "The interface follows your choice.",
                       )}
                     </p>
                   </div>

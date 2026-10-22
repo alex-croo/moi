@@ -2427,56 +2427,9 @@ input[type="file"]::file-selector-button {
   border-radius: 8px;
   color: #484148;
 }
-.recipe-export-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-  margin: 0 0 24px;
-}
-.recipe-export-toolbar > span {
-  font-size: 12px;
-  color: #796e79;
-}
-.recipe-export-toolbar .recipe-export {
-  margin-left: auto;
-}
-.recipe-export .secondary {
-  font-size: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-}
-.recipe-export [role="alert"] {
-  font-size: 12px;
-  color: #974e3a;
-  max-width: 340px;
-}
-.recipe-select {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 12px 16px;
-  font-size: 11px;
-  color: #6c626c;
-  background: #f2f0f2;
-}
-.recipe-select input {
-  width: 17px;
-  height: 17px;
-  accent-color: #3b363b;
-}
 @media (max-width: 680px) {
   .sheet-top {
     flex-wrap: wrap;
-  }
-  .sheet-top > .recipe-export {
-    order: 3;
-    width: 100%;
-  }
-  .recipe-export-toolbar .recipe-export {
-    margin-left: 0;
   }
   .planner-actions {
     flex-wrap: wrap;
@@ -3181,12 +3134,8 @@ input[type="file"]::file-selector-button {
     grid-row: span 5;
     row-gap: 0;
   }
-  .recipe-card:has(> .recipe-select),
   .recipe-card:has(> .secondary) {
     grid-row: span 6;
-  }
-  .recipe-card:has(> .recipe-select):has(> .secondary) {
-    grid-row: span 7;
   }
   .recipe-open {
     display: grid;

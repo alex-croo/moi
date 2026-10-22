@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowDownToLine,
   BookOpen,
   Clock3,
   Plus,
@@ -11,7 +10,6 @@ import {
 } from "lucide-react";
 import { Plate } from "./plate";
 import { WeekNavigation } from "./week-navigation";
-import { RecipeExport } from "./recipe-export";
 import type {
   Ingredient,
   MealSlot,
@@ -53,18 +51,13 @@ export function RecipeLibrary({
   locale,
   onOpen,
   onChoose,
-  ingredients,
-  units,
 }: {
   recipes: Recipe[];
   locale: Locale;
   onOpen: (r: Recipe) => void;
   onChoose?: (r: Recipe) => void;
-  ingredients?: Ingredient[];
-  units?: UnitPreferences;
 }) {
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
   const filtered = recipes.filter((r) =>
     `${r.title} ${r.titleEn} ${r.subtitle}`
@@ -80,35 +73,6 @@ export function RecipeLibrary({
   );
   return (
     <>
-      {!onChoose && ingredients && units && (
-        <div className="recipe-export-toolbar">
-          <button
-            className="text-button"
-            onClick={() =>
-              setSelected(
-                filtered.every((r) => selected.includes(r.id))
-                  ? selected.filter((id) => !filtered.some((r) => r.id === id))
-                  : [...new Set([...selected, ...filtered.map((r) => r.id)])],
-              )
-            }
-          >
-            {filtered.length > 0 &&
-            filtered.every((r) => selected.includes(r.id))
-              ? t("Désélectionner", "Clear selection")
-              : t("Tout sélectionner", "Select all")}
-          </button>
-          <span>
-            {selected.length} {t("recette(s) choisie(s)", "recipe(s) selected")}
-          </span>
-          <RecipeExport
-            recipes={recipes.filter((r) => selected.includes(r.id))}
-            ingredients={ingredients}
-            units={units}
-            locale={locale}
-            label={t("Exporter la sélection en PDF", "Export selection as PDF")}
-          />
-        </div>
-      )}
       <label className="recipe-search">
         <Search size={18} />
         <input
@@ -146,23 +110,6 @@ export function RecipeLibrary({
       <div className="recipe-grid">
         {filtered.map((recipe) => (
           <article className="recipe-card" key={recipe.id}>
-            {!onChoose && ingredients && units && (
-              <label className="recipe-select">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(recipe.id)}
-                  onChange={(e) =>
-                    setSelected(
-                      e.target.checked
-                        ? [...selected, recipe.id]
-                        : selected.filter((id) => id !== recipe.id),
-                    )
-                  }
-                  aria-label={`${t("Sélectionner", "Select")} ${locale === "fr" ? recipe.title : recipe.titleEn}`}
-                />
-                {t("Garder pour mon PDF", "Include in my PDF")}
-              </label>
-            )}
             <button className="recipe-open" onClick={() => onOpen(recipe)}>
               <div className="recipe-cover">
                 <RecipeImage recipe={recipe} />
@@ -222,12 +169,6 @@ export function RecipeSheet({
         <span>
           <BookOpen size={17} /> {t("MON LIVRE DE RECETTES", "MY RECIPE BOOK")}
         </span>
-        <RecipeExport
-          recipes={[recipe]}
-          ingredients={ingredients}
-          units={units}
-          locale={locale}
-        />
         <button
           className="icon-button"
           onClick={onClose}
@@ -485,48 +426,6 @@ export function WeeklyPlanner({
       setBusy(false);
     }
   }
-  async function exportWeek() {
-    const { exportMenu } = await import("@/lib/pdf");
-    await exportMenu(
-      {
-        id: week,
-        title: t("Ma semaine", "My week"),
-        titleEn: "My week",
-        startDate: week,
-        days: Array.from({ length: 7 }, (_, i) => {
-          const d = addDays(week, i);
-          const meal = (slot: MealTime) => {
-            const r = recipes.find(
-              (r) =>
-                r.id ===
-                slots.find((s) => s.date === d && s.slot === slot)?.recipeId,
-            );
-            return r
-              ? {
-                  title: r.title,
-                  titleEn: r.titleEn,
-                  minutes: r.minutes,
-                  portions: r.servings,
-                  kind: "bowl" as const,
-                  kcal: recipeNutrition(r, ingredients)?.kcal ?? null,
-                }
-              : null;
-          };
-          return {
-            date: d,
-            breakfast: meal("breakfast"),
-            morning_snack: meal("morning_snack"),
-            lunch: meal("lunch"),
-            afternoon_snack: meal("afternoon_snack"),
-            dinner: meal("dinner"),
-            evening_snack: meal("evening_snack"),
-          };
-        }),
-      },
-      locale,
-      false,
-    );
-  }
   return (
     <section className="weekly-planner">
       <div className="section-heading">
@@ -543,28 +442,9 @@ export function WeeklyPlanner({
         </div>
         {full && (
           <div className="planner-actions">
-            <RecipeExport
-              recipes={Array.from(
-                new Set(
-                  slots
-                    .filter((s) => s.date >= week && s.date <= addDays(week, 6))
-                    .map((s) => s.recipeId),
-                ),
-              )
-                .map((id) => recipes.find((r) => r.id === id))
-                .filter((r): r is Recipe => !!r)}
-              ingredients={ingredients}
-              units={units}
-              locale={locale}
-              label={t("Les recettes en PDF", "Recipes as PDF")}
-            />
             <button className="text-button" onClick={onGroceries}>
               <ShoppingBasket size={16} />
               {t("Liste d’épicerie", "Grocery list")}
-            </button>
-            <button className="text-button" onClick={() => void exportWeek()}>
-              <ArrowDownToLine size={16} />
-              {t("Exporter en PDF", "Export PDF")}
             </button>
           </div>
         )}

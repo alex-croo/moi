@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { PDFDocument } from "pdf-lib";
-import { readFile, mkdir, copyFile } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import { menuSchema } from "../src/lib/validation";
 import { demoData } from "../src/lib/demo";
 

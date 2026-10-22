@@ -1,7 +1,7 @@
 # I am able
 
 Espace personnel bilingue français–anglais : planificateur de sept jours, recettes illustrées,
-export PDF Lettre, suivi du poids, journal et bibliothèque de liens Google Drive. Application
+suivi du poids, journal et bibliothèque de liens Google Drive. Application
 pour **iamable.space**, workspace Vercel **moi**.
 
 ## Ce qui existe
@@ -9,9 +9,8 @@ pour **iamable.space**, workspace Vercel **moi**.
 - Next.js App Router + TypeScript, interface responsive vert forêt et crème.
 - Démonstration explicite et éphémère : aucune donnée de santé réelle, aucun
   stockage local du journal ou du poids. Le rechargement efface les essais.
-- Semainier aligné sur sept jours : déjeuner, dîner, souper et trois collations. Calories quotidiennes estimées pour une portion de chaque recette; export PDF Lettre complet, une journée par page.
+- Semainier aligné sur sept jours : déjeuner, dîner, souper et trois collations. Calories quotidiennes estimées pour une portion de chaque recette.
 - Liste d’épicerie créée au fil des choix du semainier : ingrédients regroupés, quantités additionnées et unités personnelles appliquées. Les cases « déjà à la maison ou acheté » sont enregistrées par semaine dans l’espace privé.
-- Fiches recettes PDF Lettre : export individuel, sélection dans la bibliothèque ou recettes de la semaine. Photos, ingrédients, mélange maison et étapes illustrées en recto verso, selon les unités choisies.
 - Mes réserves : garde-manger, réfrigérateur, congélateur, épices et condiments. Quantités facultatives converties selon les préférences, aliments libres ou liés au catalogue, état « À renouveler ». Les quantités compatibles des réserves du catalogue sont déduites de l’épicerie; les quantités inconnues ou non comparables restent à vérifier.
 - Fiches de recettes illustrées; ingrédients canoniques réutilisés et macros calculées.
 - Journal pleine page, paragraphes libres, propositions IA à accepter et protection contre les écritures concurrentes.
@@ -61,15 +60,15 @@ puis lancer `npm test` sans `CHROMIUM_PATH`.
 
 La suite vérifie le refus d’accès anonyme, l’origine des mutations, la fermeture
 de la démo sur Vercel, les règles RLS en PostgreSQL embarqué, les formulaires,
-les liens Drive, les langues, le PDF, le semainier, les conversions, la concurrence du journal et l’acceptation des propositions IA. Les captures
-et un PDF d’exemple sont générés dans `artifacts/` (ignoré par Git).
+les liens Drive, les langues, le retrait des exports PDF, le semainier, les conversions, la concurrence du journal et l’acceptation des propositions IA. Les captures
+sont générées dans `artifacts/` (ignoré par Git).
 Cela ne remplace pas un essai Google/Supabase dans le projet distant configuré.
 
 ## Menus et publication de contenu
 
 Voir [RECIPES.md](RECIPES.md) pour le contrat de publication privée, les sources nutritionnelles,
 les jetons de conversion et le validateur de catalogue. Aucun fichier personnel ni photo de recette
-n'est inclus dans Git. Les anciennes tables de menus et leurs exports sont préservés.
+n'est inclus dans Git. Les anciennes tables de menus sont préservées. Les exports PDF ont été retirés de l’application.
 
 Le journal et le poids ont une entrée par date et utilisateur. Le poids conserve sa mesure d'origine;
 les écrans et le graphique suivent les préférences, sans réécrire l'historique. Les macros restent en grammes.

@@ -21,9 +21,9 @@ Le regroupement utilise exclusivement l’identifiant canonique, jamais le nom. 
 
 La liste est dérivée des données privées déjà authentifiées, sans table supplémentaire, stockage navigateur ni service externe. Les changements de menu ou d’unités sont reflétés immédiatement. Une référence manquante signale une liste incomplète.
 
-## Fiches PDF
+## Fiches de recettes
 
-La même fiche Lettre est utilisée pour l’export individuel, la sélection du livre et les recettes distinctes de la semaine. Le recto contient le plat, les ingrédients, le mélange maison et les valeurs estimées par portion; le verso reprend les étapes illustrées en deux colonnes, selon les fiches DIY de référence. Des pages supplémentaires conservent les contenus longs sans les tronquer. Les préférences d’unités s’appliquent aux quantités et aux instructions. Les images privées sont lues avec la session courante, et le PDF est produit dans le navigateur sans service externe. Une image indisponible arrête l’export avec un message explicite. La présentation porte la marque i am able.; les références d’origine restent conservées. Les images existantes attendent leur remplacement avec Higgsfield.
+Les fiches illustrées se consultent directement dans l’application. Les quantités, instructions et valeurs nutritionnelles suivent les préférences de l’utilisateur. Les exports PDF individuels, groupés et hebdomadaires ont été retirés. Les liens vers les documents privés existants restent disponibles.
 
 ## Journal et IA
 

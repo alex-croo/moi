@@ -8,8 +8,6 @@ import {
   monday,
 } from "../src/lib/units";
 import { demoRecipes, demoIngredients } from "../src/lib/demo-recipes";
-import { PDFDocument } from "pdf-lib";
-import { readFile } from "node:fs/promises";
 
 test("canonical ingredient quantities drive nutrition; conversions preserve stored values", () => {
   const original = JSON.stringify(demoRecipes[0]);
@@ -44,7 +42,7 @@ test("canonical ingredient quantities drive nutrition; conversions preserve stor
   expect(JSON.stringify(demoRecipes[0])).toBe(original);
 });
 
-test("seven days, recipe selection, removal, week navigation and complete seven-page export", async ({
+test("seven days, recipe selection, removal and week navigation", async ({
   page,
 }) => {
   await page.goto("/fr/demo");
@@ -67,13 +65,6 @@ test("seven days, recipe selection, removal, week navigation and complete seven-
     .getByRole("navigation")
     .getByRole("button", { name: "Mes menus" })
     .click();
-  const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Exporter en PDF" }).click();
-  const pdf = await PDFDocument.load(
-    await readFile((await (await download).path())!),
-  );
-  expect(pdf.getPageCount()).toBe(7);
-  expect(pdf.getPage(0).getSize()).toEqual({ width: 612, height: 792 });
   await page.getByRole("button", { name: /Retirer Déjeuner/ }).click();
   await expect(page.locator(".planned-recipe")).toHaveCount(0);
 });
