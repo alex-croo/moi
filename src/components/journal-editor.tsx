@@ -653,7 +653,6 @@ export function JournalEditor({
         )}
         <div className="journal-save journal-autosave-footer">
           <span>{draft.text.length.toLocaleString(locale)} / 20 000</span>
-          <span>{t("Enregistrement automatique activé", "Automatic saving is on")}</span>
         </div>
         {saveState === "offline" && !sync.recoveryError && <p className="journal-sync-message" role="status">{t("Vos mots sont conservés dans cet onglet. L’enregistrement reprendra automatiquement dès que la connexion sera rétablie.", "Your words are kept in this tab. Saving will resume automatically when the connection returns.")}</p>}
         {saveState === "conflict" && <p className="journal-sync-message" role="alert">{t("Cette page a changé dans un autre onglet. Votre version reste affichée ici. Copiez-la, puis ouvrez le journal dans un nouvel onglet pour comparer les deux textes; aucune version n’est remplacée automatiquement.", "This page changed in another tab. Your version is still shown here. Copy it, then open the journal in a new tab to compare both texts; neither version is automatically replaced.")}</p>}
