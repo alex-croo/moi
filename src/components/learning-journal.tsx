@@ -46,7 +46,7 @@ export function DailyJournal({date,owner,enabled,children,beforeAI}:{date:string
  {day.adaptation?.introduction&&<aside className="companion-copy"><small><Sparkles size={12}/> Une invitation de votre compagnon IA</small><p>{day.adaptation.introduction}</p></aside>}
  <div className="reading-prose">{day.snapshot.body.split("\n\n").map((p,i)=><p key={i}>{p.replace(/\[S\d+\]/g,"")}</p>)}</div>
  <aside className="learning-experiment"><strong>Un petit pas à essayer</strong><p>{day.adaptation?.experiment||day.snapshot.action}</p></aside>
- <details className="learning-sources"><summary>Sources et repères</summary>{day.snapshot.sources.map(s=><p key={s.id}><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></p>)}<p>{day.snapshot.limits}</p></details>
+ <section className="learning-sources" aria-label="Références"><h3>Références :</h3><ul>{day.snapshot.sources.map(s=><li key={s.id}><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></li>)}</ul></section>
  <div className="learning-actions">{done?<span><Check size={15}/> Lecture terminée</span>:<button className="primary" disabled={busy||date!==data?.today} onClick={()=>void action("complete")}>J’ai terminé la lecture <Check size={14}/></button>}<small>Une nouvelle étape par jour. Aucune journée à rattraper.</small></div>
  {!data?.encrypted&&<AutoNote key={`${date}:reflection`} owner={owner} date={date} noteKey="reflection" label={day.snapshot.question} initial={day.notes.reflection} onSaved={()=>void load()}/>}
  </section>}

@@ -914,7 +914,7 @@ export function Dashboard({
             <JournalEditor
               entries={data.journal}
               guided={!!privateActions}
-              renderMeals={date => <><ThawReminders data={data} locale={locale} onSave={async m => { await mutate("shopping", m); }}/><JournalMeals key={date} data={data} date={date} locale={locale} onCook={setCooking} onUndo={async id => { await mutate("shopping", { action: "undoCook", id }); }} onOpen={setSelectedRecipe} onPlan={() => { setSelectedWeek(monday(date)); go("menus"); }}/></>}
+              renderMeals={date => <><ThawReminders widget data={data} locale={locale} onSave={async m => { await mutate("shopping", m); }}/><JournalMeals widget key={date} data={data} date={date} locale={locale} onCook={setCooking} onUndo={async id => { await mutate("shopping", { action: "undoCook", id }); }} onOpen={setSelectedRecipe} onPlan={() => { setSelectedWeek(monday(date)); go("menus"); }}/></>}
               ownerId={privateActions?.userId || "demo"}
               recoveryKey={privateActions?.journalKey || null}
               syncBridge={privateActions?.journalSync}

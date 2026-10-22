@@ -401,7 +401,7 @@ export function JournalEditor({
           <span className="journal-autosave-indicator" role="status">{saveState === "saved" ? <Cloud size={15}/> : <CloudUpload size={15}/>}{saveLabel}</span>
         </div>
       </div>
-      <div className="journal-paper">
+      <div className={`journal-day-layout${renderMeals ? " has-sidebar" : ""}`}><div className="journal-paper">
         {prompt?.lessonId && onProgram && (draft.text.includes(prompt.question) || prompt.date === date) && (
           <button className="journal-program-back text-button" onClick={onProgram} disabled={busy}>
             <ArrowLeft size={13} /> {t("Mon programme", "My program")}
@@ -660,8 +660,9 @@ export function JournalEditor({
         {sync.recoveryError && <p className="journal-sync-message" role="alert">{t("La copie de récupération de cet onglet n’est pas disponible. Attendez l’indication « Enregistré » avant de fermer ou de rafraîchir la page.", "Recovery storage is unavailable in this tab. Wait for ‘Saved’ before closing or refreshing the page.")}</p>}
         {error && <p role="alert">{error}</p>}
         {status && <p role="status">{status}</p>}
-        {renderMeals?.(date)}
         </DailyJournal>
+      </div>
+      {renderMeals && <aside className="journal-day-sidebar" aria-label={t("Ma journée en pratique", "My day at a glance")}>{renderMeals(date)}</aside>}
       </div>
       </>}
     </section>
