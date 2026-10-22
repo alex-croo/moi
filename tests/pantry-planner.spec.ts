@@ -180,6 +180,7 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await page
     .getByRole("button", { name: "Il n’en reste plus", exact: true })
     .click();
+  await page.getByRole("checkbox", { name: "Afficher les aliments épuisés", exact: true }).check();
   await expect(page.locator(".pantry-group")).toContainText("À renouveler");
   await nav
     .getByRole("button", { name: "Liste d’épicerie", exact: true })
@@ -195,6 +196,7 @@ test("planner aligns all six rows and totals while pantry and weekly checks foll
   await beef.getByRole("checkbox").uncheck();
   await expect(beef.getByRole("checkbox")).not.toBeChecked();
   await nav.getByRole("button", { name: "Mes réserves", exact: true }).click();
+  await page.getByRole("checkbox", { name: "Afficher les aliments épuisés", exact: true }).check();
   await page
     .getByRole("button", { name: "J’en ai de nouveau", exact: true })
     .click();

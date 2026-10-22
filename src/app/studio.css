@@ -555,6 +555,47 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .pantry-editor>.pantry-form{border:0;border-radius:0;margin:0;background:white;padding-top:16px}
 .pantry-editor .pantry-fields{gap:12px}
 .pantry-editor .pantry-fields label{margin:0;gap:6px}
+.pantry-page>.page-heading{margin-bottom:20px}
+.pantry-page>.page-heading>.eyebrow{display:none}
+.pantry-page>.page-heading h1{font:700 32px/1.2 var(--sans);margin:0 0 8px}
+.pantry-page>.page-heading p{font-size:13px;margin:0}
+.pantry-page .pantry-toolbar{gap:10px;margin:16px 0}
+.pantry-page>.recipe-search{margin-bottom:10px;padding:10px 14px}
+.pantry-page .pantry-filters{margin:10px 0 16px}
+.pantry-groups.pantry-list{display:block;border:1px solid var(--line);border-radius:14px;background:white;padding:14px 20px}
+.pantry-list .pantry-group{border:0;background:none;padding:0;border-radius:0}
+.pantry-list .pantry-group h2{font:600 13px/1.5 var(--sans);margin:16px 0 4px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.pantry-list .pantry-group h2 small{font-size:10px}
+.pantry-columns,.pantry-list .pantry-group li{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,.5fr) minmax(110px,.4fr) 108px;align-items:center;gap:12px}
+.pantry-columns{font-size:10px;color:var(--muted);padding:0 0 6px}
+.pantry-columns>span:nth-child(3){text-align:right}
+.pantry-list .pantry-group li{padding:6px 0;min-height:46px}
+.pantry-list .pantry-item-copy h3{font:500 13px/1.5 var(--sans);margin:0}
+.pantry-list .pantry-item-copy p,.pantry-list .pantry-item-copy small{font-size:10px;line-height:1.5;margin:2px 0 0}
+.pantry-item-location{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;min-width:0}
+.pantry-item-location svg{flex:none;color:#3574a6}
+.pantry-item-quantity{font:500 12px/1.5 var(--sans);text-align:right;overflow-wrap:anywhere}
+.pantry-list .pantry-item-actions{gap:0;margin:0;justify-content:flex-end}
+.pantry-list .pantry-item-actions .icon-button{width:36px;height:36px;min-width:36px;min-height:36px;padding:8px}
+.pantry-stock-toggle[aria-pressed="true"]{color:#248344}
+.pantry-stock-toggle[aria-pressed="false"]{color:var(--muted);opacity:.5}
+.pantry-existing{padding:16px 24px 24px;font-size:13px}
+.pantry-existing h3{margin:0 0 8px;font-size:16px}
+.pantry-existing ul{list-style:none;margin:16px 0;padding:0}
+.pantry-existing li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.pantry-existing .secondary{min-height:44px;font-size:12px}
+.grocery-stock-warning .text-button{font-size:inherit;padding:2px 0;text-decoration:underline}
+@media(max-width:680px){
+  .pantry-page>.page-heading h1{font-size:27px}
+  .pantry-groups.pantry-list{padding:8px 12px}
+  .pantry-columns{display:none}
+  .pantry-list .pantry-group li{grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 0}
+  .pantry-item-copy{grid-column:1;grid-row:1}
+  .pantry-item-quantity{grid-column:2;grid-row:1;max-width:140px}
+  .pantry-item-location{grid-column:1;grid-row:2}
+  .pantry-list .pantry-item-actions{grid-column:2;grid-row:2}
+  .pantry-list .pantry-item-actions .icon-button{width:44px;height:44px;min-width:44px;min-height:44px}
+}
 .grocery-order-check{background:var(--accent-soft);padding:8px 10px;border-radius:8px}.grocery-order-check button{font-size:inherit;padding:4px}
 .pantry-item-copy h3>svg{vertical-align:middle;color:#3574a6}
 @container(max-width:480px){.grocery-page .grocery-quantity{justify-content:flex-start}}

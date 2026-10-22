@@ -1,4 +1,6 @@
 import type { Locale } from "./locale";
+import { ingredientAisle, type Aisle } from "./grocery-aisles";
+import { quantityLabel } from "./units";
 import type {
   Ingredient,
   PantryItem,
@@ -6,6 +8,16 @@ import type {
   Quantity,
   UnitPreferences,
 } from "./types";
+
+export type PantryEntry = PantryItem & { aisle?: Aisle };
+export function pantryAisle(item: PantryEntry, ingredients: Ingredient[]): Aisle {
+  const ingredient = ingredients.find(i => i.id === item.ingredientId);
+  return item.aisle || (ingredient ? ingredientAisle(ingredient) : "other");
+}
+export function pantryQuantityLabel(q: Quantity, units: UnitPreferences, locale: Locale) {
+  return quantityLabel(q.kind === "count" && !q.label && !q.labelEn
+    ? { ...q, label: "unités", labelEn: "items" } : q, units, locale);
+}
 
 export const pantryLocations: PantryLocation[] = [
   "cupboard",

@@ -3,6 +3,7 @@ import type { MealSlot, PantryItem, Quantity, RecipeIngredient } from "./types";
 import type { ShoppingCatalog, ShoppingPersonal, ShoppingState, PurchaseLine, CookedMeal } from "./shopping-types";
 import { addDays } from "./units";
 import { grocerCategories, normalizePostalCode, postalCodePattern } from "./grocer-preferences";
+import { countMeasure } from "./ingredient-measures";
 
 const id = z.string().regex(/^[a-z0-9-]{1,100}$/);
 const quantity = z.object({ kind: z.enum(["mass", "volume", "spoon", "count"]), value: z.number().finite().min(0).max(1000000), label: z.string().max(80).optional(), labelEn: z.string().max(80).optional() }).strict();
@@ -50,11 +51,13 @@ type Need = { ingredientId: string; quantity: Quantity; grams: number };
 function demand(line: RecipeIngredient, factor = 1): Need {
   return { ingredientId: line.ingredientId, quantity: { ...line.quantity, value: line.quantity.value * factor }, grams: line.grams * factor };
 }
-// Only a recipe's documented gram equivalent can bridge incompatible dimensions.
+// Bridge dimensions using documented recipe weights and explicit ingredient measures.
 function conversion(from: Quantity, need: Need): number | null {
   if (compatible(from, need.quantity)) return 1;
   if (need.grams <= 0 || need.quantity.value <= 0) return null;
   if (from.kind === "mass") return need.quantity.value / need.grams;
+  const piece = countMeasure(need.ingredientId, from);
+  if (piece) return piece.grams * need.quantity.value / need.grams;
   if (need.quantity.kind === "mass") return null;
   return null;
 }
@@ -80,7 +83,7 @@ function take(stock: Stock[], need: Need, date: string, time = "23:59") {
     remaining = clean(remaining - used);
     if (entry.pending) { pending += used; if (entry.source) sources.set(entry.source.id, entry.source); } else onHand += used;
     deductions.push({ index: entry.index, amount: used / factor });
-    estimated ||= factor !== 1;
+    estimated ||= !compatible(entry.quantity, need.quantity);
   }
   if (remaining > 1e-8) for (const source of uncertainSources.values()) sources.set(source.id, source);
   return { remaining, onHand, pending, check: check && remaining > 1e-8, pendingCheck: pendingCheck && remaining > 1e-8, estimated, deductions, sources: [...sources.values()] };

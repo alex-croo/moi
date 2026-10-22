@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { aisles } from "./grocery-aisles";
 const date = z.iso.date();
 const title = z.string().trim().min(1).max(160);
 const ingredientId = z.string().regex(/^[a-z0-9-]{1,100}$/);
@@ -7,6 +8,7 @@ export const pantrySchema = z.object({
   ingredientId: ingredientId.nullable(),
   name: title,
   location: z.enum(["cupboard", "fridge", "freezer", "spices"]),
+  aisle: z.enum(aisles).optional(),
   quantity: z
     .object({
       kind: z.enum(["mass", "volume", "spoon", "count"]),

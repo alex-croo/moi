@@ -46,3 +46,11 @@ Dans « Mes réserves », l’ajout et la modification utilisent la même fenêt
 Les rappels de décongélation sont calculés localement, y compris pour un espace chiffré. Les réserves montrent les prochaines décongélations; un avis apparaît partout dans l’application dans les 24 heures précédant le repas. Repères horaires Toronto : 8 h / 10 h / 12 h / 15 h / 18 h / 21 h. La durée de décongélation nécessaire dépend du format; ce rappel n’est pas une garantie sanitaire. « Mis au réfrigérateur » déplace uniquement la quantité indiquée, sans la consommer; l’opération est idempotente et le frais est utilisé avant le congelé.
 
 Les avis restent uniquement dans Iamable, conformément au choix du propriétaire : aucun envoi externe ni rappel calendrier. Ils apparaissent lors de l’ouverture de l’application ou automatiquement pendant qu’elle est ouverte, pendant les 24 heures précédant le repas, avec recalcul lors des changements de stock ou de menu.
+
+## Réserves compactes et unités comptées
+
+Mes réserves reprend les rayons de l’épicerie, indépendamment de l’emplacement. Chaque ligne conserve son emplacement, sa quantité et ses actions. Le bouton « Ajouter un aliment personnel » permet de créer un aliment sans recette et de choisir son rayon; ce rayon facultatif est conservé dans les données personnelles, y compris le coffre chiffré. Les aliments épuisés restent accessibles par le filtre dédié.
+
+Un ingrédient déjà en réserve ouvre d’abord ses entrées existantes depuis la liste d’épicerie. « Modifier cette réserve » conserve son identifiant; l’ajout d’un autre lot est explicite. Une quantité non comparable affiche la quantité enregistrée et un lien de correction, plutôt qu’un avertissement ambigu.
+
+Pour l’ail frais, les unités gousses et têtes sont explicites : 3 g par gousse et 24 g par tête, selon [Santé Canada, FCÉN, aliment 2394](https://food-nutrition.canada.ca/cnf-fce/serving-portion?id=2394). Le besoin de la recette utilise son équivalent en grammes documenté. Les conversions sont estimées; des unités sans libellé ou des paquets ne sont jamais convertis automatiquement. La même conversion sert aux courses, à la disponibilité des repas et à « J’ai cuisiné », avec une annulation exacte des déductions.

@@ -98,6 +98,7 @@ export function Dashboard({
   const [journalNavigation, setJournalNavigation] = useState<{ id: number; date?: string }>({ id: 0 });
   const [locale, setLocale] = useState(initialLocale);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [pantryEditId, setPantryEditId] = useState<string | undefined>();
   const [cooking, setCooking] = useState<MealSlot | null>(null);
   const [view, setView] = useState<View>("overview");
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [view]);
@@ -192,6 +193,7 @@ export function Dashboard({
     );
   }
   function go(value: View, journalDate?: string) {
+    setPantryEditId(undefined);
     if (value === "journal") setJournalNavigation(current => ({ id: current.id + 1, date: journalDate }));
     setView(value);
     setMenuOpen(false);
@@ -885,12 +887,14 @@ export function Dashboard({
               onOpen={setSelectedRecipe}
               onSave={async (value: ShoppingMutation) => { await mutate("shopping", value); }}
               onSettings={() => go("settings")}
-              onPantry={() => go("pantry")}
+              onPantry={id => { go("pantry"); setPantryEditId(id); }}
               onPantrySave={async item => { await mutate("pantry", item); }}
             />
           )}
           {view === "pantry" && (
             <Pantry
+              key={pantryEditId || "pantry"}
+              initialItemId={pantryEditId}
               deliveries={<PendingOrders data={data} locale={locale} showEmpty onSave={async value => { await mutate("shopping", value); }}/>}
               items={data.pantry}
               ingredients={data.ingredients}
