@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./studio.css";
 import "./learning.css";
+import "./elan.css";
 export const metadata: Metadata = {
   title: "Tred’meal — Un jour à la fois",
   description:

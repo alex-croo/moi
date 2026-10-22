@@ -2,12 +2,16 @@
 import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
+  ChefHat,
   Clock3,
   Plus,
   Search,
   ShoppingBasket,
   X,
 } from "lucide-react";
+import { defaultRecipeTags, mergeRecipeTags, matchesRecipe, recipeTagIds, type RecipeTag } from "@/lib/recipe-tags";
+import { AppSelect } from "./app-select";
+import { CookingMode } from "./cooking-mode";
 import { Plate } from "./plate";
 import { WeekNavigation } from "./week-navigation";
 import type {
@@ -59,21 +63,15 @@ export function RecipeLibrary({
 }) {
   const [query, setQuery] = useState("");
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
-  const filtered = recipes.filter((r) =>
-    `${r.title} ${r.titleEn} ${r.subtitle}`
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "")
-      .toLowerCase()
-      .includes(
-        query
-          .normalize("NFD")
-          .replace(/\p{Diacritic}/gu, "")
-          .toLowerCase(),
-      ),
-  );
+  const [vocabulary, setVocabulary] = useState<RecipeTag[]>(defaultRecipeTags);
+  const [diet, setDiet] = useState(""), [type, setType] = useState(""), [tags, setTags] = useState<string[]>([]);
+  useEffect(() => { let alive = true; fetch("/api/recipes/tags").then(async r => { if (r.ok) { const data = await r.json(); if (alive) setVocabulary(mergeRecipeTags(data.tags)); } }).catch(() => {}); return () => { alive = false; }; }, []);
+  const filtered = recipes.filter(recipe => matchesRecipe(recipe, { query, diet, type, tags }, vocabulary));
+  const filteredActive = !!(query || diet || type || tags.length);
+  const label = (tag: RecipeTag) => locale === "fr" ? tag.label : tag.label_en;
   return (
     <>
-      <label className="recipe-search">
+      <div className="recipe-filter-bar"><label className="recipe-search">
         <Search size={18} />
         <input
           value={query}
@@ -82,6 +80,10 @@ export function RecipeLibrary({
           aria-label={t("Rechercher une recette", "Search recipes")}
         />
       </label>
+      <label className="recipe-filter"><span>{t("Régime alimentaire", "Diet")}</span><AppSelect aria-label={t("Régime alimentaire", "Diet")} value={diet} onChange={e => setDiet(e.target.value)}><option value="">{t("Tous les régimes", "All diets")}</option>{vocabulary.filter(tag => tag.category === "diet").map(tag => <option key={tag.id} value={tag.id}>{label(tag)}</option>)}</AppSelect></label>
+      <label className="recipe-filter"><span>{t("Type de plat", "Recipe type")}</span><AppSelect aria-label={t("Type de plat", "Recipe type")} value={type} onChange={e => setType(e.target.value)}><option value="">{t("Tous les plats", "All types")}</option>{vocabulary.filter(tag => tag.category === "type").map(tag => <option key={tag.id} value={tag.id}>{label(tag)}</option>)}</AppSelect></label></div>
+      <div className="recipe-filter-tags" aria-label="Tags">{vocabulary.filter(tag => tag.category === "tag").map(tag => <button key={tag.id} className="recipe-tag" aria-pressed={tags.includes(tag.id)} onClick={() => setTags(current => current.includes(tag.id) ? current.filter(id => id !== tag.id) : [...current, tag.id])}>{label(tag)}</button>)}</div>
+      <div className="recipe-filter-summary"><span role="status">{filtered.length} {t("recettes à découvrir", "recipes to explore")}</span>{filteredActive && <button className="text-button" onClick={() => { setQuery(""); setDiet(""); setType(""); setTags([]); }}>{t("Effacer les filtres", "Clear filters")}</button>}</div>
       {!recipes.length && (
         <div className="empty-state">
           <BookOpen />
@@ -115,9 +117,7 @@ export function RecipeLibrary({
                 <RecipeImage recipe={recipe} />
               </div>
               <div className="recipe-card-copy">
-                <span className="eyebrow">
-                  {t("DANS MON CARNET", "IN MY RECIPE BOOK")}
-                </span>
+                <span className="recipe-card-tags">{vocabulary.filter(tag => tag.category === "type" && tag.id !== "main" && recipeTagIds(recipe).includes(tag.id)).slice(0,1).map(tag => <span className="recipe-tag" key={tag.id}>{label(tag)}</span>)}</span>
                 <h3>{locale === "fr" ? recipe.title : recipe.titleEn}</h3>
                 <p>{locale === "fr" ? recipe.subtitle : recipe.subtitleEn}</p>
                 <span className="recipe-meta">
@@ -152,6 +152,7 @@ export function RecipeSheet({
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const servings = recipe.servings;
+  const [cookingMode, setCookingMode] = useState(false);
   useEffect(() => {
     dialog.current?.showModal();
   }, []);
@@ -165,6 +166,7 @@ export function RecipeSheet({
       onCancel={onClose}
       aria-labelledby="recipe-title"
     >
+      {cookingMode && <CookingMode recipe={recipe} ingredients={ingredients} units={units} locale={locale} onClose={() => setCookingMode(false)}/>}
       <div className="sheet-top">
         <span>
           <BookOpen size={17} /> {t("MON LIVRE DE RECETTES", "MY RECIPE BOOK")}
@@ -190,6 +192,7 @@ export function RecipeSheet({
         <RecipeImage recipe={recipe} />
       </div>
       <div className="sheet-strip">
+        <button className="primary" onClick={() => setCookingMode(true)}><ChefHat size={18}/>{t("Mode cuisine", "Cooking mode")}</button>
         <span>
           <Clock3 size={17} />
           {recipe.minutes} min

@@ -46,6 +46,7 @@ test("seven days, recipe selection, removal and week navigation", async ({
   page,
 }) => {
   await page.goto("/fr/demo");
+  await page.getByRole("navigation").getByRole("button",{name:"Mes menus",exact:true}).click();
   await expect(page.locator(".week-day")).toHaveCount(7);
   await expect(page.locator(".empty-slot")).toHaveCount(42);
   await page.locator(".empty-slot").first().click();
@@ -105,65 +106,25 @@ test("granular settings convert recipes, steps, current weight and history indep
   await expect(page.locator(".nutrition-calories")).toContainText("191");
 });
 
-test("journal preserves paragraphs and selection-only AI suggestions require acceptance", async ({
-  page,
-}) => {
+test("journal preserves paragraphs, autosaves, and selection-only AI suggestions require acceptance", async ({page}) => {
   await page.goto("/fr/demo");
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Mon journal" })
-    .click();
-  const editor = page.getByLabel("Texte du journal");
-  const original = "Je suis aller marcher.\n\nUne belle journée.";
-  await editor.fill(original);
-  await page.getByLabel("Titre de la page").fill("Ma journée");
-  await editor.evaluate((el: HTMLTextAreaElement) => {
-    el.focus();
-    el.setSelectionRange(0, 21);
-    el.dispatchEvent(new Event("select", { bubbles: true }));
-  });
-  let sent = "";
-  await page.route("**/api/journal/edit", async (route) => {
-    sent = route.request().postDataJSON().text;
-    await route.fulfill({ json: { text: "Je suis allé marcher." } });
-  });
-  await page.getByRole("button", { name: "Corriger les fautes" }).click();
-  await expect(
-    page.getByRole("button", { name: "Accepter la proposition" }),
-  ).toBeVisible();
-  expect(sent).toBe("Je suis aller marcher");
-  await expect(editor).toHaveValue(original);
-  await page.getByRole("button", { name: "Ignorer", exact: true }).click();
-  await expect(editor).toHaveValue(original);
-  await editor.evaluate((el: HTMLTextAreaElement) => {
-    el.focus();
-    el.setSelectionRange(0, 22);
-    el.dispatchEvent(new Event("select", { bubbles: true }));
-  });
-  await page.getByRole("button", { name: "Corriger les fautes" }).click();
-  await page.getByRole("button", { name: "Accepter la proposition" }).click();
-  await expect(editor).toHaveValue(
-    "Je suis allé marcher.\n\nUne belle journée.",
-  );
-  await page.getByRole("button", { name: "Annuler la correction" }).click();
-  await expect(editor).toHaveValue(original);
-  await page.getByRole("button", { name: "Enregistrer ma page" }).click();
-  await expect(page.getByRole("status")).toContainText("page est enregistrée");
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Mes recettes" })
-    .click();
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Mon journal" })
-    .click();
-  await expect(editor).toHaveValue(original);
-  expect(
-    await page.evaluate(() => ({
-      local: localStorage.length,
-      session: sessionStorage.length,
-    })),
-  ).toEqual({ local: 0, session: 0 });
+  await page.getByRole("navigation").getByRole("button", {name:"Mon journal",exact:true}).click();
+  await page.getByRole("button",{name:"Écrire aujourd’hui",exact:true}).click();
+  const editor=page.getByLabel("Texte du journal");
+  const original="Je suis aller marcher.\n\nUne belle journée.";
+  await editor.fill(original);await page.getByLabel("Titre de la page").fill("Ma journée");
+  const select=async()=>editor.evaluate(async(el:HTMLTextAreaElement)=>{await new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r())));el.focus();el.setSelectionRange(0,22);el.dispatchEvent(new Event("select",{bubbles:true}));});
+  let sent="";await page.route("**/api/journal/edit",async route=>{sent=route.request().postDataJSON().text;await route.fulfill({json:{text:"Je suis allé marcher."}});});
+  await select();await page.getByRole("button",{name:"Corriger les fautes",exact:true}).click();
+  await expect(page.locator(".journal-inline-review del")).toContainText("aller");expect(sent).toBe("Je suis aller marcher.");
+  await page.getByRole("button",{name:"Refuser",exact:true}).click();await expect(editor).toHaveValue(original);
+  await select();await page.getByRole("button",{name:"Corriger les fautes",exact:true}).click();await page.getByRole("button",{name:"Accepter",exact:true}).click();
+  await expect(editor).toHaveValue("Je suis allé marcher.\n\nUne belle journée.");
+  await page.getByRole("button",{name:"Annuler la correction"}).click();await expect(editor).toHaveValue(original);
+  await expect(page.locator(".journal-autosave-indicator")).toContainText("Enregistré");
+  await page.getByRole("navigation").getByRole("button",{name:"Mes recettes",exact:true}).click();
+  await page.getByRole("navigation").getByRole("button",{name:"Mon journal",exact:true}).click();
+  await page.getByRole("button",{name:"Écrire aujourd’hui",exact:true}).first().click();await expect(editor).toHaveValue(original);
 });
 
 test("AI and recipe images reject anonymous and cross-origin access", async ({
@@ -190,35 +151,14 @@ test("AI and recipe images reject anonymous and cross-origin access", async ({
   ).toBe(403);
 });
 
-test("a stale AI proposal cannot replace newer writing and errors preserve the draft", async ({
-  page,
-}) => {
-  await page.goto("/fr/demo");
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Mon journal" })
-    .click();
-  const editor = page.getByLabel("Texte du journal");
-  await editor.fill("Mon texte initial.");
-  await page.route("**/api/journal/edit", (r) =>
-    r.fulfill({ json: { text: "Texte proposé." } }),
-  );
-  await page.getByRole("button", { name: "Améliorer le texte" }).click();
-  await expect(
-    page.getByRole("button", { name: "Accepter la proposition" }),
-  ).toBeVisible();
-  await editor.fill("Nouvelle pensée.");
-  await expect(
-    page.getByRole("button", { name: "Accepter la proposition" }),
-  ).toBeDisabled();
-  await page.getByRole("button", { name: "Ignorer", exact: true }).click();
-  await page.unroute("**/api/journal/edit");
-  await page.route("**/api/journal/edit", (r) =>
-    r.fulfill({ status: 503, json: { error: "ai_unavailable" } }),
-  );
-  await page.getByRole("button", { name: "Améliorer le texte" }).click();
-  await expect(page.locator(".journal-paper").getByRole("alert")).toContainText(
-    "n’est pas disponible",
-  );
-  await expect(editor).toHaveValue("Nouvelle pensée.");
+test("review locks the draft until acceptance or rejection and AI errors preserve writing", async ({page}) => {
+ await page.goto("/fr/demo");await page.getByRole("navigation").getByRole("button",{name:"Mon journal",exact:true}).click();await page.getByRole("button",{name:"Écrire aujourd’hui",exact:true}).click();
+ const editor=page.getByLabel("Texte du journal");await editor.fill("Mon texte initial.");
+ const select=async()=>editor.evaluate(async(el:HTMLTextAreaElement)=>{await new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r())));el.focus();el.select();el.dispatchEvent(new Event("select",{bubbles:true}));});
+ await page.route("**/api/journal/edit",r=>r.fulfill({json:{text:"Texte proposé."}}));
+ await select();await page.getByRole("button",{name:"Améliorer",exact:true}).click();
+ await expect(page.getByLabel("Titre de la page")).toBeDisabled();await expect(editor).toHaveCount(0);
+ await page.getByRole("button",{name:"Refuser",exact:true}).click();await expect(editor).toHaveValue("Mon texte initial.");
+ await editor.fill("Nouvelle pensée.");await page.unroute("**/api/journal/edit");await page.route("**/api/journal/edit",r=>r.fulfill({status:503,json:{error:"ai_unavailable"}}));
+ await select();await page.getByRole("button",{name:"Améliorer",exact:true}).click();await expect(page.locator(".journal-paper").getByRole("alert")).toBeVisible();await expect(editor).toHaveValue("Nouvelle pensée.");
 });

@@ -100,7 +100,9 @@ export function JournalEditor({
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
   const draft = drafts[date] || draftFromEntry(entries.find(e => e.date === date));
   function change(patch: Partial<Draft>) {
-    sync.update(date, { ...(drafts[date] || draft), ...patch });
+    // Successive edits can arrive before React paints the next render. Merge
+    // with the current draft so a title/mood edit never restores older text.
+    sync.update(date, { ...(sync.drafts[date] || draft), ...patch });
     setStatus("");
   }
   const aiDisabled = encrypted || protectionChanged || (guided && !providerReady);
@@ -109,6 +111,7 @@ export function JournalEditor({
     if (el) setSelection({ start: el.selectionStart, end: el.selectionEnd });
   }
   function openPage(nextDate: string) {
+    const openingControl = document.activeElement;
     setDate(nextDate);
     setScreen("editor");
     setOpenDates(current => current.includes(nextDate) ? current : [...current, nextDate]);
@@ -117,7 +120,9 @@ export function JournalEditor({
     setStatus("");
     requestAnimationFrame(() => {
       pageRoot.current?.scrollIntoView({ block: "start" });
-      titleEditor.current?.focus({ preventScroll: true });
+      // Do not steal focus if the person has already started writing.
+      if (document.activeElement === openingControl || document.activeElement === document.body)
+        titleEditor.current?.focus({ preventScroll: true });
     });
   }
   useEffect(() => {

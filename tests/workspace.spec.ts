@@ -144,7 +144,7 @@ test("desktop and mobile layouts render without overflow or external calls", asy
   await page.setViewportSize({ width: 1440, height: 1120 });
   await page.goto("/fr/demo");
   await expect(
-    page.getByRole("heading", { name: "Un jour à la fois." }),
+    page.getByRole("heading", { name: "Du plaisir dans vos journées." }),
   ).toBeVisible();
   await page.screenshot({
     path: "artifacts/maquette-desktop.png",

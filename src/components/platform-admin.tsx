@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck, UserPlus, Eye } from "lucide-react";
 import type { Locale } from "@/lib/locale";
+import { RecipeTagAdmin } from "./recipe-tag-admin";
 import { LearningAdmin } from "./learning-admin";
 type AdminData = {
   members: {
@@ -162,6 +163,7 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
           </button>
         </section>
       </div>
+      <RecipeTagAdmin locale={locale}/>
       {error && <p role="alert">{error}</p>}
       {status && <p role="status">{status}</p>}
       <section className="card">

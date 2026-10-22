@@ -6,12 +6,12 @@ import { createVault, encryptVault, decryptVault } from "../src/lib/vault-crypto
 import { demoData } from "../src/lib/demo";
 import type { PersonalData } from "../src/lib/private-types";
 
-test("real database persists receipt and cooking together with stock, survives reload, and rejects stale or foreign writes", async () => {
+test("legacy schema: database persists receipt and cooking together with stock, survives reload, and rejects stale or foreign writes", async () => {
   test.setTimeout(60000);
   const db = new PGlite(), owner = "11111111-1111-4111-8111-111111111111", admin = "22222222-2222-4222-8222-222222222222";
   try {
     await db.exec(`create role anon;create role authenticated;create role supabase_auth_admin;create schema auth;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;insert into auth.users values('${owner}','owner@example.test',now()),('${admin}','imalexgauthier@gmail.com',now());`);
-    for (const file of (await readdir("supabase/migrations")).filter(f => f.endsWith(".sql")).sort()) await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
+    for (const file of (await readdir("supabase/migrations")).filter(f => f.endsWith(".sql") && f < "20261022000000").sort()) await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
     await db.exec(`insert into private.members(user_id,role) values('${owner}','member'),('${admin}','admin')`);
     const asUser = async (id: string) => { await db.exec("reset role;set role authenticated"); await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]); };
     const save = async (revision: number, data: PersonalData) => db.query("select public.save_standard_workspace($1,$2)",[revision,JSON.stringify(data)]);

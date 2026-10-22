@@ -30,6 +30,8 @@ import {
   PenLine,
   type LucideIcon,
 } from "lucide-react";
+import { mealLabel, mealTimes } from "@/lib/planner";
+import { RecipeImage } from "./recipes";
 import { WeeklyPlanner, RecipeLibrary, RecipeSheet } from "./recipes";
 import { Community } from "./community";
 import { PlatformAdmin } from "./platform-admin";
@@ -63,6 +65,7 @@ type View =
   | "recipes"
   | "menus"
   | "groceries"
+  | "orders"
   | "pantry"
   | "weight"
   | "journal"
@@ -146,6 +149,7 @@ export function Dashboard({
       label: t("Liste d’épicerie", "Grocery list"),
     },
     { id: "pantry", icon: Archive, label: t("Mes réserves", "My pantry") },
+    { id: "orders", icon: ShoppingBasket, label: t("Mes commandes", "My orders") },
     { id: "weight", icon: Scale, label: t("Mon parcours", "My progress") },
     { id: "journal", icon: BookOpen, label: t("Mon journal", "My journal") },
     {
@@ -172,6 +176,8 @@ export function Dashboard({
         label: t("Administration", "Administration"),
       });
   }
+  const navOrder: View[] = ["overview", "program", "journal", "menus", "recipes", "groceries", "pantry", "orders", "weight", "library", "circles", "admin"];
+  nav.sort((a,b) => navOrder.indexOf(a.id) - navOrder.indexOf(b.id));
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
@@ -500,7 +506,7 @@ export function Dashboard({
     );
   }
   return (
-    <div className="app-shell">
+    <div className="app-shell elan-app" data-view={view}>
       {menuOpen && (
         <button
           className="sidebar-overlay"
@@ -515,9 +521,11 @@ export function Dashboard({
         >
           <Brand />
         </a>
-        <div className="sidebar-label">{t("MON ESPACE", "MY SPACE")}</div>
+
         <nav aria-label={t("Navigation principale", "Main navigation")}>
           {nav.map((n) => (
+            <div key={n.id} className="nav-item">
+            {["overview","menus","weight","admin"].includes(n.id) && <div className="sidebar-label">{n.id === "overview" ? t("MON QUOTIDIEN", "MY EVERYDAY") : n.id === "menus" ? t("À TABLE", "AT THE TABLE") : n.id === "weight" ? t("POUR MOI", "FOR ME") : t("GÉRER", "MANAGE")}</div>}
             <button
               key={n.id}
               className={view === n.id ? "active" : ""}
@@ -527,7 +535,7 @@ export function Dashboard({
               <n.icon size={19} strokeWidth={1.6} />
               <span>{n.label}</span>
               {view === n.id && <span className="active-dot" />}
-            </button>
+            </button></div>
           ))}
         </nav>
         <div className="sidebar-bottom">
@@ -656,29 +664,10 @@ export function Dashboard({
               </span>
             </div>
           )}
-          {privateActions && view === "overview" && (
-            <button
-              className="program-invitation card"
-              onClick={() => go("program")}
-            >
-              <Sprout size={25} />
-              <span>
-                <strong>
-                  {t("Un moment pour avancer", "A moment to move forward")}
-                </strong>
-                <small>
-                  {t(
-                    "Votre lecture du jour, une petite action et quelques lignes pour vous.",
-                    "Your daily reading, a small action and a few words for yourself.",
-                  )}
-                </small>
-              </span>
-              <ArrowRight size={20} />
-            </button>
-          )}
           {view === "overview" && (
             <>
-              <section className="welcome">
+              <div className="page-heading home-greeting"><div><span className="eyebrow">{dateLabel(today(), { weekday: "long", day: "numeric", month: "long" })}</span><h1>{t("Bonjour, vous.", "Hello, you.")}</h1><p>{t("On fait de la place à ce qui vous fait du bien?", "A little room for what feels good?")}</p></div><button className="secondary" onClick={() => open("journal")}><PenLine size={16}/>{t("Ma journée", "My day")}</button></div>
+              <div className="home-hero-grid"><section className="welcome">
                 <div className="welcome-copy">
                   <span className="eyebrow">
                     <span className="mini-line" />
@@ -688,9 +677,9 @@ export function Dashboard({
                     )}
                   </span>
                   <h1>
-                    {t("Un jour", "One day")}
+                    {t("Du plaisir", "A little joy")}
                     <br />
-                    <em>{t("à la fois.", "at a time.")}</em>
+                    <em>{t("dans vos journées.", "in every day.")}</em>
                   </h1>
                   <p>
                     {t(
@@ -713,9 +702,9 @@ export function Dashboard({
                   </div>
                 </div>
                 <div className="welcome-art">
-                  <img src="/brand/growth.webp" alt="" width={1024} height={688} />
+                  <img src="/brand/elan/welcome.jpg" alt="" width={1024} height={688} />
                 </div>
-              </section>
+              </section><aside className="home-program-card"><Sprout size={28}/><span className="eyebrow">{t("VOTRE PETIT PAS DU JOUR", "YOUR SMALL STEP TODAY")}</span><h2>{t("Un moment pour avancer.", "A moment to move forward.")}</h2><p>{t("Une lecture qui fait réfléchir. Quelques mots pour vous. Et la suite, à votre rythme.", "A thought-provoking reading. A few words for yourself. And the next step, at your pace.")}</p><button className="primary" onClick={() => privateActions ? go("program") : open("journal")}>{t("Ouvrir ma journée", "Open my day")}<ArrowRight size={16}/></button></aside></div>
               <div className="quick-stats">
                 <button onClick={() => go("menus")}>
                   <span className="stat-icon">
@@ -774,7 +763,10 @@ export function Dashboard({
               </div>
               <div className="overview-columns">
                 <div>
-                  {menuSection()}
+                  <section className="home-meals"><header><div><span className="eyebrow">{t("À TABLE AUJOURD’HUI", "ON TODAY’S MENU")}</span><h2>{t("De quoi se régaler.", "Something to enjoy.")}</h2></div><button className="text-button" onClick={() => go("menus")}>{t("Tout mon menu", "My full menu")}<ArrowRight size={15}/></button></header><div className="home-meal-grid">
+                    {data.slots.filter(slot => slot.date === today()).sort((a,b) => mealTimes.indexOf(a.slot) - mealTimes.indexOf(b.slot)).map(slot => { const recipe = data.recipes.find(r => r.id === slot.recipeId); return recipe && <button className="home-meal" key={slot.slot} onClick={() => setSelectedRecipe(recipe)}><RecipeImage recipe={recipe}/><span><small>{mealLabel(slot.slot,locale)}</small><strong>{locale === "fr" ? recipe.title : recipe.titleEn}</strong><small>{recipe.minutes} min · {recipe.servings} portions</small></span></button>; })}
+                    {!data.slots.some(slot => slot.date === today()) && <button className="home-meal-empty" onClick={() => go("menus")}><CalendarDays size={28}/><strong>{t("Qu’est-ce qui vous ferait plaisir?", "What would you enjoy?")}</strong><span>{t("Choisissez vos repas pour aujourd’hui.", "Choose your meals for today.")}</span><span className="primary">{t("Composer mon menu", "Plan my menu")}<Plus size={15}/></span></button>}
+                  </div></section>
                   <section className="daily-note">
                     <div className="daily-note-icon">
                       <Heart size={22} strokeWidth={1.4} />
@@ -857,6 +849,7 @@ export function Dashboard({
               onPantrySave={async item => { await mutate("pantry", item); }}
             />
           )}
+          {view === "orders" && <><div className="page-heading"><span className="eyebrow">{t("BIENTÔT À LA MAISON", "COMING HOME SOON")}</span><h1>{t("Mes commandes.", "My orders.")}</h1><p>{t("Vos prochaines livraisons et cueillettes, en un coup d’œil.", "Your upcoming deliveries and pickups, at a glance.")}</p></div><PendingOrders data={data} locale={locale} showEmpty onSave={async value => { await mutate("shopping", value); }}/><button className="secondary" onClick={() => go("groceries")}>{t("Préparer mes achats", "Plan my groceries")}<ArrowRight size={16}/></button></>}
           {view === "pantry" && (
             <Pantry
               key={pantryEditId || "pantry"}

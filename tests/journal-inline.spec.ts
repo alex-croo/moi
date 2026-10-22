@@ -184,8 +184,10 @@ test("database AI gate permits only active standard users, with independent hour
     );
     for (const file of (await readdir("supabase/migrations"))
       .filter((f) => f.endsWith(".sql"))
-      .sort())
+      .sort()) {
+      if (file === "20261022040217_guided_daily_journal.sql") await db.exec(`insert into public.personal_vaults(owner_id,revision,envelope)values('${b}',1,'{}')`);
       await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
+    }
     await db.exec(
       `insert into private.members(user_id)values('${a}'),('${b}');set role authenticated;select set_config('request.jwt.claim.sub','${a}',false);`,
     );
@@ -198,11 +200,10 @@ test("database AI gate permits only active standard users, with independent hour
     for (let i = 0; i < 20; i++) expect(await reserve()).toBe(true);
     expect(await reserve()).toBe(false);
     await db.exec(`select set_config('request.jwt.claim.sub','${b}',false)`);
+    expect(await reserve()).toBe(false); // Legacy encrypted accounts remain excluded.
+    await db.exec(`reset role;delete from public.personal_vaults where owner_id='${b}';set role authenticated;`);
     expect(await reserve()).toBe(true);
-    await db.exec(
-      `reset role;insert into public.personal_vaults(owner_id,revision,envelope)values('${b}',1,'{}');set role authenticated;`,
-    );
-    expect(await reserve()).toBe(false);
+    await expect(db.exec(`reset role;insert into public.personal_vaults(owner_id,revision,envelope)values('${b}',1,'{}')`)).rejects.toThrow(/New vault creation retired/);
     await db.exec(
       `reset role;delete from public.personal_vaults where owner_id='${b}';update private.members set active=false where user_id='${b}';set role authenticated;`,
     );

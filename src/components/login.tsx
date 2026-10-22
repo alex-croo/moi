@@ -27,9 +27,9 @@ export function Login({
             {t("DE LA PLACE POUR VOUS", "A LITTLE ROOM FOR YOU")}
           </span>
           <h1>
-            {t("Les petits pas", "Small steps")}
+            {t("Du plaisir dans", "A little joy in")}
             <br />
-            <em>{t("font leur chemin.", "go a long way.")}</em>
+            <em>{t("votre quotidien.", "your everyday.")}</em>
           </h1>
           <p>
             {t(
@@ -37,7 +37,7 @@ export function Login({
               "Eat well. Take a breath. Move at your own pace.",
             )}
           </p>
-          <img className="login-brand-art" src="/brand/growth.webp" alt="" width={1024} height={688} />
+          <img className="login-brand-art" src="/brand/elan/welcome.jpg" alt="" width={1024} height={688} />
           <div className="story-note">
             <Sprout size={18} />
             {t(

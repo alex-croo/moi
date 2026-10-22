@@ -119,7 +119,7 @@ test("31 days unlock in order immediately, retain progress and complete four mil
     expect(lesson.body[1].length).toBeGreaterThan(250);
   }
 });
-test("real PostgreSQL: migration, vault isolation including admin, invitations, circles and immediate revocation", async () => {
+test("legacy schema: migration, vault isolation including admin, invitations, circles and immediate revocation", async () => {
   test.setTimeout(120000);
   const db = new PGlite();
   try {
@@ -127,7 +127,7 @@ test("real PostgreSQL: migration, vault isolation including admin, invitations, 
       `create role anon;create role authenticated;create role supabase_auth_admin;create schema auth;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;insert into auth.users values('${a}','imalexgauthier@gmail.com',now()),('${b}','member@example.test',now()),('${c}','stranger@example.test',now()),('${d}','unverified@example.test',null);`,
     );
     const files = (await readdir("supabase/migrations"))
-      .filter((f) => f.endsWith(".sql"))
+      .filter((f) => f.endsWith(".sql") && f < "20261022000000")
       .sort();
     for (const file of files) {
       if (file.includes("private_vault"))
@@ -403,7 +403,7 @@ test("passkey-encrypted vault has no server secret, recovers without passkey and
   ).toEqual({ journal: ["Existing thoughts"], weights: [82] });
 });
 
-test("standard data is isolated, activation migrates all data atomically and rejects stale plaintext writes", async () => {
+test("legacy schema: standard data is isolated, activation migrates all data atomically and rejects stale plaintext writes", async () => {
   test.setTimeout(120000);
   const db = new PGlite();
   try {
@@ -411,7 +411,7 @@ test("standard data is isolated, activation migrates all data atomically and rej
       `create role anon;create role authenticated;create role supabase_auth_admin;create schema auth;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;insert into auth.users values('${a}','imalexgauthier@gmail.com',now()),('${b}','member@example.test',now());`,
     );
     for (const f of (await readdir("supabase/migrations"))
-      .filter((f) => f.endsWith(".sql"))
+      .filter((f) => f.endsWith(".sql") && f < "20261022000000")
       .sort())
       await db.exec(await readFile(`supabase/migrations/${f}`, "utf8"));
     await db.exec(
