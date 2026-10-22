@@ -26,9 +26,9 @@ export async function learningRequest(request: Request, editorial = false) {
   const parsed = (editorial ? admin : personal).safeParse(await boundedJson(request,85000));
   if (!parsed.success) return privateReply({error:"invalid"},400);
   const {action,...payload} = parsed.data;
-  if (action === "preferences" && "enabled" in payload && payload.enabled && !fireworksStatus().ready) return privateReply({error:"retention_unverified"},503);
+  if (action === "preferences" && "enabled" in payload && payload.enabled && !fireworksStatus(auth.user.id).ready) return privateReply({error:"unavailable"},503);
   const {data,error} = await auth.db.rpc("learning_action",{action,payload});
   if (error) return privateReply({error:error.code === "40001" ? "conflict" : "unavailable"},error.code === "42501" ? 403 : error.code === "40001" ? 409 : 400);
-  return privateReply(action === "note" || action === "admin_versions" ? data : {...data,ai:fireworksStatus()});
+  return privateReply(action === "note" || action === "admin_versions" ? data : {...data,ai:fireworksStatus(auth.user.id)});
  } catch { return privateReply({error:"unavailable"},503); }
 }

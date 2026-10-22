@@ -41,7 +41,7 @@ test('daily program: isolated notes, one step per local date, resume, editorial 
  await db.exec(`reset role;set role anon;select set_config('request.jwt.claim.sub','',false);`);await expect(run('state')).rejects.toThrow();
  }finally{await db.close();}
 });
-test('retention is enforced before any journal context is loaded and no router fallback is configured',async()=>{
- const route=await readFile('src/app/api/learning/companion/route.ts','utf8');expect(route.indexOf('await requirePrivateFireworks()')).toBeLessThan(route.indexOf('.from("standard_workspaces")'));
+test('private AI access is checked for the authenticated owner before loading journal context',async()=>{
+ const route=await readFile('src/app/api/learning/companion/route.ts','utf8');const guard=route.indexOf('await requirePrivateFireworks(auth.user.id)');expect(guard).toBeGreaterThan(-1);expect(guard).toBeLessThan(route.indexOf('.from("standard_workspaces")'));
  const provider=await readFile('src/lib/fireworks.ts','utf8');expect(provider).toContain('store: false');expect(provider).toContain('result.model !== model');expect(provider).toContain('zeroDataRetention');expect(provider).toContain('FIREWORKS_ZDR_VERIFICATION');
 });

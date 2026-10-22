@@ -454,7 +454,7 @@ export function JournalEditor({
             {encrypted||protectionChanged?t(
               "Protection renforcée · L’IA est désactivée pour garder vos mots dans votre coffre.",
               "Enhanced protection · AI is off to keep your words inside your vault.",
-            ):t("L’assistance IA attend la validation de la zéro rétention. Vous pouvez continuer à écrire.","AI assistance is waiting for zero-retention verification. You can keep writing.")}
+            ):t("L’assistance IA n’est pas disponible pour le moment. Vous pouvez continuer à écrire.","AI assistance is currently unavailable. You can keep writing.")}
           </p>
         )}
         <div className="journal-writing-area" aria-busy={aiBusy}>

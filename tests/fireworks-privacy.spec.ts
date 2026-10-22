@@ -30,6 +30,21 @@ test('journal inference fails closed before sending content when retention is mi
   returnedModel=env.FIREWORKS_MODEL;finish='length';await assert.rejects(()=>api.fireworksText('Edit',{}),/incomplete_output/);
   enforced=false;calls.length=0;await assert.rejects(()=>api.fireworksText('Edit',{}),/retention_unverified/);
   expect(calls).toHaveLength(1);expect(calls[0].url).toContain('policySettings');
+  delete env.FIREWORKS_ZDR_VERIFICATION;
+  env.FIREWORKS_PRIVATE_PILOT_OWNER='11111111-1111-4111-8111-111111111111';
+  finish='stop';calls.length=0;
+  expect(api.fireworksStatus(env.FIREWORKS_PRIVATE_PILOT_OWNER).ready).toBe(true);
+  expect(api.fireworksStatus().ready).toBe(false);
+  expect(await api.fireworksText('Edit',{text:'Owner test'},true,false,env.FIREWORKS_PRIVATE_PILOT_OWNER)).toBe('Synthetic response');
+  expect(calls).toHaveLength(1);expect(calls[0].url).toContain('/chat/completions');
+  expect(JSON.parse(calls[0].init.body as string).store).toBe(false);
+  calls.length=0;
+  await assert.rejects(()=>api.fireworksText('Edit',{},true,false,'22222222-2222-4222-8222-222222222222'),/retention_unverified/);
+  await assert.rejects(()=>api.fireworksText('Edit',{}),/retention_unverified/);
+  expect(calls).toHaveLength(0);
+  delete env.FIREWORKS_API_KEY;
+  await assert.rejects(()=>api.fireworksText('Edit',{},true,false,env.FIREWORKS_PRIVATE_PILOT_OWNER),/retention_unverified/);
+  expect(calls).toHaveLength(0);
 });
 
 test('editorial drafts preserve approved metadata and reject unexpected AI fields', async () => {
