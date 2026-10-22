@@ -117,6 +117,7 @@ test("shopping UI covers suppliers, free dates, receipts, cooking and compact fo
   await expect(page.locator(".pantry-groups").getByRole("listitem")).toHaveCount(0);
   await nav.getByRole("button", { name: "Liste d’épicerie", exact: true }).click();
   await page.getByRole("button", { name: "J’ai reçu ma commande", exact: true }).click();
+  await dialog.getByRole("button", { name: "Vérifier manuellement", exact: true }).click();
   await dialog.getByLabel("Quantité Oignon", { exact: true }).fill("0");
   await dialog.getByRole("button", { name: "Confirmer et ajouter aux réserves", exact: true }).click();
   await expect(page.locator(".pending-order")).toHaveCount(0);

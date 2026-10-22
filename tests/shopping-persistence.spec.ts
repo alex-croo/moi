@@ -21,7 +21,8 @@ test("legacy schema: database persists receipt and cooking together with stock, 
     let personal: PersonalData = { ...base, pantry: [], slots: [{ date: "2026-10-25", slot: "lunch", recipeId: demoData.recipes[0].id }], program: { completed: {}, reflections: {} } };
     const orderId = crypto.randomUUID(), cookId = crypto.randomUUID();
     await asUser(owner);
-    personal = applyPrivateMutation(personal, "shopping", { action: "order", id: orderId, mode: "store", grocer: "Private grocer", expectedDate: "2026-10-25", fulfillment: "pickup", lines: [{ ingredientId: "beef-95-raw", quantity: { kind: "mass", value: 500 }, location: "freezer" }] }, catalog);
+    personal = applyPrivateMutation(personal, "shopping", { action: "order", id: orderId, mode: "online", grocer: "Private grocer", expectedDate: "2026-10-25", fulfillment: "pickup", lines: [{ ingredientId: "beef-95-raw", quantity: { kind: "count", value: 1, label: "paquet" }, location: "freezer" }] }, catalog);
+    personal = applyPrivateMutation(personal, "shopping", { action: "receiveActual", id: orderId, lines: [{ ingredientId: "beef-95-raw", quantity: { kind: "mass", value: 500 }, location: "freezer" }] }, catalog);
     const personalFood = { id: crypto.randomUUID(), name: "Private yogurt", aisle: "dairy", quantity: { kind: "volume", value: 500 } };
     personal = applyPrivateMutation(personal, "shopping", { action: "personalItem", item: personalFood }, catalog);
     personal = applyPrivateMutation(personal, "shopping", { action: "selectMany", range: { start: "2026-10-25", end: "2026-10-31" }, updates: [{ ingredientId: personalFood.id, checked: true }] }, catalog);

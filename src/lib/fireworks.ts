@@ -21,14 +21,14 @@ export async function requirePrivateFireworks(ownerId?: string) {
   const enforcement = p?.inference?.enforcement;
   if (!(enforcement === "ENFORCED" || (p?.defaultEnforced === true && (!enforcement || enforcement === "INHERIT" || enforcement === "ENFORCEMENT_UNSPECIFIED")))) throw Error("retention_unverified");
 }
-export async function fireworksText(instructions: string, input: unknown, privateData = true, json = false, ownerId?: string) {
+export async function fireworksText(instructions: string, input: unknown, privateData = true, json = false, ownerId?: string, limits: { maxTokens?: number; maxCharacters?: number } = {}) {
   if (privateData) await requirePrivateFireworks(ownerId);
   if (!process.env.FIREWORKS_API_KEY) throw Error("provider_unavailable");
   const model = fireworksStatus().model;
   const r = await fetch("https://api.fireworks.ai/inference/v1/chat/completions", {
     method: "POST", cache: "no-store", signal: AbortSignal.timeout(50000),
     headers: { Authorization: `Bearer ${process.env.FIREWORKS_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model, store: false, stream: false, max_tokens: 4000, ...(json ? {response_format:{type:"json_object"}} : {}), messages: [
+    body: JSON.stringify({ model, store: false, stream: false, max_tokens: limits.maxTokens ?? 4000, ...(json ? {response_format:{type:"json_object"}} : {}), messages: [
       { role: "system", content: instructions }, { role: "user", content: JSON.stringify(input) },
     ] }),
   });
@@ -37,6 +37,6 @@ export async function fireworksText(instructions: string, input: unknown, privat
   if (result.model !== model) throw Error("unexpected_model");
   if (result.choices?.[0]?.finish_reason !== "stop") throw Error("incomplete_output");
   const text = result.choices?.[0]?.message?.content;
-  if (typeof text !== "string" || !text.trim() || text.length > 25000) throw Error("invalid_output");
+  if (typeof text !== "string" || !text.trim() || text.length > (limits.maxCharacters ?? 25000)) throw Error("invalid_output");
   return text;
 }

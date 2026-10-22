@@ -30,6 +30,7 @@ export const shoppingMutation = z.discriminatedUnion("action", [
   }) }).strict(),
   z.object({ action: z.literal("order"), id: z.uuid(), mode: z.enum(["store", "online"]), grocer: z.string().trim().max(100), expectedDate: z.iso.date(), fulfillment: z.enum(["delivery", "pickup"]), lines, deliveryWindow: deliveryWindow.optional() }).strict(),
   z.object({ action: z.literal("receive"), id: z.uuid(), lines }).strict(),
+  z.object({ action: z.literal("receiveActual"), id: z.uuid(), lines: z.array(line).max(300).refine(v => new Set(v.map(purchaseLineKey)).size === v.length) }).strict(),
   z.object({ action: z.literal("thaw"), id: z.uuid(), itemId: z.uuid(), amount: z.number().positive().max(1000000) }).strict(),
   z.object({ action: z.literal("cancel"), id: z.uuid() }).strict(),
   z.object({ action: z.literal("reschedule"), id: z.uuid(), expectedDate: z.iso.date() }).strict(),
@@ -267,13 +268,18 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
       for (const key of Object.keys(state.selections)) state.selections[key] = state.selections[key].filter(id => !input.lines.some(l => (l.ingredientId === id || l.personalItemId === id) && l.quantity.value > 0));
       break;
     }
-    case "receive": {
+    case "receive": case "receiveActual": {
       const order = state.orders.find(o => o.id === input.id);
       if (!order || order.status === "cancelled") throw Error("order_unavailable");
       if (order.status === "received") return data;
-      if (input.lines.length !== order.lines.length || input.lines.some(l => !order.lines.some(original => purchaseLineKey(original) === purchaseLineKey(l) && original.ingredientId === l.ingredientId && compatible(original.quantity, l.quantity)))) throw Error("invalid_receipt");
-      // Product identities and prices come from the order; receipt edits only amount and storage.
-      const received = input.lines.map(l => ({ ...order.lines.find(original => purchaseLineKey(original) === purchaseLineKey(l))!, quantity: l.quantity, location: l.location }));
+      if (input.action === "receive" && (input.lines.length !== order.lines.length || input.lines.some(l => !order.lines.some(original => purchaseLineKey(original) === purchaseLineKey(l) && original.ingredientId === l.ingredientId && compatible(original.quantity, l.quantity))))) throw Error("invalid_receipt");
+      if (input.lines.some(l => l.ingredientId !== null && !catalog.ingredients.some(i => i.id === l.ingredientId))) throw Error("invalid_receipt");
+      // A reviewed receipt can contain substitutions, extras and missing products.
+      // Keep the ordered lines untouched; only confirmed received lines enter stock.
+      const received = input.action === "receive" ? input.lines.map(l => ({ ...order.lines.find(original => purchaseLineKey(original) === purchaseLineKey(l))!, quantity: l.quantity, location: l.location })) : input.lines.map(l => {
+        if (l.personalItemId && !order.lines.some(original => original.personalItemId === l.personalItemId && original.ingredientId === l.ingredientId && compatible(original.quantity, l.quantity))) throw Error("invalid_personal_item");
+        return { ...l };
+      });
       for (const line of received) addStock(next.pantry, line, catalog);
       order.status = "received"; order.received = received; order.receivedAt = now;
       break;

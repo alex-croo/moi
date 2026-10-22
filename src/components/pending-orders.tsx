@@ -6,7 +6,7 @@ import type { Locale } from "@/lib/locale";
 import type { Purchase, ShoppingWorkspace } from "@/lib/shopping-types";
 import { shoppingState, purchaseLineKey, type ShoppingMutation } from "@/lib/shopping";
 import { localToday, quantityLabel } from "@/lib/units";
-import { PurchaseEditor } from "./purchase-editor";
+import { ReceiptEditor } from "./receipt-editor";
 
 export function PendingOrders({ data, locale, onSave, showEmpty = false }: {
   data: ShoppingWorkspace;
@@ -19,6 +19,8 @@ export function PendingOrders({ data, locale, onSave, showEmpty = false }: {
   // Delivery dates are independent of the period selected for groceries.
   const pending = shopping.orders.filter(order => order.status === "pending")
     .sort((a, b) => a.expectedDate.localeCompare(b.expectedDate));
+  const received = shopping.orders.filter(order => order.status === "received" && order.mode === "online")
+    .sort((a, b) => (b.receivedAt || "").localeCompare(a.receivedAt || "")).slice(0, 10);
   const [receiving, setReceiving] = useState<Purchase | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -33,7 +35,7 @@ export function PendingOrders({ data, locale, onSave, showEmpty = false }: {
     day: "numeric", month: "short", year: "numeric",
   }).format(new Date(`${date}T12:00:00`));
 
-  if (!pending.length && !showEmpty && !status && !error) return null;
+  if (!pending.length && !received.length && !showEmpty && !status && !error) return null;
   return <section className="pending-orders" aria-label={t("Commandes en attente", "Pending orders")}>
     <h2><Truck size={17}/>{t("Commandes en attente", "Pending orders")} <span>{pending.length}</span></h2>
     <p className="pending-orders-note">{pending.length
@@ -60,7 +62,8 @@ export function PendingOrders({ data, locale, onSave, showEmpty = false }: {
     </div>)}
     {error && <p role="alert" className="form-error">{error}</p>}
     {status && <p role="status" className="grocery-status">{status}</p>}
-    {receiving && <PurchaseEditor mode="receive" order={receiving} initialLines={receiving.lines} grocers={shopping.grocers} ingredients={data.ingredients} units={data.preferences} locale={locale} onClose={() => setReceiving(null)} onSave={async value => {
+    {!!received.length && <details className="received-orders"><summary>{t("Mes dernières réceptions", "Recent receipts")} <span>{received.length}</span></summary>{received.map(order => <details key={order.id}><summary>{order.grocer || t("Commande en ligne", "Online order")} · {order.receivedAt && dateLabel(order.receivedAt.slice(0, 10))} · {(order.received || []).filter(l => l.quantity.value > 0).length} {t("articles reçus", "received items")}</summary><ul className="pending-order-items">{(order.received || []).map(line => <li key={purchaseLineKey(line)}><span>{line.name || data.ingredients.find(i => i.id === line.ingredientId)?.[locale === "fr" ? "name" : "nameEn"] || line.ingredientId}</span><span>{quantityLabel(line.quantity, data.preferences, locale)}</span></li>)}</ul></details>)}</details>}
+    {receiving && <ReceiptEditor order={receiving} ingredients={data.ingredients} units={data.preferences} locale={locale} onClose={() => setReceiving(null)} onSave={async value => {
       await onSave(value);
       setStatus(t("Commande reçue. Les quantités confirmées sont ajoutées à vos réserves.", "Order received. Confirmed quantities have been added to your pantry."));
     }}/>}
