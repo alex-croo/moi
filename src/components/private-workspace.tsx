@@ -345,12 +345,20 @@ export function PrivateWorkspace({
           privacyPanel: (displayLocale) => (
             <PrivacySettings
               locale={displayLocale}
-              userId={userId}
               enhanced={!!current.envelope}
-              passkey={!!current.envelope?.passkeys?.length}
-              snapshot={snapshot}
-              protect={protect}
-              onRestore={selectRestore}
+              migrate={async () => {
+                const expected = await snapshot();
+                if (!expected.envelope) return;
+                const response = await fetch("/api/vault/migrate", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ expectedRevision: expected.revision, acknowledged: true, personal: expected.data }) });
+                if (!response.ok) throw Error("migration");
+                const readback = await fetch("/api/vault", {cache:"no-store"});
+                if (!readback.ok) throw Error("readback");
+                const saved: LoadedWorkspace = await readback.json();
+                const canonical = (value: unknown): string => JSON.stringify(value, function(_key, item) { return item && typeof item === "object" && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a],[b])=>a.localeCompare(b))) : item; });
+                if (saved.envelope || !saved.standard || canonical(saved.standard) !== canonical(expected.data)) throw Error("readback");
+                state.current = {key:null,envelope:null,data:saved.standard,revision:saved.standardRevision || 0};
+                setLoaded(saved); setData(saved.standard); setRestore(null); setSecret("");
+              }}
               backup={() => {
                 if (state.current?.envelope)
                   download(

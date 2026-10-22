@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck, UserPlus, Eye } from "lucide-react";
 import type { Locale } from "@/lib/locale";
-import { DailyProgram } from "./daily-program";
+import { LearningAdmin } from "./learning-admin";
 type AdminData = {
   members: {
     id: string;
@@ -68,20 +68,7 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
         <button className="text-button" onClick={() => setPreview(false)}>
           {t("← Retour à l’administration", "← Back to administration")}
         </button>
-        <DailyProgram
-          locale={locale}
-          progress={{ completed: {}, reflections: {} }}
-          preview
-          onSave={async () => {}}
-          onJournal={() =>
-            setStatus(
-              t(
-                "Aperçu : la réflexion ouvre le journal personnel du participant.",
-                "Preview: reflection opens the participant’s own journal.",
-              ),
-            )
-          }
-        />
+        <LearningAdmin/>
         <p role="status">{status}</p>
       </>
     );
@@ -162,16 +149,16 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
         <section className="card">
           <h2>
             <Eye size={21} />
-            {t("Le programme quotidien", "The daily program")}
+            {t("Centre documentaire", "Content library")}
           </h2>
           <p>
             {t(
-              "31 lectures originales, quatre jalons et un lien vers le journal personnel. Le contenu commun est versionné; aucune information personnelle ne sert à l’écrire.",
-              "31 original readings, four milestones and a link to the personal journal. Shared content is versioned; no personal information is used to write it.",
+              "150 fiches de départ réparties en 15 modules. Révisez les sources, enrichissez le parcours et publiez les lectures approuvées. Les journaux restent séparés.",
+              "150 initial documents in 15 modules. Review sources, extend the journey and publish approved readings. Journals remain separate.",
             )}
           </p>
           <button className="secondary" onClick={() => setPreview(true)}>
-            {t("Parcourir les 31 journées", "Preview all 31 days")}
+            {t("Ouvrir le centre documentaire", "Open the content library")}
           </button>
         </section>
       </div>

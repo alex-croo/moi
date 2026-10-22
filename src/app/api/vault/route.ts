@@ -67,6 +67,7 @@ export async function POST(request: Request) {
     parsed.data.envelope.revision !== parsed.data.expectedRevision + 1
   )
     return reply({ error: "invalid_input" }, 400);
+  if (parsed.data.expectedRevision === 0) return reply({error:"new_vaults_retired"},410);
   const activating = parsed.data.expectedStandardRevision !== undefined;
   if (activating && parsed.data.expectedRevision !== 0)
     return reply({ error: "invalid_input" }, 400);

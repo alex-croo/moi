@@ -319,12 +319,12 @@ export function RecipeSheet({
           <div className="recipe-steps">
             {recipe.steps.map((step, i) => (
               <article key={i}>
-                <div className="step-image">
+                {step.image && <div className="step-image">
                   <RecipeImage
                     image={step.image}
                     alt={locale === "fr" ? step.title : step.titleEn}
                   />
-                </div>
+                </div>}
                 <h3>
                   <span>{i + 1}</span>
                   {locale === "fr" ? step.title : step.titleEn}
@@ -347,7 +347,7 @@ export function RecipeSheet({
             "Tred’meal · My recipe book.",
           )}{" "}
           <a href={recipe.source} target="_blank" rel="noopener noreferrer">
-            {t("Fiche d’origine dans Drive", "Original card in Drive")}
+            {t("Source de la recette", "Recipe source")}
           </a>
         </footer>
       </div>

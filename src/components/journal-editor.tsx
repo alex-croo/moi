@@ -19,6 +19,7 @@ import {
 import { applyJournalSuggestion, journalChanges } from "@/lib/journal-revision";
 import { useJournalAutosave } from "@/hooks/use-journal-autosave";
 import { draftFromEntry, type JournalSyncBridge } from "@/lib/journal-autosave";
+import { DailyJournal, learningCall } from "./learning-journal";
 import { JournalLibrary } from "./journal-library";
 import { journalPages, journalPageTitle, journalDraftKey as key, type JournalDraft as Draft } from "@/lib/journal-library";
 import { journalSelectionPosition, placeJournalToolbar } from "@/lib/journal-selection";
@@ -41,8 +42,10 @@ export function JournalEditor({
   recoveryKey = null,
   syncBridge,
   renderMeals,
+  guided = false,
 }: {
   entries: JournalEntry[];
+  guided?: boolean;
   renderMeals?: (date: string) => ReactNode;
   ownerId?: string;
   recoveryKey?: CryptoKey | null;
@@ -62,6 +65,9 @@ export function JournalEditor({
   }) => Promise<JournalEntry>;
 }) {
   const [screen, setScreen] = useState<"library" | "editor">("library");
+  const [providerReady,setProviderReady]=useState(false);
+  const [guidedPages, setGuidedPages] = useState<{date:string;title:string}[]>([]);
+  useEffect(() => { if(guided && active) learningCall("state").then(s=>{setGuidedPages(s.pages||[]);setProviderReady(s.ai?.ready===true);}).catch(()=>{}); }, [guided,active,screen]);
   const [openDates, setOpenDates] = useState<string[]>([]);
   const pageRoot = useRef<HTMLElement>(null);
   const [date, setDate] = useState(localToday);
@@ -97,7 +103,7 @@ export function JournalEditor({
     sync.update(date, { ...(drafts[date] || draft), ...patch });
     setStatus("");
   }
-  const aiDisabled = encrypted || protectionChanged;
+  const aiDisabled = encrypted || protectionChanged || (guided && !providerReady);
   function captureSelection() {
     const el = editor.current;
     if (el) setSelection({ start: el.selectionStart, end: el.selectionEnd });
@@ -355,7 +361,7 @@ export function JournalEditor({
       editor.current?.setSelectionRange(caret, caret);
     });
   }
-  const pages = journalPages(entries, drafts);
+  const pages = journalPages([...guidedPages.filter(p=>!entries.some(e=>e.date===p.date)).map(p=>({...p,id:p.date,text:"",mood:3,revision:0})),...entries], drafts);
   const titleFor = (pageDate: string) => journalPageTitle(pages.find(page => page.date === pageDate), t("Sans titre", "Untitled"));
   const locked = busy || aiBusy || !!proposal;
   const saveState = sync.states[date] || "saved";
@@ -441,13 +447,14 @@ export function JournalEditor({
             ))}
           </span>
         </div>
+        <DailyJournal key={date} date={date} owner={ownerId} enabled={guided && active} beforeAI={() => sync.requireSynced()}>
         {aiDisabled && (
           <p className="journal-privacy-hint">
             <LockKeyhole size={14} />
-            {t(
+            {encrypted||protectionChanged?t(
               "Protection renforcée · L’IA est désactivée pour garder vos mots dans votre coffre.",
               "Enhanced protection · AI is off to keep your words inside your vault.",
-            )}
+            ):t("L’assistance IA attend la validation de la zéro rétention. Vous pouvez continuer à écrire.","AI assistance is waiting for zero-retention verification. You can keep writing.")}
           </p>
         )}
         <div className="journal-writing-area" aria-busy={aiBusy}>
@@ -496,7 +503,7 @@ export function JournalEditor({
                       "Select up to 8,000 characters.",
                     )
                   : t(
-                      "Seule la sélection sera envoyée à l’IA via Vercel.",
+                      "Seule la sélection sera envoyée à l’IA via Fireworks.",
                       "Only this selection will be sent to AI through Vercel.",
                     )}
               </span>
@@ -654,6 +661,7 @@ export function JournalEditor({
         {error && <p role="alert">{error}</p>}
         {status && <p role="status">{status}</p>}
         {renderMeals?.(date)}
+        </DailyJournal>
       </div>
       </>}
     </section>

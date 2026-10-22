@@ -105,7 +105,7 @@ export type Recipe = {
     titleEn: string;
     text: string;
     textEn: string;
-    image: string;
+    image?: string;
   }[];
   note?: string;
   noteEn?: string;

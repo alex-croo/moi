@@ -9,65 +9,11 @@ export default async function Privacy({
   if (locale !== "fr" && locale !== "en") notFound();
   const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
   const sections = [
-    [
-      t("Deux niveaux de confidentialité", "Two privacy levels"),
-      t(
-        "La protection standard permet une entrée simple avec Google. Les données sont isolées entre utilisateurs et le tableau de bord de l’administration ne permet pas de lire les journaux. Les opérateurs techniques peuvent toutefois accéder aux données standard dans l’infrastructure. La protection renforcée est facultative et s’active dans Préférences → Confidentialité.",
-        "Standard protection allows simple Google sign-in. User data is isolated and the admin dashboard cannot read journals. Infrastructure operators can nevertheless access standard-mode data. Enhanced protection is optional, in Preferences → Privacy.",
-      ),
-    ],
-    [
-      t(
-        "Quand vous activez la protection renforcée",
-        "When you enable enhanced protection",
-      ),
-      t(
-        "Le journal, ses titres et humeurs, vos mesures, menus, réserves, listes d’épicerie, liens personnels, préférences et progression existants sont chiffrés dans votre navigateur, puis les nouvelles écritures le sont aussi. La version en clair de ces données est retirée de la base active dans la même transaction que la sauvegarde chiffrée. L’administration ne possède pas votre clé. Les anciennes sauvegardes et journaux techniques des fournisseurs ne sont pas rétroactivement chiffrés.",
-        "Your existing journal, titles and moods, measurements, meals, pantry, grocery lists, personal links, preferences and progress are encrypted in your browser, as are subsequent saves. The plaintext copy is removed from the active database in the same transaction as the encrypted save. The administrator does not have your key. Historical backups and provider logs are not retroactively encrypted.",
-      ),
-    ],
-    [
-      t("Clé d’accès et récupération", "Passkey and recovery"),
-      t(
-        "Une clé d’accès compatible peut déverrouiller les données avec Touch ID, Face ID ou le code de l’appareil. La compatibilité est vérifiée avant toute activation. Une phrase secrète est proposée en remplacement; elle reste disponible pour les coffres existants. Conservez le code de récupération séparément. Sans votre moyen de déverrouillage ni ce code, nous ne pouvons pas retrouver le contenu. Google seul ne déchiffre pas les données protégées. Recharger la page verrouille un espace protégé.",
-        "A compatible passkey can unlock data using Touch ID, Face ID or your device PIN. Compatibility is checked before activation. A passphrase is available as an alternative and remains supported for existing vaults. Keep the recovery code separately. Without your unlocking method or this code, we cannot recover the content. Google alone cannot decrypt protected data. Reloading locks a protected workspace.",
-      ),
-    ],
-    [
-      t("Ce qui reste visible", "What remains visible"),
-      t(
-        "La plateforme conserve l’adresse Google nécessaire à l’accès, les invitations, l’état du compte, l’appartenance aux cercles et des informations techniques comme les dates de requête et le volume du coffre. L’administration peut gérer ces accès sans consulter le contenu chiffré. Google assure la connexion; Vercel héberge l’application et Supabase l’authentification et la base de données.",
-        "The platform retains the Google email needed for access, invitations, account status, circle memberships and technical information such as request times and vault size. The administrator can manage access without reading encrypted content. Google handles sign-in; Vercel hosts the application and Supabase provides authentication and the database.",
-      ),
-    ],
-    [
-      t("Vos cercles", "Your circles"),
-      t(
-        "Rejoindre un cercle demande votre accord. Aucun journal, poids, repas ou progrès n’est publié automatiquement. Vous choisissez et prévisualisez chaque encouragement ou jalon partagé. Ces messages communs sont visibles aux membres du cercle et stockés séparément, sans chiffrement par votre clé personnelle. Les opérateurs de l’infrastructure peuvent donc y accéder. Quitter un cercle retire vos messages de l’application, mais pas les copies déjà conservées par les destinataires.",
-        "Joining a circle requires your acceptance. No journal, weight, meal or progress is automatically posted. You choose and preview each shared encouragement or milestone. Shared messages are visible to circle members and stored separately, without encryption by your personal key. Infrastructure operators can therefore access them. Leaving removes your messages from the application, but not copies already retained by recipients.",
-      ),
-    ],
-    [
-      t("IA, sauvegardes et exports", "AI, backups and exports"),
-      t(
-        "En mode standard, vous pouvez demander à l’IA de corriger ou améliorer un passage sélectionné. Seul ce passage est envoyé via Vercel AI Gateway à un fournisseur filtré pour l’absence de conservation et d’entraînement. Les modifications sont proposées dans la page et attendent votre acceptation. Lorsque la protection renforcée est active, cette assistance est désactivée et le contenu du coffre n’est pas envoyé à l’IA. Vous pouvez télécharger une sauvegarde chiffrée de votre coffre et la restaurer avec votre secret. Conservez votre code de récupération en lieu sûr. Les anciennes sauvegardes créées avant cette version ne sont pas automatiquement chiffrées; leur retrait ou leur protection doit être traité séparément.",
-        "In standard mode, you can ask AI to correct or improve a selected passage. Only that passage is sent through Vercel AI Gateway to a provider filtered for zero retention and no training. Changes are proposed within the page and require your acceptance. When enhanced protection is active, this assistance is disabled and vault content is not sent to AI. You can download an encrypted vault backup and restore it with your secret. Keep your recovery code somewhere safe. Backups from before this version are not automatically encrypted; their retirement or protection requires separate handling.",
-      ),
-    ],
-    [
-      t("Les limites de cette protection", "Limits of this protection"),
-      t(
-        "Le chiffrement protège le contenu conservé sur le serveur. Il ne protège pas un appareil déverrouillé ou compromis, une extension malveillante, ni une modification malveillante du code de l’application. L’exploitant d’une application web contrôle le code livré au navigateur. Il ne s’agit donc pas d’une garantie absolue contre un exploitant activement malveillant.",
-        "Encryption protects content stored on the server. It does not protect an unlocked or compromised device, a malicious extension or a malicious change to application code. A web application operator controls code delivered to the browser. This is therefore not an absolute guarantee against an actively malicious operator.",
-      ),
-    ],
-    [
-      t("Gérer vos informations", "Manage your information"),
-      t(
-        "En mode renforcé, la sauvegarde chiffrée se trouve dans Préférences. Vous pouvez quitter vos cercles et demander la suspension de votre accès ou la suppression de votre compte à l’administrateur qui vous a invité. Une suspension conserve le coffre; une suppression définitive doit être confirmée séparément. Les copies détenues par les fournisseurs suivent aussi leur cycle de conservation. Aucun outil publicitaire n’est intégré.",
-        "In enhanced mode, encrypted backup is available in Preferences. You can leave circles and request access suspension or account deletion from the administrator who invited you. Suspension preserves the vault; permanent deletion must be confirmed separately. Provider-held copies also follow their retention cycle. No advertising tools are integrated.",
-      ),
-    ],
+    [t("Votre espace personnel", "Your personal space"), t("Votre compte Google ouvre un espace isolé des autres usagers. Le centre documentaire et l’administration ne donnent pas accès aux journaux. Les données sont protégées en transit et dans l’hébergement; les opérateurs techniques peuvent toutefois y accéder. Le journal accompagné n’est pas chiffré de bout en bout.", "Google sign-in opens a space isolated from other users. Editorial and admin tools do not expose journals. Data is protected in transit and at rest; technical operators may access it. The guided journal is not end-to-end encrypted.")],
+    [t("La personnalisation reste votre choix", "Personalization is your choice"), t("La personnalisation est désactivée par défaut. Avec votre accord, des extraits récents de votre journal, vos notes de lecture et vos repères confirmés peuvent être envoyés à Fireworks pour Ember-1. Aucun vrai journal n’est envoyé avant la vérification de la politique de zéro rétention pour le compte et le modèle utilisés. Les métadonnées techniques, le cache temporaire et les obligations légales suivent les politiques des fournisseurs. Vous pouvez désactiver cette fonction dans Préférences.", "Personalization is off by default. With your consent, recent journal excerpts, reading notes and confirmed memories may be sent to Fireworks for Ember-1. No real journal is sent before retention coverage is verified for the account and model. Technical metadata, temporary caches and legal obligations follow provider policies. Disable personalization in Preferences at any time.")],
+    [t("Vos notes et les repères du compagnon", "Your notes and companion memories"), t("Vos notes se sauvegardent automatiquement dans votre espace, avec un brouillon local sur cet appareil en cas d’interruption. Les questions IA restent identifiées et facultatives. Les repères proposés n’alimentent la mémoire durable qu’après votre confirmation; vous pouvez les modifier ou les oublier. Effacer un repère ne supprime pas le texte original du journal. Le compagnon ne remplace pas un professionnel de la santé.", "Notes autosave to your account, with a local recovery draft on this device. AI questions are identified and optional. Suggested memories become durable context only after your confirmation; edit or forget them in Preferences. Forgetting a memory does not delete the source journal. The companion does not replace a health professional.")],
+    [t("Les coffres existants", "Existing vaults"), t("Un ancien coffre reste chiffré jusqu’à ce que son propriétaire le déverrouille et accepte le transfert vers le journal accompagné. Le transfert conserve les données existantes et une copie chiffrée de secours; il n’active pas l’IA. Les nouvelles activations de coffre sont retirées. Les anciennes sauvegardes suivent leur cycle de conservation.", "An existing vault remains encrypted until its owner unlocks it and agrees to migrate. Migration preserves existing data and an encrypted recovery copy; it does not enable AI. New vault creation is retired. Existing backups follow their retention cycle.")],
+    [t("Gérer vos informations", "Manage your information"), t("Vous pouvez quitter vos cercles et demander la suspension ou la suppression de votre compte à l’administrateur qui vous a invité. La suspension conserve vos données. La suppression définitive doit être confirmée séparément. Aucun outil publicitaire n’est intégré.", "Leave circles or ask your inviting administrator to suspend or delete your account. Suspension retains data. Permanent deletion requires separate confirmation. No advertising tools are integrated.")],
   ];
   return (
     <main className="vault-screen">
@@ -82,7 +28,7 @@ export default async function Privacy({
             "A space that respects your privacy.",
           )}
         </h1>
-        <p>{t("Mise à jour : 19 octobre 2026", "Updated: October 19, 2026")}</p>
+        <p>{t("Mise à jour : 22 octobre 2026", "Updated: October 22, 2026")}</p>
         {sections.map(([title, body]) => (
           <section key={title}>
             <h2 style={{ fontSize: 25 }}>{title}</h2>

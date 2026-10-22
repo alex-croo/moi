@@ -1,4 +1,5 @@
 "use client";
+import { LearningJourney } from "./learning-journal";
 import { AppSelect } from "./app-select";
 
 import { useEffect, useRef, useState } from "react";
@@ -30,7 +31,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { WeeklyPlanner, RecipeLibrary, RecipeSheet } from "./recipes";
-import { DailyProgram } from "./daily-program";
 import { Community } from "./community";
 import { PlatformAdmin } from "./platform-admin";
 import type { PrivateActions, JournalPrompt } from "@/lib/private-types";
@@ -635,18 +635,9 @@ export function Dashboard({
           </div>
         </header>
         <main id="main-content" className="main-content">
-          <ThawReminders data={data} locale={locale} all={view === "pantry"} onSave={async m => { await mutate("shopping", m); }}/>
+          {view !== "journal" && <ThawReminders data={data} locale={locale} all={view === "pantry"} onSave={async m => { await mutate("shopping", m); }}/>}
           {privateActions && view === "program" && (
-            <DailyProgram
-              locale={locale}
-              progress={privateActions.progress}
-              entries={data.journal}
-              onSave={privateActions.saveProgress}
-              onJournal={(prompt) => {
-                setJournalPrompt(prompt);
-                go("journal", prompt.date || today());
-              }}
-            />
+            <LearningJourney entries={data.journal} onOpen={date => go("journal", date)} />
           )}
           {privateActions && view === "circles" && (
             <Community locale={locale} userId={privateActions.userId} />
@@ -922,7 +913,8 @@ export function Dashboard({
           <div hidden={view !== "journal"}>
             <JournalEditor
               entries={data.journal}
-              renderMeals={date => <JournalMeals key={date} data={data} date={date} locale={locale} onCook={setCooking} onUndo={async id => { await mutate("shopping", { action: "undoCook", id }); }} onOpen={setSelectedRecipe} onPlan={() => { setSelectedWeek(monday(date)); go("menus"); }}/>}
+              guided={!!privateActions}
+              renderMeals={date => <><ThawReminders data={data} locale={locale} onSave={async m => { await mutate("shopping", m); }}/><JournalMeals key={date} data={data} date={date} locale={locale} onCook={setCooking} onUndo={async id => { await mutate("shopping", { action: "undoCook", id }); }} onOpen={setSelectedRecipe} onPlan={() => { setSelectedWeek(monday(date)); go("menus"); }}/></>}
               ownerId={privateActions?.userId || "demo"}
               recoveryKey={privateActions?.journalKey || null}
               syncBridge={privateActions?.journalSync}

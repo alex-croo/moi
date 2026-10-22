@@ -77,7 +77,7 @@ const schema = z
                     titleEn: text,
                     text,
                     textEn: text,
-                    image,
+                    image: image.optional(),
                   })
                   .strict(),
               )
@@ -118,7 +118,7 @@ for (const recipe of catalog.recipes) {
   for (const line of recipe.ingredients)
     if (!ingredients.has(line.ingredientId))
       throw Error(`Missing ingredient: ${line.ingredientId}`);
-  for (const asset of [recipe.image, ...recipe.steps.map((s) => s.image)])
+  for (const asset of [recipe.image, ...recipe.steps.flatMap((s) => s.image ? [s.image] : [])])
     if (!assets.has(asset.split("/").at(-1)))
       throw Error(`Missing asset: ${asset}`);
 }
