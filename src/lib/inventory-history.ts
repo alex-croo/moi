@@ -1,5 +1,5 @@
 import type { ShoppingPersonal, ShoppingState } from './shopping-types';
-export type InventoryChange = { collection: 'pantry'|'slots'|'orders'|'cooked'|'personalItems'|'portions'|'stockAliases'; key: string; before?: unknown; after?: unknown };
+export type InventoryChange = { collection: 'pantry'|'slots'|'orders'|'cooked'|'personalItems'|'portions'|'stockAliases'|'preparedBlends'; key: string; before?: unknown; after?: unknown };
 export type InventoryEvent = { id: string; at: string; action: string; changes: InventoryChange[]; undone?: boolean };
 const defaults = (): ShoppingState => ({grocers:[],orders:[],cooked:[],selections:{}});
 const stable = (value: unknown): unknown => Array.isArray(value) ? value.map(stable) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).filter(([,v])=>v!==undefined).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>[k,stable(v)])) : value;
@@ -14,7 +14,7 @@ function entries(data:ShoppingPersonal, collection:InventoryChange['collection']
 /** Record only food-related changes, never a snapshot of journals or credentials. */
 export function recordInventory<T extends ShoppingPersonal>(before:T,after:T,action:string):T {
  const changes:InventoryChange[]=[];
- for(const collection of ['pantry','slots','orders','cooked','personalItems','portions','stockAliases'] as const){
+ for(const collection of ['pantry','slots','orders','cooked','personalItems','portions','stockAliases','preparedBlends'] as const){
   const a=entries(before,collection),b=entries(after,collection);
   for(const key of new Set([...Object.keys(a),...Object.keys(b)]))if(!equal(a[key],b[key]))changes.push({collection,key,before:a[key],after:b[key]});
  }

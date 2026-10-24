@@ -1,0 +1,4316 @@
+{
+  "ingredients": [
+    {
+      "id": "epice-carvi",
+      "name": "Graines de carvi écrasées",
+      "nameEn": "Crushed caraway seeds",
+      "state": "sec",
+      "nutrition": {
+        "fat": 14.59,
+        "carbs": 49.9,
+        "kcal": 333.0,
+        "protein": 19.77
+      },
+      "source": "https://fdc.nal.usda.gov/food-details/170918/nutrients",
+      "sourceLabel": "USDA FoodData Central — SR Legacy",
+      "sourceDescription": "Spices, caraway seed; 1 tsp = 2.1 g. Mesure volumique approximative.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Graines de carvi écrasées": "Graines de carvi écrasées"
+        },
+        "en": {
+          "Graines de carvi écrasées": "Crushed caraway seeds"
+        },
+        "es": {
+          "Graines de carvi écrasées": "Semillas de alcaravea trituradas"
+        },
+        "pt-BR": {
+          "Graines de carvi écrasées": "Sementes de alcaravia trituradas"
+        }
+      }
+    },
+    {
+      "id": "epice-cardamome",
+      "name": "Cardamome moulue",
+      "nameEn": "Ground cardamom",
+      "state": "sec",
+      "nutrition": {
+        "protein": 10.76,
+        "fat": 6.7,
+        "carbs": 68.47,
+        "kcal": 311.0
+      },
+      "source": "https://fdc.nal.usda.gov/food-details/170919/nutrients",
+      "sourceLabel": "USDA FoodData Central — SR Legacy",
+      "sourceDescription": "Spices, cardamom; 1 tsp ground = 2 g. Mesure volumique approximative.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Cardamome moulue": "Cardamome moulue"
+        },
+        "en": {
+          "Cardamome moulue": "Ground cardamom"
+        },
+        "es": {
+          "Cardamome moulue": "Cardamomo molido"
+        },
+        "pt-BR": {
+          "Cardamome moulue": "Cardamomo em pó"
+        }
+      }
+    },
+    {
+      "id": "epice-clou",
+      "name": "Clou de girofle moulu",
+      "nameEn": "Ground cloves",
+      "state": "sec",
+      "nutrition": {
+        "fat": 13.0,
+        "carbs": 65.53,
+        "kcal": 274.0,
+        "protein": 5.97
+      },
+      "source": "https://fdc.nal.usda.gov/food-details/171321/nutrients",
+      "sourceLabel": "USDA FoodData Central — SR Legacy",
+      "sourceDescription": "Spices, cloves, ground; 1 tsp = 2.1 g. Mesure volumique approximative.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Clou de girofle moulu": "Clou de girofle moulu"
+        },
+        "en": {
+          "Clou de girofle moulu": "Ground cloves"
+        },
+        "es": {
+          "Clou de girofle moulu": "Clavo de olor molido"
+        },
+        "pt-BR": {
+          "Clou de girofle moulu": "Cravo em pó"
+        }
+      }
+    },
+    {
+      "id": "epice-muscade",
+      "name": "Muscade moulue",
+      "nameEn": "Ground nutmeg",
+      "state": "sec",
+      "nutrition": {
+        "protein": 5.84,
+        "fat": 36.31,
+        "carbs": 49.29,
+        "kcal": 525.0
+      },
+      "source": "https://fdc.nal.usda.gov/food-details/171326/nutrients",
+      "sourceLabel": "USDA FoodData Central — SR Legacy",
+      "sourceDescription": "Spices, nutmeg, ground; 1 tsp = 2.2 g. Mesure volumique approximative.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Muscade moulue": "Muscade moulue"
+        },
+        "en": {
+          "Muscade moulue": "Ground nutmeg"
+        },
+        "es": {
+          "Muscade moulue": "Nuez moscada molida"
+        },
+        "pt-BR": {
+          "Muscade moulue": "Noz-moscada em pó"
+        }
+      }
+    },
+    {
+      "id": "epice-amande",
+      "name": "Amandes moulues",
+      "nameEn": "Ground almonds",
+      "state": "sec",
+      "nutrition": {
+        "protein": 21.15,
+        "fat": 49.93,
+        "carbs": 21.55,
+        "kcal": 579.0
+      },
+      "source": "https://fdc.nal.usda.gov/food-details/170567/nutrients",
+      "sourceLabel": "USDA FoodData Central — SR Legacy",
+      "sourceDescription": "Nuts, almonds; 1 cup ground = 95 g; cup = 240 ml. Mesure volumique approximative.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Amandes moulues": "Amandes moulues"
+        },
+        "en": {
+          "Amandes moulues": "Ground almonds"
+        },
+        "es": {
+          "Amandes moulues": "Almendras molidas"
+        },
+        "pt-BR": {
+          "Amandes moulues": "Amêndoas moídas"
+        }
+      }
+    },
+    {
+      "id": "tredmeal-melange-creme",
+      "name": "Base pour sauce crémeuse",
+      "nameEn": "Creamy sauce base",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 321.9332972710824,
+        "protein": 9.964927906586336,
+        "carbs": 68.46502266325942,
+        "fat": 0.8592356046333774
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Base pour sauce crémeuse": "Base pour sauce crémeuse",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Blé": "Blé"
+        },
+        "en": {
+          "Base pour sauce crémeuse": "Creamy sauce base",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Blé": "Wheat"
+        },
+        "es": {
+          "Base pour sauce crémeuse": "Base para salsa cremosa",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Blé": "Trigo"
+        },
+        "pt-BR": {
+          "Base pour sauce crémeuse": "Base para molho cremoso",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Blé": "Trigo"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "collection-farine",
+            "quantity": {
+              "kind": "spoon",
+              "value": 76.25
+            },
+            "grams": 39.71354166666667
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 6.00625
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.375
+            },
+            "grams": 4.5
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.6875
+            },
+            "grams": 5.625
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Blé"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-jus",
+      "name": "Base pour jus de cuisson",
+      "nameEn": "Pan gravy base",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 352.4619223715463,
+        "protein": 10.994538047563212,
+        "carbs": 75.91184961366164,
+        "fat": 1.0518920056522654
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Base pour jus de cuisson": "Base pour jus de cuisson",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Blé": "Blé"
+        },
+        "en": {
+          "Base pour jus de cuisson": "Pan gravy base",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Blé": "Wheat"
+        },
+        "es": {
+          "Base pour jus de cuisson": "Base para salsa de cocción",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Blé": "Trigo"
+        },
+        "pt-BR": {
+          "Base pour jus de cuisson": "Base para molho de assado",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Blé": "Trigo"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "collection-farine",
+            "quantity": {
+              "kind": "spoon",
+              "value": 69.375
+            },
+            "grams": 36.1328125
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 17.5
+            },
+            "grams": 8.4
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.75
+            },
+            "grams": 5.425
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.375
+            },
+            "grams": 2.0124999999999997
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Blé"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-italien",
+      "name": "Herbes italiennes à l’ail",
+      "nameEn": "Italian garlic herbs",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 286.5131578947369,
+        "protein": 14.94776315789474,
+        "carbs": 65.81750000000001,
+        "fat": 2.582894736842105
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Herbes italiennes à l’ail": "Herbes italiennes à l’ail",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Herbes italiennes à l’ail": "Italian garlic herbs",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Herbes italiennes à l’ail": "Hierbas italianas con ajo",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Herbes italiennes à l’ail": "Ervas italianas com alho",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.0
+            },
+            "grams": 12.4
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.0
+            },
+            "grams": 4.0
+          },
+          {
+            "ingredientId": "basilic-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.0
+            },
+            "grams": 2.8
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.0
+            },
+            "grams": 9.2
+          },
+          {
+            "ingredientId": "persil-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.0
+            },
+            "grams": 2.0
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-fume",
+      "name": "Paprika fumé et ail",
+      "nameEn": "Smoked paprika and garlic",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 301.78249756572546,
+        "protein": 15.1129759006816,
+        "carbs": 61.55579600778968,
+        "fat": 7.980710808179163
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Paprika fumé et ail": "Paprika fumé et ail",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Paprika fumé et ail": "Smoked paprika and garlic",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Paprika fumé et ail": "Paprika ahumada y ajo",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Paprika fumé et ail": "Páprica defumada e alho",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-fume",
+            "quantity": {
+              "kind": "spoon",
+              "value": 66.5625
+            },
+            "grams": 30.61875
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 33.4375
+            },
+            "grams": 20.73125
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-aneth",
+      "name": "Aneth, ail et oignon",
+      "nameEn": "Dill, garlic and onion",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 263.01513067400276,
+        "protein": 11.499527739569006,
+        "carbs": 59.15653828519028,
+        "fat": 0.925515818431912
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Aneth, ail et oignon": "Aneth, ail et oignon",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Aneth, ail et oignon": "Dill, garlic and onion",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Aneth, ail et oignon": "Eneldo, ajo y cebolla",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Aneth, ail et oignon": "Endro, alho e cebola",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 36.5625
+            },
+            "grams": 17.55
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 36.25
+            },
+            "grams": 22.475
+          },
+          {
+            "ingredientId": "collection-anethsec",
+            "quantity": {
+              "kind": "spoon",
+              "value": 18.125
+            },
+            "grams": 3.625
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.0625
+            },
+            "grams": 10.875
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-enchilada",
+      "name": "Piments doux et cumin",
+      "nameEn": "Mild chilies and cumin",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 313.50202867189614,
+        "protein": 12.682261292940222,
+        "carbs": 61.656344333243176,
+        "fat": 10.1214335948066
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Piments doux et cumin": "Piments doux et cumin",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Piments doux et cumin": "Mild chilies and cumin",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Piments doux et cumin": "Chiles suaves y comino",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Piments doux et cumin": "Pimentas suaves e cominho",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "chili-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.375
+            },
+            "grams": 10.4625
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.375
+            },
+            "grams": 8.9125
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.8125
+            },
+            "grams": 5.3812500000000005
+          },
+          {
+            "ingredientId": "cassonade",
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.5625
+            },
+            "grams": 3.9375
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 4.6499999999999995
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 6.00625
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 1.9375
+          },
+          {
+            "ingredientId": "chipotle",
+            "quantity": {
+              "kind": "spoon",
+              "value": 3.125
+            },
+            "grams": 1.125
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.5625
+            },
+            "grams": 2.3625
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 3.125
+            },
+            "grams": 1.4375
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-citron",
+      "name": "Poivre et citron frais",
+      "nameEn": "Pepper and fresh lemon",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 161.37782196748157,
+        "protein": 7.158309743829688,
+        "carbs": 39.768158848988186,
+        "fat": 1.261106562171014
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Poivre et citron frais": "Poivre et citron frais",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités."
+        },
+        "en": {
+          "Poivre et citron frais": "Pepper and fresh lemon",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Contains fresh zest: refrigerate and prepare small batches."
+        },
+        "es": {
+          "Poivre et citron frais": "Pimienta y limón fresco",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Con ralladura fresca: refrigera y prepara cantidades pequeñas."
+        },
+        "pt-BR": {
+          "Poivre et citron frais": "Pimenta e limão fresco",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Com raspas frescas: mantenha na geladeira e prepare pequenas quantidades."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 36.5625
+            },
+            "grams": 16.818749999999998
+          },
+          {
+            "ingredientId": "collection-zestecitron",
+            "quantity": {
+              "kind": "spoon",
+              "value": 36.25
+            },
+            "grams": 14.5
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 18.125
+            },
+            "grams": 11.2375
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.0625
+            },
+            "grams": 10.875
+          }
+        ],
+        "storage": "fridge",
+        "storageNote": "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-acidule",
+      "name": "Ail citronné aux herbes",
+      "nameEn": "Lemony garlic herbs",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 244.85110438389952,
+        "protein": 11.230026908846282,
+        "carbs": 54.22197667899989,
+        "fat": 2.1460354299809397
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Ail citronné aux herbes": "Ail citronné aux herbes",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités."
+        },
+        "en": {
+          "Ail citronné aux herbes": "Lemony garlic herbs",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Contains fresh zest: refrigerate and prepare small batches."
+        },
+        "es": {
+          "Ail citronné aux herbes": "Ajo al limón con hierbas",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Con ralladura fresca: refrigera y prepara cantidades pequeñas."
+        },
+        "pt-BR": {
+          "Ail citronné aux herbes": "Alho com limão e ervas",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Com raspas frescas: mantenha na geladeira e prepare pequenas quantidades."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 42.8125
+            },
+            "grams": 26.54375
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.375
+            },
+            "grams": 6.8999999999999995
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.375
+            },
+            "grams": 6.6125
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 7.1875
+            },
+            "grams": 1.4375
+          },
+          {
+            "ingredientId": "collection-zestecitron",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.0625
+            },
+            "grams": 5.625
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 7.1875
+            },
+            "grams": 8.625
+          }
+        ],
+        "storage": "fridge",
+        "storageNote": "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-cajun",
+      "name": "Paprika cajun doux",
+      "nameEn": "Mild Cajun paprika",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 308.8482354802975,
+        "protein": 12.934006963127077,
+        "carbs": 67.22567336603893,
+        "fat": 5.715225510365564
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Paprika cajun doux": "Paprika cajun doux",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Paprika cajun doux": "Mild Cajun paprika",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Paprika cajun doux": "Paprika cajún suave",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Paprika cajun doux": "Páprica cajun suave",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.9375
+            },
+            "grams": 11.931249999999999
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.9375
+            },
+            "grams": 12.45
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.8125
+            },
+            "grams": 7.94375
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.8125
+            },
+            "grams": 2.5625
+          },
+          {
+            "ingredientId": "thym-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.8125
+            },
+            "grams": 2.5625
+          },
+          {
+            "ingredientId": "basilic-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.5625
+            },
+            "grams": 0.91875
+          },
+          {
+            "ingredientId": "cayenne",
+            "quantity": {
+              "kind": "spoon",
+              "value": 3.125
+            },
+            "grams": 1.125
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-shawarma",
+      "name": "Épices chaudes au cumin",
+      "nameEn": "Warm cumin spices",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 317.77435897435896,
+        "protein": 13.164564102564103,
+        "carbs": 60.47828205128206,
+        "fat": 9.688948717948719
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Épices chaudes au cumin": "Épices chaudes au cumin",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Épices chaudes au cumin": "Warm cumin spices",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Épices chaudes au cumin": "Especias cálidas con comino",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Épices chaudes au cumin": "Especiarias quentes com cominho",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "collection-curcuma",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.0
+            },
+            "grams": 15.0
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.0
+            },
+            "grams": 10.500000000000002
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.5
+            },
+            "grams": 4.5
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.5
+            },
+            "grams": 7.75
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.5
+            },
+            "grams": 5.75
+          },
+          {
+            "ingredientId": "collection-pimentjamaique",
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.25
+            },
+            "grams": 2.375
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.25
+            },
+            "grams": 2.875
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-mooshu",
+      "name": "Gingembre et ail",
+      "nameEn": "Ginger and garlic",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 332.46938775510205,
+        "protein": 13.769183673469389,
+        "carbs": 72.32224489795918,
+        "fat": 2.019387755102041
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Gingembre et ail": "Gingembre et ail",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Gingembre et ail": "Ginger and garlic",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Gingembre et ail": "Jengibre y ajo",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Gingembre et ail": "Gengibre e alho",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 50.0
+            },
+            "grams": 18.0
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 50.0
+            },
+            "grams": 31.0
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-montreal",
+      "name": "Épices à steak du bistrot",
+      "nameEn": "Bistro steak spices",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 243.13076836285683,
+        "protein": 11.69472639061266,
+        "carbs": 45.75627552747377,
+        "fat": 7.436168340291099
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Épices à steak du bistrot": "Épices à steak du bistrot",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Moutarde": "Moutarde"
+        },
+        "en": {
+          "Épices à steak du bistrot": "Bistro steak spices",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Moutarde": "Mustard"
+        },
+        "es": {
+          "Épices à steak du bistrot": "Especias para bistec",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Moutarde": "Mostaza"
+        },
+        "pt-BR": {
+          "Épices à steak du bistrot": "Especiarias para bife",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Moutarde": "Mostarda"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 22.1875
+            },
+            "grams": 13.75625
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 22.1875
+            },
+            "grams": 10.206249999999999
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.25
+            },
+            "grams": 4.05
+          },
+          {
+            "ingredientId": "aneth-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.25
+            },
+            "grams": 4.7250000000000005
+          },
+          {
+            "ingredientId": "collection-moutardep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.25
+            },
+            "grams": 4.5
+          },
+          {
+            "ingredientId": "paprika-fume",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.9375
+            },
+            "grams": 5.03125
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.9375
+            },
+            "grams": 13.125
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Moutarde"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-mexicain",
+      "name": "Paprika mexicain doux",
+      "nameEn": "Mild Mexican paprika",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 311.67508641318796,
+        "protein": 14.040574315341663,
+        "carbs": 59.755805636798726,
+        "fat": 9.996486306833289
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Paprika mexicain doux": "Paprika mexicain doux",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Paprika mexicain doux": "Mild Mexican paprika",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Paprika mexicain doux": "Paprika mexicana suave",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Paprika mexicain doux": "Páprica mexicana suave",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 26.25
+            },
+            "grams": 12.075
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.6875
+            },
+            "grams": 8.26875
+          },
+          {
+            "ingredientId": "chili-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 13.125
+            },
+            "grams": 7.0875
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 13.125
+            },
+            "grams": 8.1375
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 13.125
+            },
+            "grams": 6.3
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.5625
+            },
+            "grams": 1.3125
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.5625
+            },
+            "grams": 3.01875
+          },
+          {
+            "ingredientId": "collection-cannelle",
+            "quantity": {
+              "kind": "spoon",
+              "value": 1.5625
+            },
+            "grams": 0.8125
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-sesame",
+      "name": "Sésame, ail et gingembre",
+      "nameEn": "Sesame, garlic and ginger",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 384.99545208446125,
+        "protein": 13.119780184082297,
+        "carbs": 40.16524851109909,
+        "fat": 22.334080129940446
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Sésame, ail et gingembre": "Sésame, ail et gingembre",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.",
+          "Sésame": "Sésame"
+        },
+        "en": {
+          "Sésame, ail et gingembre": "Sesame, garlic and ginger",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Contains fresh zest: refrigerate and prepare small batches.",
+          "Sésame": "Sesame"
+        },
+        "es": {
+          "Sésame, ail et gingembre": "Ajonjolí, ajo y jengibre",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Con ralladura fresca: refrigera y prepara cantidades pequeñas.",
+          "Sésame": "Ajonjolí"
+        },
+        "pt-BR": {
+          "Sésame, ail et gingembre": "Gergelim, alho e gengibre",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Com raspas frescas: mantenha na geladeira e prepare pequenas quantidades.",
+          "Sésame": "Gergelim"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "collection-sesame",
+            "quantity": {
+              "kind": "spoon",
+              "value": 42.1875
+            },
+            "grams": 25.3125
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.9375
+            },
+            "grams": 12.98125
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.625
+            },
+            "grams": 5.1
+          },
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.625
+            },
+            "grams": 3.8249999999999997
+          },
+          {
+            "ingredientId": "collection-zesteorange",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.3125
+            },
+            "grams": 4.125
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.3125
+            },
+            "grams": 6.375
+          }
+        ],
+        "storage": "fridge",
+        "storageNote": "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.",
+        "allergens": [
+          "Sésame"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-indien",
+      "name": "Cari doux à la coriandre",
+      "nameEn": "Mild coriander curry",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 328.4193763326226,
+        "protein": 13.499534914712154,
+        "carbs": 59.833198294243076,
+        "fat": 11.039181769722815
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Cari doux à la coriandre": "Cari doux à la coriandre",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Moutarde": "Moutarde"
+        },
+        "en": {
+          "Cari doux à la coriandre": "Mild coriander curry",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Moutarde": "Mustard"
+        },
+        "es": {
+          "Cari doux à la coriandre": "Curry suave con cilantro",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Moutarde": "Mostaza"
+        },
+        "pt-BR": {
+          "Cari doux à la coriandre": "Curry suave com coentro",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Moutarde": "Mostarda"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 28.4375
+            },
+            "grams": 10.237499999999999
+          },
+          {
+            "ingredientId": "collection-curcuma",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.0625
+            },
+            "grams": 11.4375
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.0625
+            },
+            "grams": 8.006250000000001
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 4.6499999999999995
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 6.00625
+          },
+          {
+            "ingredientId": "collection-moutardep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.6875
+            },
+            "grams": 1.875
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.6875
+            },
+            "grams": 2.15625
+          },
+          {
+            "ingredientId": "chili-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.6875
+            },
+            "grams": 2.53125
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Moutarde"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-sudouest",
+      "name": "Ail, cumin et chili doux",
+      "nameEn": "Garlic, cumin and mild chili",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 327.3727272727273,
+        "protein": 16.03209090909091,
+        "carbs": 61.63818181818183,
+        "fat": 8.16809090909091
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Ail, cumin et chili doux": "Ail, cumin et chili doux",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Ail, cumin et chili doux": "Garlic, cumin and mild chili",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Ail, cumin et chili doux": "Ajo, comino y chile suave",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Ail, cumin et chili doux": "Alho, cominho e chili suave",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 50.0
+            },
+            "grams": 31.0
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.0
+            },
+            "grams": 10.500000000000002
+          },
+          {
+            "ingredientId": "chili-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.0
+            },
+            "grams": 13.5
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-espagnol",
+      "name": "Paprika aux herbes",
+      "nameEn": "Paprika with herbs",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 261.3653051300754,
+        "protein": 11.963225139800635,
+        "carbs": 50.755745198152205,
+        "fat": 7.935827862873816
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Paprika aux herbes": "Paprika aux herbes",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Paprika aux herbes": "Paprika with herbs",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Paprika aux herbes": "Paprika con hierbas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Paprika aux herbes": "Páprica com ervas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-fume",
+            "quantity": {
+              "kind": "spoon",
+              "value": 42.8125
+            },
+            "grams": 19.693749999999998
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.375
+            },
+            "grams": 6.0375000000000005
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.375
+            },
+            "grams": 6.8999999999999995
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.0625
+            },
+            "grams": 8.71875
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 7.1875
+            },
+            "grams": 1.4375
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 7.1875
+            },
+            "grams": 8.625
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-pommier",
+      "name": "Épices douces fumées",
+      "nameEn": "Sweet smoked spices",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 294.17214700193426,
+        "protein": 9.239593810444873,
+        "carbs": 62.478367277278416,
+        "fat": 6.066352258504949
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Épices douces fumées": "Épices douces fumées",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Moutarde": "Moutarde"
+        },
+        "en": {
+          "Épices douces fumées": "Sweet smoked spices",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Moutarde": "Mustard"
+        },
+        "es": {
+          "Épices douces fumées": "Especias dulces ahumadas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Moutarde": "Mostaza"
+        },
+        "pt-BR": {
+          "Épices douces fumées": "Especiarias doces defumadas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Moutarde": "Mostarda"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-fume",
+            "quantity": {
+              "kind": "spoon",
+              "value": 34.375
+            },
+            "grams": 15.812499999999998
+          },
+          {
+            "ingredientId": "cassonade",
+            "quantity": {
+              "kind": "spoon",
+              "value": 22.8125
+            },
+            "grams": 13.6875
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.5625
+            },
+            "grams": 7.16875
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.5625
+            },
+            "grams": 5.55
+          },
+          {
+            "ingredientId": "collection-moutardep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.625
+            },
+            "grams": 2.25
+          },
+          {
+            "ingredientId": "celeri-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.8125
+            },
+            "grams": 1.125
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.625
+            },
+            "grams": 2.5875
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.625
+            },
+            "grams": 6.75
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Moutarde"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-selail",
+      "name": "Sel à l’ail",
+      "nameEn": "Garlic salt",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 112.75824175824175,
+        "protein": 5.637912087912088,
+        "carbs": 24.776153846153846,
+        "fat": 0.24868131868131868
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Sel à l’ail": "Sel à l’ail",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Sel à l’ail": "Garlic salt",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Sel à l’ail": "Sal de ajo",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Sel à l’ail": "Sal de alho",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 50.0
+            },
+            "grams": 31.0
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 50.0
+            },
+            "grams": 60.0
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-mediterraneen",
+      "name": "Herbes du soleil",
+      "nameEn": "Sunshine herbs",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 285.47777777777776,
+        "protein": 14.76688888888889,
+        "carbs": 65.37033333333333,
+        "fat": 3.441222222222222
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Herbes du soleil": "Herbes du soleil",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Herbes du soleil": "Sunshine herbs",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Herbes du soleil": "Hierbas mediterráneas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Herbes du soleil": "Ervas do Mediterrâneo",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 37.5
+            },
+            "grams": 7.5
+          },
+          {
+            "ingredientId": "basilic-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.0
+            },
+            "grams": 3.4999999999999996
+          },
+          {
+            "ingredientId": "thym-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.5
+            },
+            "grams": 2.5
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.5
+            },
+            "grams": 7.75
+          },
+          {
+            "ingredientId": "persil-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.5
+            },
+            "grams": 1.25
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-cumin-curcuma",
+      "name": "Cumin et curcuma",
+      "nameEn": "Cumin and turmeric",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 336.92930208468215,
+        "protein": 13.930758772497736,
+        "carbs": 59.13606500064743,
+        "fat": 10.93863136087013
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Cumin et curcuma": "Cumin et curcuma",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Cumin et curcuma": "Cumin and turmeric",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Cumin et curcuma": "Comino y cúrcuma",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Cumin et curcuma": "Cominho e cúrcuma",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 40.0
+            },
+            "grams": 16.8
+          },
+          {
+            "ingredientId": "collection-curcuma",
+            "quantity": {
+              "kind": "spoon",
+              "value": 26.5625
+            },
+            "grams": 15.9375
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 13.4375
+            },
+            "grams": 4.8374999999999995
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 13.4375
+            },
+            "grams": 8.33125
+          },
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.5625
+            },
+            "grams": 2.3625
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-turc",
+      "name": "Cumin et coriandre à la turque",
+      "nameEn": "Turkish-style cumin and coriander",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 337.9407474931632,
+        "protein": 15.909447844771455,
+        "carbs": 60.67658679515563,
+        "fat": 10.703212657898165
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Cumin et coriandre à la turque": "Cumin et coriandre à la turque",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Cumin et coriandre à la turque": "Turkish-style cumin and coriander",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Cumin et coriandre à la turque": "Comino y cilantro al estilo turco",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Cumin et coriandre à la turque": "Cominho e coentro ao estilo turco",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 37.1875
+            },
+            "grams": 15.618750000000002
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 37.1875
+            },
+            "grams": 23.05625
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 18.75
+            },
+            "grams": 6.75
+          },
+          {
+            "ingredientId": "collection-pimentjamaique",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.6875
+            },
+            "grams": 1.78125
+          },
+          {
+            "ingredientId": "cayenne",
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.1875
+            },
+            "grams": 0.7875
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-marocain",
+      "name": "Épices dorées à la marocaine",
+      "nameEn": "Moroccan-style golden spices",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 321.05457870305247,
+        "protein": 12.97276269517513,
+        "carbs": 60.8689253059502,
+        "fat": 10.959279786186524
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Épices dorées à la marocaine": "Épices dorées à la marocaine",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Épices dorées à la marocaine": "Moroccan-style golden spices",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Épices dorées à la marocaine": "Especias doradas al estilo marroquí",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Épices dorées à la marocaine": "Especiarias douradas ao estilo marroquino",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 24.6875
+            },
+            "grams": 10.36875
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 24.375
+            },
+            "grams": 8.775
+          },
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.125
+            },
+            "grams": 2.925
+          },
+          {
+            "ingredientId": "collection-curcuma",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.125
+            },
+            "grams": 4.875
+          },
+          {
+            "ingredientId": "collection-cannelle",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.0625
+            },
+            "grams": 2.1125000000000003
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.125
+            },
+            "grams": 3.7375
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.125
+            },
+            "grams": 5.0375
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.125
+            },
+            "grams": 3.9
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.0625
+            },
+            "grams": 1.86875
+          },
+          {
+            "ingredientId": "collection-pimentjamaique",
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.1875
+            },
+            "grams": 0.83125
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-chili-cumin",
+      "name": "Chili et cumin",
+      "nameEn": "Chili and cumin",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 320.3729648378711,
+        "protein": 15.168512792447666,
+        "carbs": 54.59208783691339,
+        "fat": 12.965303051032972
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Chili et cumin": "Chili et cumin",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Chili et cumin": "Chili and cumin",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Chili et cumin": "Chile y comino",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Chili et cumin": "Chili e cominho",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "chili-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 33.4375
+            },
+            "grams": 18.056250000000002
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 33.4375
+            },
+            "grams": 14.043750000000001
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 16.5625
+            },
+            "grams": 10.26875
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 16.5625
+            },
+            "grams": 3.3125
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-herbes-italiennes",
+      "name": "Herbes italiennes classiques",
+      "nameEn": "Classic Italian herbs",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 269.4834174477289,
+        "protein": 13.27738644556597,
+        "carbs": 60.668619322278296,
+        "fat": 6.364178082191781
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Herbes italiennes classiques": "Herbes italiennes classiques",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Herbes italiennes classiques": "Classic Italian herbs",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Herbes italiennes classiques": "Hierbas italianas clásicas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Herbes italiennes classiques": "Ervas italianas clássicas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 33.4375
+            },
+            "grams": 6.6875
+          },
+          {
+            "ingredientId": "basilic-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 33.4375
+            },
+            "grams": 4.6812499999999995
+          },
+          {
+            "ingredientId": "thym-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.25
+            },
+            "grams": 2.25
+          },
+          {
+            "ingredientId": "romarin-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.9375
+            },
+            "grams": 2.625
+          },
+          {
+            "ingredientId": "persil-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.9375
+            },
+            "grams": 1.09375
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-thai",
+      "name": "Sésame thaï épicé",
+      "nameEn": "Spicy Thai-style sesame",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 445.6081428047439,
+        "protein": 14.58103802420834,
+        "carbs": 47.048305416310065,
+        "fat": 27.74089375229246
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Sésame thaï épicé": "Sésame thaï épicé",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Sésame": "Sésame"
+        },
+        "en": {
+          "Sésame thaï épicé": "Spicy Thai-style sesame",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Sésame": "Sesame"
+        },
+        "es": {
+          "Sésame thaï épicé": "Ajonjolí picante estilo tailandés",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Sésame": "Ajonjolí"
+        },
+        "pt-BR": {
+          "Sésame thaï épicé": "Gergelim picante ao estilo tailandês",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Sésame": "Gergelim"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "collection-sesame",
+            "quantity": {
+              "kind": "spoon",
+              "value": 42.5
+            },
+            "grams": 25.5
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 17.1875
+            },
+            "grams": 6.1875
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 16.875
+            },
+            "grams": 8.1
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.4375
+            },
+            "grams": 5.23125
+          },
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.4375
+            },
+            "grams": 3.0375
+          },
+          {
+            "ingredientId": "collection-cannelle",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.375
+            },
+            "grams": 2.275
+          },
+          {
+            "ingredientId": "cayenne",
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.1875
+            },
+            "grams": 0.7875
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Sésame"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-zaatar",
+      "name": "Thym citronné et sésame",
+      "nameEn": "Lemon thyme and sesame",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 381.27112970711295,
+        "protein": 12.217464435146443,
+        "carbs": 36.563288702928865,
+        "fat": 26.385138075313808
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Thym citronné et sésame": "Thym citronné et sésame",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.",
+          "Sésame": "Sésame"
+        },
+        "en": {
+          "Thym citronné et sésame": "Lemon thyme and sesame",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Contains fresh zest: refrigerate and prepare small batches.",
+          "Sésame": "Sesame"
+        },
+        "es": {
+          "Thym citronné et sésame": "Tomillo al limón y ajonjolí",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Con ralladura fresca: refrigera y prepara cantidades pequeñas.",
+          "Sésame": "Ajonjolí"
+        },
+        "pt-BR": {
+          "Thym citronné et sésame": "Tomilho com limão e gergelim",
+          "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.": "Com raspas frescas: mantenha na geladeira e prepare pequenas quantidades.",
+          "Sésame": "Gergelim"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "thym-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 30.9375
+            },
+            "grams": 6.1875
+          },
+          {
+            "ingredientId": "collection-sesame",
+            "quantity": {
+              "kind": "spoon",
+              "value": 30.625
+            },
+            "grams": 18.375
+          },
+          {
+            "ingredientId": "collection-zestecitron",
+            "quantity": {
+              "kind": "spoon",
+              "value": 15.3125
+            },
+            "grams": 6.125
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 15.3125
+            },
+            "grams": 3.0625
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 7.8125
+            },
+            "grams": 3.5937499999999996
+          }
+        ],
+        "storage": "fridge",
+        "storageNote": "Avec du zeste frais : conserver au réfrigérateur et préparer de petites quantités.",
+        "allergens": [
+          "Sésame"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-caraibes",
+      "name": "Épices des îles",
+      "nameEn": "Island spices",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 313.1384098886007,
+        "protein": 10.81495803448802,
+        "carbs": 73.78699832137953,
+        "fat": 3.3863589195788193
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Épices des îles": "Épices des îles",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Épices des îles": "Island spices",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Épices des îles": "Especias isleñas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Épices des îles": "Especiarias das ilhas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 21.5625
+            },
+            "grams": 13.36875
+          },
+          {
+            "ingredientId": "thym-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 21.5625
+            },
+            "grams": 4.3125
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.375
+            },
+            "grams": 6.8999999999999995
+          },
+          {
+            "ingredientId": "origan-seche",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.375
+            },
+            "grams": 2.875
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 7.1875
+            },
+            "grams": 3.30625
+          },
+          {
+            "ingredientId": "cassonade",
+            "quantity": {
+              "kind": "spoon",
+              "value": 7.1875
+            },
+            "grams": 4.3125
+          },
+          {
+            "ingredientId": "collection-pimentjamaique",
+            "quantity": {
+              "kind": "spoon",
+              "value": 7.1875
+            },
+            "grams": 2.73125
+          },
+          {
+            "ingredientId": "collection-cannelle",
+            "quantity": {
+              "kind": "spoon",
+              "value": 3.75
+            },
+            "grams": 1.9500000000000002
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 1.875
+            },
+            "grams": 0.8624999999999999
+          },
+          {
+            "ingredientId": "cayenne",
+            "quantity": {
+              "kind": "spoon",
+              "value": 0.9375
+            },
+            "grams": 0.33749999999999997
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-harissa",
+      "name": "Paprika et carvi relevés",
+      "nameEn": "Spicy paprika and caraway",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 279.69152046783626,
+        "protein": 13.457218234981392,
+        "carbs": 48.2469643806486,
+        "fat": 12.565592769803297
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Paprika et carvi relevés": "Paprika et carvi relevés",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Paprika et carvi relevés": "Spicy paprika and caraway",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Paprika et carvi relevés": "Paprika y alcaravea picantes",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Paprika et carvi relevés": "Páprica e alcaravia picantes",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 28.4375
+            },
+            "grams": 13.081249999999999
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.0625
+            },
+            "grams": 6.8625
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.0625
+            },
+            "grams": 8.006250000000001
+          },
+          {
+            "ingredientId": "epice-carvi",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 4.0687500000000005
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 6.00625
+          },
+          {
+            "ingredientId": "chipotle",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.375
+            },
+            "grams": 3.375
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.6875
+            },
+            "grams": 5.625
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-rechauffantes",
+      "name": "Cannelle et épices douces",
+      "nameEn": "Cinnamon and sweet spices",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 329.62900345279206,
+        "protein": 2.670581021550184,
+        "carbs": 84.53470770329801,
+        "fat": 4.493987379449934
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Cannelle et épices douces": "Cannelle et épices douces",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Cannelle et épices douces": "Cinnamon and sweet spices",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Cannelle et épices douces": "Canela y especias dulces",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Cannelle et épices douces": "Canela e especiarias doces",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "collection-cannelle",
+            "quantity": {
+              "kind": "spoon",
+              "value": 38.125
+            },
+            "grams": 19.825
+          },
+          {
+            "ingredientId": "cassonade",
+            "quantity": {
+              "kind": "spoon",
+              "value": 38.125
+            },
+            "grams": 22.875
+          },
+          {
+            "ingredientId": "epice-muscade",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 4.2625
+          },
+          {
+            "ingredientId": "collection-pimentjamaique",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.375
+            },
+            "grams": 3.5625
+          },
+          {
+            "ingredientId": "epice-clou",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.6875
+            },
+            "grams": 1.9687500000000002
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-curcuma-dore",
+      "name": "Curcuma doré au gingembre",
+      "nameEn": "Golden turmeric and ginger",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 324.43676967021554,
+        "protein": 12.545268761360685,
+        "carbs": 61.91817839522202,
+        "fat": 8.906129576733315
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Curcuma doré au gingembre": "Curcuma doré au gingembre",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Curcuma doré au gingembre": "Golden turmeric and ginger",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Curcuma doré au gingembre": "Cúrcuma dorada con jengibre",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Curcuma doré au gingembre": "Cúrcuma dourada com gengibre",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "collection-curcuma",
+            "quantity": {
+              "kind": "spoon",
+              "value": 32.5
+            },
+            "grams": 19.5
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 21.5625
+            },
+            "grams": 9.05625
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 21.5625
+            },
+            "grams": 7.762499999999999
+          },
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.9375
+            },
+            "grams": 3.9375
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.625
+            },
+            "grams": 6.5875
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.8125
+            },
+            "grams": 1.29375
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-moyen-orient",
+      "name": "Paprika et épices orientales",
+      "nameEn": "Paprika and Eastern spices",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 210.13710016835017,
+        "protein": 9.204723274410775,
+        "carbs": 44.799042508417514,
+        "fat": 5.19118265993266
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Paprika et épices orientales": "Paprika et épices orientales",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Paprika et épices orientales": "Paprika and Eastern spices",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Paprika et épices orientales": "Paprika y especias orientales",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Paprika et épices orientales": "Páprica e especiarias orientais",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 28.4375
+            },
+            "grams": 13.081249999999999
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 17.1875
+            },
+            "grams": 10.65625
+          },
+          {
+            "ingredientId": "collection-curcuma",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.5625
+            },
+            "grams": 6.9375
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.5625
+            },
+            "grams": 4.1625
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.25
+            },
+            "grams": 5.175
+          },
+          {
+            "ingredientId": "collection-pimentjamaique",
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.625
+            },
+            "grams": 2.1375
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.375
+            },
+            "grams": 17.25
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-dal",
+      "name": "Coriandre douce pour lentilles",
+      "nameEn": "Mild coriander for lentils",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 321.52304940140357,
+        "protein": 13.102556763451219,
+        "carbs": 59.96429888537223,
+        "fat": 10.857997798266135
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Coriandre douce pour lentilles": "Coriandre douce pour lentilles",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Coriandre douce pour lentilles": "Mild coriander for lentils",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Coriandre douce pour lentilles": "Cilantro suave para lentejas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Coriandre douce pour lentilles": "Coentro suave para lentilhas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 29.375
+            },
+            "grams": 10.575
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.6875
+            },
+            "grams": 8.26875
+          },
+          {
+            "ingredientId": "collection-curcuma",
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.375
+            },
+            "grams": 11.625
+          },
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 3.4875
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 6.00625
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 9.6875
+            },
+            "grams": 4.45625
+          },
+          {
+            "ingredientId": "epice-cardamome",
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.5
+            },
+            "grams": 1.0
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-dukka",
+      "name": "Croquant d’amandes et sésame",
+      "nameEn": "Almond and sesame crunch",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 503.5640137167983,
+        "protein": 18.13462523747506,
+        "carbs": 30.71735593179836,
+        "fat": 40.95932288243939
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Croquant d’amandes et sésame": "Croquant d’amandes et sésame",
+          "Conserver au réfrigérateur dans un contenant fermé.": "Conserver au réfrigérateur dans un contenant fermé.",
+          "Sésame": "Sésame",
+          "Amandes": "Amandes"
+        },
+        "en": {
+          "Croquant d’amandes et sésame": "Almond and sesame crunch",
+          "Conserver au réfrigérateur dans un contenant fermé.": "Refrigerate in a sealed container.",
+          "Sésame": "Sesame",
+          "Amandes": "Almonds"
+        },
+        "es": {
+          "Croquant d’amandes et sésame": "Mezcla crujiente de almendras y ajonjolí",
+          "Conserver au réfrigérateur dans un contenant fermé.": "Refrigera en un recipiente cerrado.",
+          "Sésame": "Ajonjolí",
+          "Amandes": "Almendras"
+        },
+        "pt-BR": {
+          "Croquant d’amandes et sésame": "Mistura crocante de amêndoas e gergelim",
+          "Conserver au réfrigérateur dans un contenant fermé.": "Mantenha na geladeira em recipiente fechado.",
+          "Sésame": "Gergelim",
+          "Amandes": "Amêndoas"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "epice-amande",
+            "quantity": {
+              "kind": "spoon",
+              "value": 44.375
+            },
+            "grams": 17.565104166666664
+          },
+          {
+            "ingredientId": "collection-sesame",
+            "quantity": {
+              "kind": "spoon",
+              "value": 22.1875
+            },
+            "grams": 13.3125
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 22.1875
+            },
+            "grams": 7.9875
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 11.25
+            },
+            "grams": 4.7250000000000005
+          }
+        ],
+        "storage": "fridge",
+        "storageNote": "Conserver au réfrigérateur dans un contenant fermé.",
+        "allergens": [
+          "Sésame",
+          "Amandes"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-bbq",
+      "name": "BBQ fumé",
+      "nameEn": "Smoky BBQ",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 338.2711552612215,
+        "protein": 9.717958057395142,
+        "carbs": 71.76975226882512,
+        "fat": 7.506701005641403
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "BBQ fumé": "BBQ fumé",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Moutarde": "Moutarde"
+        },
+        "en": {
+          "BBQ fumé": "Smoky BBQ",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Moutarde": "Mustard"
+        },
+        "es": {
+          "BBQ fumé": "BBQ ahumado",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Moutarde": "Mostaza"
+        },
+        "pt-BR": {
+          "BBQ fumé": "BBQ defumado",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Moutarde": "Mostarda"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-fume",
+            "quantity": {
+              "kind": "spoon",
+              "value": 40.9375
+            },
+            "grams": 18.831249999999997
+          },
+          {
+            "ingredientId": "cassonade",
+            "quantity": {
+              "kind": "spoon",
+              "value": 30.9375
+            },
+            "grams": 18.5625
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.3125
+            },
+            "grams": 6.39375
+          },
+          {
+            "ingredientId": "collection-moutardep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.3125
+            },
+            "grams": 2.125
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.0
+            },
+            "grams": 2.1
+          },
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.0
+            },
+            "grams": 1.7999999999999998
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.5
+            },
+            "grams": 1.15
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Moutarde"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-marin",
+      "name": "Céleri et paprika du littoral",
+      "nameEn": "Coastal celery and paprika",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 230.01904225352112,
+        "protein": 10.547785915492957,
+        "carbs": 29.982946478873238,
+        "fat": 12.790763943661972
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Céleri et paprika du littoral": "Céleri et paprika du littoral",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Moutarde": "Moutarde"
+        },
+        "en": {
+          "Céleri et paprika du littoral": "Coastal celery and paprika",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Moutarde": "Mustard"
+        },
+        "es": {
+          "Céleri et paprika du littoral": "Apio y paprika de la costa",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Moutarde": "Mostaza"
+        },
+        "pt-BR": {
+          "Céleri et paprika du littoral": "Aipo e páprica do litoral",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Moutarde": "Mostarda"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "celeri-graines",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.3125
+            },
+            "grams": 10.125
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.3125
+            },
+            "grams": 11.643749999999999
+          },
+          {
+            "ingredientId": "collection-moutardep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 16.875
+            },
+            "grams": 6.75
+          },
+          {
+            "ingredientId": "sel",
+            "quantity": {
+              "kind": "spoon",
+              "value": 16.875
+            },
+            "grams": 20.25
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.4375
+            },
+            "grams": 3.8812499999999996
+          },
+          {
+            "ingredientId": "collection-gingembrep",
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.0625
+            },
+            "grams": 1.4625
+          },
+          {
+            "ingredientId": "epice-muscade",
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.1875
+            },
+            "grams": 0.9625000000000001
+          },
+          {
+            "ingredientId": "epice-clou",
+            "quantity": {
+              "kind": "spoon",
+              "value": 0.9375
+            },
+            "grams": 0.39375000000000004
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Moutarde"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-italien-sept-herbes",
+      "name": "Italiennes aux sept herbes",
+      "nameEn": "Seven Italian herbs",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 285.1045042189914,
+        "protein": 13.970768893026449,
+        "carbs": 64.51588252188726,
+        "fat": 4.637745810719804
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Italiennes aux sept herbes": "Italiennes aux sept herbes",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Italiennes aux sept herbes": "Seven Italian herbs",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Italiennes aux sept herbes": "Siete hierbas italianas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Italiennes aux sept herbes": "Sete ervas italianas",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "origan-seche",
+            "grams": 6.666666666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 33.333333333333336
+            }
+          },
+          {
+            "ingredientId": "basilic-seche",
+            "grams": 3.5000000000000004,
+            "quantity": {
+              "kind": "spoon",
+              "value": 25.0
+            }
+          },
+          {
+            "ingredientId": "marjolaine-sechee",
+            "grams": 1.888866666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 16.666666666666668
+            }
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "grams": 5.388866666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.333333333333334
+            }
+          },
+          {
+            "ingredientId": "romarin-seche",
+            "grams": 1.8333333333333335,
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.333333333333334
+            }
+          },
+          {
+            "ingredientId": "persil-seche",
+            "grams": 0.6666666666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.25
+            }
+          },
+          {
+            "ingredientId": "laurier-moulu",
+            "grams": 0.25,
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.0833333333333335
+            }
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-paprika-ail-grille",
+      "name": "Paprika et ail grillé",
+      "nameEn": "Paprika and toasted garlic",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 310.80606060606067,
+        "protein": 15.556787878787881,
+        "carbs": 65.00684848484849,
+        "fat": 5.74139393939394
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Paprika et ail grillé": "Paprika et ail grillé",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Paprika et ail grillé": "Paprika and toasted garlic",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Paprika et ail grillé": "Paprika y ajo tostado",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Paprika et ail grillé": "Páprica e alho tostado",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "paprika-fume",
+            "grams": 22.666666666666668,
+            "quantity": {
+              "kind": "spoon",
+              "value": 50.0
+            }
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "grams": 32.333333333333336,
+            "quantity": {
+              "kind": "spoon",
+              "value": 50.0
+            }
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-chili-mexicain",
+      "name": "Chili mexicain",
+      "nameEn": "Mexican chili",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 297.73504979155837,
+        "protein": 13.998281644356318,
+        "carbs": 51.37815814749216,
+        "fat": 14.543429819423764
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Chili mexicain": "Chili mexicain",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Chili mexicain": "Mexican chili",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Chili mexicain": "Chile mexicano",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Chili mexicain": "Chili mexicano",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "chili-poudre",
+            "grams": 21.666666666666668,
+            "quantity": {
+              "kind": "spoon",
+              "value": 40.625
+            }
+          },
+          {
+            "ingredientId": "origan-seche",
+            "grams": 3.9583333333333335,
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.791666666666668
+            }
+          },
+          {
+            "ingredientId": "paprika-fume",
+            "grams": 8.972233333333334,
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.791666666666668
+            }
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "grams": 7.916666666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 19.791666666666668
+            }
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-piments-cumin-releves",
+      "name": "Piments et cumin relevés",
+      "nameEn": "Spicy chilies and cumin",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 244.3744235841738,
+        "protein": 8.952730252909232,
+        "carbs": 49.80572318386346,
+        "fat": 6.9485761241272295
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Piments et cumin relevés": "Piments et cumin relevés",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière."
+        },
+        "en": {
+          "Piments et cumin relevés": "Spicy chilies and cumin",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place."
+        },
+        "es": {
+          "Piments et cumin relevés": "Chiles y comino picantes",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz."
+        },
+        "pt-BR": {
+          "Piments et cumin relevés": "Pimentas e cominho picantes",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz."
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "chili-poudre",
+            "grams": 7.777800000000001,
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.583333333333334
+            }
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "grams": 6.611133333333334,
+            "quantity": {
+              "kind": "spoon",
+              "value": 14.583333333333334
+            }
+          },
+          {
+            "ingredientId": "cumin-moulu",
+            "grams": 4.166666666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.416666666666668
+            }
+          },
+          {
+            "ingredientId": "cassonade",
+            "grams": 6.25,
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.416666666666668
+            }
+          },
+          {
+            "ingredientId": "sel",
+            "grams": 12.5,
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.416666666666668
+            }
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "grams": 3.833333333333333,
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.333333333333334
+            }
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "grams": 5.388866666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.333333333333334
+            }
+          },
+          {
+            "ingredientId": "origan-seche",
+            "grams": 1.6666666666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 8.333333333333334
+            }
+          },
+          {
+            "ingredientId": "chipotle",
+            "grams": 1.4722,
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.166666666666667
+            }
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "grams": 1.3888666666666667,
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.166666666666667
+            }
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "grams": 1.9166666666666665,
+            "quantity": {
+              "kind": "spoon",
+              "value": 4.166666666666667
+            }
+          },
+          {
+            "ingredientId": "cayenne",
+            "grams": 0.7361333333333334,
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.0833333333333335
+            }
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": []
+      }
+    },
+    {
+      "id": "tredmeal-melange-bbq-cassonade",
+      "name": "BBQ à la cassonade",
+      "nameEn": "Brown sugar BBQ",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 304.06144052113405,
+        "protein": 9.90406220108889,
+        "carbs": 65.35996171034851,
+        "fat": 4.736500285212908
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "BBQ à la cassonade": "BBQ à la cassonade",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Moutarde": "Moutarde"
+        },
+        "en": {
+          "BBQ à la cassonade": "Brown sugar BBQ",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Moutarde": "Mustard"
+        },
+        "es": {
+          "BBQ à la cassonade": "BBQ con azúcar morena",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Moutarde": "Mostaza"
+        },
+        "pt-BR": {
+          "BBQ à la cassonade": "BBQ com açúcar mascavo",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Moutarde": "Mostarda"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "cassonade",
+            "grams": 12.0,
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.0
+            }
+          },
+          {
+            "ingredientId": "ail-poudre",
+            "grams": 12.93336,
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.0
+            }
+          },
+          {
+            "ingredientId": "oignon-poudre",
+            "grams": 9.2,
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.0
+            }
+          },
+          {
+            "ingredientId": "paprika-fume",
+            "grams": 5.66664,
+            "quantity": {
+              "kind": "spoon",
+              "value": 12.5
+            }
+          },
+          {
+            "ingredientId": "paprika-doux",
+            "grams": 4.53336,
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.0
+            }
+          },
+          {
+            "ingredientId": "moutarde-graines",
+            "grams": 2.1,
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.0
+            }
+          },
+          {
+            "ingredientId": "sel",
+            "grams": 6.0,
+            "quantity": {
+              "kind": "spoon",
+              "value": 5.0
+            }
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "grams": 1.15,
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.5
+            }
+          },
+          {
+            "ingredientId": "celeri-graines",
+            "grams": 1.08336,
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.5
+            }
+          },
+          {
+            "ingredientId": "thym-seche",
+            "grams": 0.45,
+            "quantity": {
+              "kind": "spoon",
+              "value": 2.5
+            }
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Moutarde"
+        ]
+      }
+    },
+    {
+      "id": "tredmeal-melange-steak-grains",
+      "name": "Steak à l’ail et aux grains",
+      "nameEn": "Garlic and seed steak blend",
+      "state": "préparé",
+      "nutrition": {
+        "kcal": 225.41732003048108,
+        "protein": 10.831974458258264,
+        "carbs": 39.48032101370654,
+        "fat": 7.258730311988826
+      },
+      "source": "https://fdc.nal.usda.gov/",
+      "sourceLabel": "Tred’meal · ingrédients de référence USDA",
+      "sourceDescription": "Valeurs calculées à partir des ingrédients du mélange. Le volume obtenu varie selon la mouture et le tassement.",
+      "estimated": true,
+      "aisle": "seasoning",
+      "translations": {
+        "fr": {
+          "Steak à l’ail et aux grains": "Steak à l’ail et aux grains",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+          "Moutarde": "Moutarde"
+        },
+        "en": {
+          "Steak à l’ail et aux grains": "Garlic and seed steak blend",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Keep in a sealed container in a dry, dark place.",
+          "Moutarde": "Mustard"
+        },
+        "es": {
+          "Steak à l’ail et aux grains": "Ajo y semillas para bistec",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarda en un recipiente cerrado, seco y protegido de la luz.",
+          "Moutarde": "Mostaza"
+        },
+        "pt-BR": {
+          "Steak à l’ail et aux grains": "Alho e sementes para bife",
+          "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.": "Guarde em recipiente fechado, seco e protegido da luz.",
+          "Moutarde": "Mostarda"
+        }
+      },
+      "blend": {
+        "version": 1,
+        "yieldMl": 100,
+        "components": [
+          {
+            "ingredientId": "ail-poudre",
+            "grams": 14.819466666666665,
+            "quantity": {
+              "kind": "spoon",
+              "value": 22.916666666666668
+            }
+          },
+          {
+            "ingredientId": "poivre-noir",
+            "grams": 9.583333333333334,
+            "quantity": {
+              "kind": "spoon",
+              "value": 20.833333333333336
+            }
+          },
+          {
+            "ingredientId": "moutarde-graines",
+            "grams": 7.000000000000001,
+            "quantity": {
+              "kind": "spoon",
+              "value": 16.666666666666668
+            }
+          },
+          {
+            "ingredientId": "sel",
+            "grams": 20.0,
+            "quantity": {
+              "kind": "spoon",
+              "value": 16.666666666666668
+            }
+          },
+          {
+            "ingredientId": "aneth-graines",
+            "grams": 4.583333333333334,
+            "quantity": {
+              "kind": "spoon",
+              "value": 10.416666666666668
+            }
+          },
+          {
+            "ingredientId": "coriandre-graines",
+            "grams": 2.0833333333333335,
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.25
+            }
+          },
+          {
+            "ingredientId": "piment-flocons",
+            "grams": 2.2083333333333335,
+            "quantity": {
+              "kind": "spoon",
+              "value": 6.25
+            }
+          }
+        ],
+        "storage": "spices",
+        "storageNote": "Conserver dans un contenant fermé, au sec et à l’abri de la lumière.",
+        "allergens": [
+          "Moutarde"
+        ]
+      }
+    }
+  ],
+  "volumeReferences": {
+    "coco": {
+      "gramsPerMl": 1.0,
+      "basis": "USDA FDC 170173: 1 tbsp = 15 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "eau": {
+      "gramsPerMl": 1,
+      "basis": "Eau : approximation 1 g/ml"
+    },
+    "lime": {
+      "gramsPerMl": 1.0083333333333333,
+      "basis": "USDA FDC 168156: 1 cup = 242 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "huile": {
+      "gramsPerMl": 0.9,
+      "basis": "USDA FDC 172336: 1 tsp = 4.5 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "coriandrep": {
+      "gramsPerMl": 0.36,
+      "basis": "USDA FDC 170922: 1 tsp = 1.8 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "curcuma": {
+      "gramsPerMl": 0.6,
+      "basis": "USDA FDC 172231: 1 tsp = 3 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "cumin": {
+      "gramsPerMl": 0.42000000000000004,
+      "basis": "USDA FDC 170923: 1 tsp, whole = 2.1 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "oignonp": {
+      "gramsPerMl": 0.48,
+      "basis": "USDA FDC 171327: 1 tsp = 2.4 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "ailp": {
+      "gramsPerMl": 0.62,
+      "basis": "USDA FDC 171325: 1 tsp = 3.1 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "moutardep": {
+      "gramsPerMl": 0.4,
+      "basis": "USDA FDC 170929: 1 tsp = 2 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "poivre": {
+      "gramsPerMl": 0.45999999999999996,
+      "basis": "USDA FDC 170931: 1 tsp, ground = 2.3 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "chili": {
+      "gramsPerMl": 0.54,
+      "basis": "USDA FDC 171319: 1 tsp = 2.7 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "farine": {
+      "gramsPerMl": 0.5208333333333334,
+      "basis": "USDA FDC 168894: 1 cup = 125 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "sel": {
+      "gramsPerMl": 1.2,
+      "basis": "USDA FDC 173468: 1 tsp = 6 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "mayo": {
+      "gramsPerMl": 0.92,
+      "basis": "USDA FDC 171009: 1 tbsp = 13.8 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "dijon": {
+      "gramsPerMl": 1.0,
+      "basis": "USDA FDC 172234: 1 tsp or 1 packet = 5 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "vinaigre": {
+      "gramsPerMl": 1.0,
+      "basis": "USDA FDC 172240: 1 tsp = 5 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "lait": {
+      "gramsPerMl": 1.0166666666666666,
+      "basis": "USDA FDC 171267: 1 cup = 244 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "creme": {
+      "gramsPerMl": 1.0,
+      "basis": "USDA FDC 171255: 1 tbsp = 15 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "origan": {
+      "gramsPerMl": 0.2,
+      "basis": "USDA FDC 171328: 1 tsp, leaves = 1 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "basilicsec": {
+      "gramsPerMl": 0.13999999999999999,
+      "basis": "USDA FDC 171317: 1 tsp, leaves = 0.7 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "persilsec": {
+      "gramsPerMl": 0.1,
+      "basis": "USDA FDC 170930: 1 tsp = 0.5 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "bbq": {
+      "gramsPerMl": 1.1333333333333333,
+      "basis": "USDA FDC 174523: 1 tbsp = 17 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "paprika": {
+      "gramsPerMl": 0.45999999999999996,
+      "basis": "USDA FDC 171329: 1 tsp = 2.3 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "thym": {
+      "gramsPerMl": 0.2,
+      "basis": "USDA FDC 170938: 1 tsp, leaves = 1 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "anethsec": {
+      "gramsPerMl": 0.2,
+      "basis": "USDA FDC 171322: 1 tsp = 1 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "citron": {
+      "gramsPerMl": 1.0166666666666666,
+      "basis": "USDA FDC 167747: 1 cup = 244 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "poisson": {
+      "gramsPerMl": 1.2,
+      "basis": "USDA FDC 174531: 1 tbsp = 18 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "gingembrep": {
+      "gramsPerMl": 0.36,
+      "basis": "USDA FDC 170926: 1 tsp = 1.8 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "paprikadoux": {
+      "gramsPerMl": 0.45999999999999996,
+      "basis": "USDA FDC 171329: 1 tsp = 2.3 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "cassonade": {
+      "gramsPerMl": 0.6,
+      "basis": "USDA FDC 168833: 1 tsp unpacked = 3 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "chipotle": {
+      "gramsPerMl": 0.36,
+      "basis": "USDA FDC 170932: 1 tsp = 1.8 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "zestecitron": {
+      "gramsPerMl": 0.4,
+      "basis": "USDA FDC 167749: 1 tsp = 2 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "hoisin": {
+      "gramsPerMl": 1.0666666666666667,
+      "basis": "USDA FDC 172886: 1 tbsp = 16 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "soya": {
+      "gramsPerMl": 0.9,
+      "basis": "USDA FDC 172473: 1 tsp = 4.5 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "sesame": {
+      "gramsPerMl": 0.6,
+      "basis": "USDA FDC 170150: 1 tbsp = 9 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "cayenne": {
+      "gramsPerMl": 0.36,
+      "basis": "USDA FDC 170932: 1 tsp = 1.8 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "pimentjamaique": {
+      "gramsPerMl": 0.38,
+      "basis": "USDA FDC 171315: 1 tsp = 1.9 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "worcestershire": {
+      "gramsPerMl": 1.1333333333333333,
+      "basis": "USDA FDC 171610: 1 tbsp = 17 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "anethgraine": {
+      "gramsPerMl": 0.42000000000000004,
+      "basis": "USDA FDC 170925: 1 tsp = 2.1 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "cannelle": {
+      "gramsPerMl": 0.52,
+      "basis": "USDA FDC 171320: 1 tsp = 2.6 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "prune": {
+      "gramsPerMl": 1.2666666666666666,
+      "basis": "USDA FDC 172879: 1 tbsp = 19 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "huilesesame": {
+      "gramsPerMl": 0.9,
+      "basis": "USDA FDC 171016: 1 tsp = 4.5 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "zesteorange": {
+      "gramsPerMl": 0.4,
+      "basis": "USDA FDC 169103: 1 tsp = 2 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "celerigraine": {
+      "gramsPerMl": 0.4,
+      "basis": "USDA FDC 170920: 1 tsp = 2 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "balsamique": {
+      "gramsPerMl": 1.06,
+      "basis": "USDA FDC 172241: 1 tsp = 5.3 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "romarin": {
+      "gramsPerMl": 0.24,
+      "basis": "USDA FDC 171333: 1 tsp = 1.2 g; tsp=5 ml, tbsp=15 ml, cup américaine arrondie=240 ml. Densité approximative."
+    },
+    "carvi": {
+      "gramsPerMl": 0.42000000000000004,
+      "basis": "1 tsp = 2.1 g"
+    },
+    "cardamome": {
+      "gramsPerMl": 0.4,
+      "basis": "1 tsp ground = 2 g"
+    },
+    "clou": {
+      "gramsPerMl": 0.42000000000000004,
+      "basis": "1 tsp = 2.1 g"
+    },
+    "muscade": {
+      "gramsPerMl": 0.44000000000000006,
+      "basis": "1 tsp = 2.2 g"
+    },
+    "amande": {
+      "gramsPerMl": 0.3958333333333333,
+      "basis": "1 cup ground = 95 g; cup = 240 ml"
+    }
+  }
+}

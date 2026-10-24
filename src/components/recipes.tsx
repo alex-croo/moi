@@ -1,4 +1,5 @@
 "use client";
+import { recipeCookingIngredients, linkedPreparations, type SpiceBlend } from "@/lib/spice-blends";
 import { recipePreparations } from "@/lib/recipe-preparations";
 import { useText, useContentTranslation, TranslationStatus } from "./locale-provider";
 
@@ -148,12 +149,14 @@ export function RecipeSheet({
   units,
   locale,
   onClose,
+  onPrepare,
 }: {
   recipe: Recipe;
   ingredients: Ingredient[];
   units: UnitPreferences;
   locale: Locale;
   onClose: () => void;
+  onPrepare?: (blend:SpiceBlend,volumeMl:number) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const servings = recipe.servings;
@@ -165,6 +168,8 @@ export function RecipeSheet({
   const t = useText(locale);
   const nutrition = recipeNutrition(recipe, ingredients);
   const factor = servings / recipe.servings;
+  const linked = linkedPreparations(recipe,ingredients);
+  const displayIngredients = recipeCookingIngredients(recipe,ingredients);
   return (
     <dialog
       ref={dialog}
@@ -172,7 +177,7 @@ export function RecipeSheet({
       onCancel={onClose}
       aria-labelledby="recipe-title"
     >
-      {cookingMode && <CookingMode recipe={recipe} ingredients={ingredients} units={units} locale={locale} onClose={() => setCookingMode(false)}/>}
+      {cookingMode && <CookingMode recipe={recipe} ingredients={ingredients} units={units} locale={locale} onPrepare={onPrepare} onClose={() => setCookingMode(false)}/>}
       <div className="sheet-top">
         <span>
           <BookOpen size={17} /> {t("MON LIVRE DE RECETTES", "MY RECIPE BOOK")}
@@ -213,7 +218,7 @@ export function RecipeSheet({
           <section>
             <h2>{t("Les ingrédients", "Ingredients")}</h2>
             <ul className="ingredient-list">
-              {recipe.ingredients.map((line, i) => {
+              {displayIngredients.map((line, i) => {
                 const ingredient = ingredients.find(
                   (x) => x.id === line.ingredientId,
                 );
@@ -308,10 +313,10 @@ export function RecipeSheet({
             </details>
           </aside>
         </div>
-        {recipePreparations(recipe).length>0&&<section className="recipe-homemade" aria-label={t("Les mélanges à préparer","Mixtures to prepare")}>
-          <h2>{t("Les mélanges à préparer","Mixtures to prepare")}</h2>
-          <p>{t("Préparez seulement la quantité pour cette recette. Ces ingrédients sont déjà inclus dans la liste ci-dessus et dans vos courses.","Prepare only the amount for this recipe. These ingredients are already included above and in your shopping list.")}</p>
-          <div>{recipePreparations(recipe).map(prep=><article key={prep.id}><h3>{t(prep.title,prep.titleEn)}</h3><ul>{prep.ingredients.map((line,i)=>{const item=ingredients.find(x=>x.id===line.ingredientId);return <li key={i}><span>{item?t(item.name,item.nameEn):line.ingredientId}</span><strong>{quantityLabel(line.quantity,units,locale,factor,t)}</strong></li>})}</ul></article>)}</div>
+        {recipePreparations(recipe).length>0&&<section className="recipe-homemade" aria-label={t("Mes mélanges Tred’meal","My Tred’meal blends")}>
+          <h2>{t("Mes mélanges Tred’meal","My Tred’meal blends")}</h2>
+          <p>{t("Préparez une double dose : une pour ce repas, l’autre à garder. Si votre mélange est déjà prêt, utilisez seulement la dose indiquée dans les ingrédients.","Prepare a double batch: one for this meal, one to keep. If your blend is already prepared, use only the amount shown in the ingredients.")}</p>
+          <div>{recipePreparations(recipe).map(prep=>{const item=linked.find(l=>l.preparation.id===prep.id);return <article key={prep.id}><h3>{item?t(item.blend.name,item.blend.nameEn):t(prep.title,prep.titleEn)}</h3>{item&&<p className="blend-recipe-yield"><strong>{quantityLabel({kind:"spoon",value:item.volumeMl*2},units,locale,factor,t)}</strong> · {t("la moitié pour ce repas, la moitié en réserve","half for this meal, half for your pantry")}</p>}<ul>{prep.ingredients.map((line,i)=>{const ingredient=ingredients.find(x=>x.id===line.ingredientId);return <li key={i}><span>{ingredient?t(ingredient.name,ingredient.nameEn):line.ingredientId}</span><strong>{quantityLabel(line.quantity,units,locale,factor*(item?2:1),t)}</strong></li>})}</ul>{item&&onPrepare&&<button className="secondary" onClick={()=>onPrepare(item.blend,item.volumeMl*factor*2)}>{t("Préparer et mettre en réserve","Prepare and add to pantry")}</button>}</article>;})}</div>
         </section>}
         {recipe.note && (
           <p className="recipe-note">

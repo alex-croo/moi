@@ -1,0 +1,716 @@
+{
+  "version": 1,
+  "researchedAt": "2026-10-24",
+  "sources": {
+    "community": "https://www.reddit.com/r/hellofresh/comments/giy5tc/hello_fresh_diy_spice_blends/",
+    "community2019": "https://www.reddit.com/r/hellofresh/comments/bawnby/hello_fresh_diy_spice_blends/",
+    "ratios": "https://www.brandon-j-navarro.com/recipe/2025/06/09/HelloFresh-Spice-Blends.html",
+    "southwest": "https://www.hellofresh.com/recipes/market/southwest-spice-blend-6022f187a72dcd79e6201a81",
+    "cream": "https://www.reddit.com/r/hellofresh/comments/wkzqmy/cream_sauce_spice_blend/",
+    "creamAlternative": "https://www.mommytravels.net/hellofresh-spice-recipes-sauce-recipes/",
+    "dill": "https://www.reddit.com/r/Chefsplate/comments/rpvw1r",
+    "applewood": "https://www.hellofresh.ca/recipes/applewood-spice-rubbed-chicken-breast-6a7a5f3fa64cfe1e1f5abc70",
+    "zesty": "https://www.reddit.com/r/hellofresh/comments/1anj5t0/zesty_garlic_blend/",
+    "sesame": "https://www.hellofresh.ca/recipes/asian-sesame-salmon-and-and-clementine-salad-6940939e1101204cae753814",
+    "spanish": "https://www.hellofresh.ca/recipes/one-pot-spanish-chicken-and-rice-6979223ebcdfd65d69c34250",
+    "indian": "https://www.reddit.com/r/hellofresh/comments/fi36pk/hello_fresh_spice_blends/",
+    "montreal": "https://www.alive.com/recipe/make-your-own-montreal-spice-mix/",
+    "lemon": "https://www.hellofresh.ca/recipes/creamy-lemon-pepper-chicken-668bf00d018283f1f43981c6",
+    "mexican": "https://www.reddit.com/r/hellofresh/comments/iz0ywz/substitute_for_mexican_spice/",
+    "compilation": "https://spiceblends.food/",
+    "morocco": "https://www.reddit.com/r/hellofresh/comments/l1mpqe/moroccan_spice_blend/",
+    "warming": "https://www.reddit.com/r/hellofresh/comments/19ev50k/",
+    "harissa": "https://www.lecreuset.com/harissa-spice-blend/LCR-2348.html",
+    "dal": "https://www.hellofresh.ca/recipes/spiced-mushrooms-and-lentil-dal-65d3b8ce245c6966a90af75c",
+    "zaatar": "https://blog.hellofresh.com.au/get-know-essentials-middle-eastern-cooking/",
+    "caribbean": "https://www.reddit.com/r/Chefsplate/comments/ybvrq4/"
+  },
+  "blends": {
+    "creme": {
+      "name": "Base maison pour sauce crémeuse",
+      "status": "approximation maison après comparaison de copycats",
+      "sources": [
+        "cream",
+        "creamAlternative"
+      ],
+      "parts": {
+        "farine": 8,
+        "ailp": 1,
+        "oignonp": 1,
+        "sel": 0.5
+      },
+      "reason": "Les copycats divergent. La composition canadienne archivée contient surtout farine, sel, ail et oignon. Proportions maison en volume; ne pas convertir directement le ratio en grammes trouvé sur le forum."
+    },
+    "jus": {
+      "name": "Base maison pour jus de cuisson",
+      "status": "approximation maison",
+      "sources": [
+        "cream",
+        "creamAlternative"
+      ],
+      "parts": {
+        "farine": 8,
+        "oignonp": 2,
+        "ailp": 1,
+        "poivre": 0.5
+      },
+      "reason": "Base épaississante au blé. Aucune proportion canadienne exacte trouvée; le bouillon est ajouté séparément dans le plat."
+    },
+    "italien": {
+      "name": "Herbes italiennes à l’ail",
+      "status": "copycat adapté",
+      "sources": [
+        "ratios",
+        "community"
+      ],
+      "parts": {
+        "ailp": 1,
+        "origan": 1,
+        "basilicsec": 1,
+        "poivre": 1,
+        "persilsec": 1
+      },
+      "reason": "Mélange communautaire sans sel ajouté; la composition canadienne est plus salée. Garder le sel du plat séparé."
+    },
+    "fume": {
+      "name": "Paprika fumé et ail",
+      "status": "composition confirmée, proportions maison",
+      "sources": [
+        "community"
+      ],
+      "parts": {
+        "paprika": 2,
+        "ailp": 1
+      },
+      "reason": "Deux composants confirmés dans la recette canadienne archivée; ratio non publié."
+    },
+    "aneth": {
+      "name": "Aneth, ail et oignon",
+      "status": "composition confirmée, proportions maison",
+      "sources": [
+        "dill",
+        "applewood"
+      ],
+      "parts": {
+        "oignonp": 2,
+        "ailp": 2,
+        "anethsec": 1,
+        "sel": 0.5
+      },
+      "reason": "Composition canadienne publiée : oignon, ail, sel, aneth. Proportions choisies pour cette collection."
+    },
+    "enchilada": {
+      "name": "Piments doux et cumin",
+      "status": "copycat adapté",
+      "sources": [
+        "community2019",
+        "ratios"
+      ],
+      "parts": {
+        "chili": 3,
+        "paprikadoux": 3,
+        "cumin": 2,
+        "cassonade": 1,
+        "oignonp": 1.5,
+        "ailp": 1.5,
+        "origan": 1.5,
+        "chipotle": 0.5,
+        "coriandrep": 1,
+        "poivre": 0.5
+      },
+      "reason": "Version douce inspirée du copycat long : moins de sucre et de chipotle; sel géré à part. La variante courte chili-cumin-origan est aussi publiée, donc aucune identité exacte revendiquée."
+    },
+    "citron": {
+      "name": "Poivre et citron",
+      "status": "approximation maison",
+      "sources": [
+        "lemon"
+      ],
+      "parts": {
+        "poivre": 2,
+        "zestecitron": 2,
+        "ailp": 1,
+        "sel": 0.5
+      },
+      "reason": "Zeste frais dans ce petit mélange; garder la réserve au réfrigérateur et utiliser sous 2 jours. Pas un mélange sec de longue conservation."
+    },
+    "acidule": {
+      "name": "Ail citronné aux herbes",
+      "status": "approximation maison",
+      "sources": [
+        "zesty"
+      ],
+      "parts": {
+        "ailp": 3,
+        "oignonp": 1,
+        "paprikadoux": 1,
+        "origan": 0.5,
+        "zestecitron": 1,
+        "sel": 0.5
+      },
+      "reason": "Les suggestions du forum ne correspondent pas à la composition canadienne; elles ne sont pas retenues comme formule. Citron frais remplace l’acide citrique et la semoule est omise. Réserve réfrigérée, 2 jours."
+    },
+    "cajun": {
+      "name": "Paprika cajun doux",
+      "status": "copycat adapté",
+      "sources": [
+        "community",
+        "ratios"
+      ],
+      "parts": {
+        "paprikadoux": 2,
+        "oignonp": 2,
+        "ailp": 1,
+        "origan": 1,
+        "thym": 1,
+        "basilicsec": 0.5,
+        "cayenne": 0.25
+      },
+      "reason": "Cayenne réduite de moitié par rapport au copycat pour garder une chaleur modérée."
+    },
+    "shawarma": {
+      "name": "Épices chaudes au cumin",
+      "status": "copycat communautaire",
+      "sources": [
+        "community2019",
+        "ratios"
+      ],
+      "parts": {
+        "curcuma": 2,
+        "cumin": 2,
+        "coriandrep": 1,
+        "ailp": 1,
+        "paprikadoux": 1,
+        "pimentjamaique": 0.5,
+        "poivre": 0.5
+      },
+      "reason": "Ratio communautaire, non confirmé pour le sachet canadien."
+    },
+    "mooshu": {
+      "name": "Gingembre et ail",
+      "status": "copycat communautaire",
+      "sources": [
+        "community",
+        "ratios"
+      ],
+      "parts": {
+        "gingembrep": 1,
+        "ailp": 1
+      },
+      "reason": "Deux parts égales dans les deux compilations consultées."
+    },
+    "montreal": {
+      "name": "Épices à steak du bistrot",
+      "status": "approximation maison",
+      "sources": [
+        "montreal",
+        "community"
+      ],
+      "parts": {
+        "ailp": 2,
+        "poivre": 2,
+        "coriandrep": 1,
+        "anethgraine": 1,
+        "moutardep": 1,
+        "paprika": 1,
+        "sel": 1
+      },
+      "reason": "Assemblage maison du profil ail-poivre-coriandre-aneth; ce n’est pas une formule officielle."
+    },
+    "mexicain": {
+      "name": "Paprika mexicain doux",
+      "status": "copycat adapté",
+      "sources": [
+        "mexican"
+      ],
+      "parts": {
+        "paprikadoux": 2,
+        "cumin": 1.5,
+        "chili": 1,
+        "ailp": 1,
+        "oignonp": 1,
+        "origan": 0.5,
+        "poivre": 0.5,
+        "cannelle": 0.125
+      },
+      "reason": "Version adoucie : pas de girofle ni de flocons forts; sel du repas séparé."
+    },
+    "sesame": {
+      "name": "Sésame, ail et gingembre",
+      "status": "approximation maison",
+      "sources": [
+        "sesame"
+      ],
+      "parts": {
+        "sesame": 4,
+        "ailp": 2,
+        "oignonp": 1,
+        "gingembrep": 1,
+        "zesteorange": 1,
+        "sel": 0.5
+      },
+      "reason": "Composition publiée, ratios absents; gingembre choisi pour la composante épices. Zeste frais : réserve au froid, 2 jours."
+    },
+    "indien": {
+      "name": "Cari doux à la coriandre",
+      "status": "approximation maison",
+      "sources": [
+        "indian",
+        "community"
+      ],
+      "parts": {
+        "coriandrep": 3,
+        "curcuma": 2,
+        "cumin": 2,
+        "oignonp": 1,
+        "ailp": 1,
+        "moutardep": 0.5,
+        "poivre": 0.5,
+        "chili": 0.5
+      },
+      "reason": "Adaptation de la composition canadienne archivée. Les résultats web portent sur plusieurs pays et ne confirment pas le ratio canadien."
+    },
+    "sudouest": {
+      "name": "Ail, cumin et chili doux",
+      "status": "composition confirmée et ratio copycat",
+      "sources": [
+        "southwest",
+        "community"
+      ],
+      "parts": {
+        "ailp": 4,
+        "cumin": 2,
+        "chili": 2
+      },
+      "reason": "Trois composants confirmés par le produit officiel américain; ratio communautaire 4:2:2, non confirmé pour le Canada."
+    },
+    "espagnol": {
+      "name": "Paprika aux herbes",
+      "status": "approximation maison",
+      "sources": [
+        "spanish"
+      ],
+      "parts": {
+        "paprika": 3,
+        "cumin": 1,
+        "oignonp": 1,
+        "ailp": 1,
+        "origan": 0.5,
+        "sel": 0.5
+      },
+      "reason": "Composition canadienne publiée mais épices non détaillées; profil maison paprika-cumin. Le mélange Blue Apron trouvé est un autre produit et n’est pas assimilé à celui-ci."
+    },
+    "pommier": {
+      "name": "Épices douces fumées",
+      "status": "approximation maison",
+      "sources": [
+        "applewood",
+        "community2019"
+      ],
+      "parts": {
+        "paprika": 3,
+        "cassonade": 2,
+        "ailp": 1,
+        "oignonp": 1,
+        "moutardep": 0.5,
+        "celerigraine": 0.25,
+        "poivre": 0.5,
+        "sel": 0.5
+      },
+      "reason": "Le paprika fumé remplace l’arôme de fumée de bois de pommier; le nom du mélange ne prétend pas reproduire ce bois."
+    },
+    "selail": {
+      "name": "Sel à l’ail maison",
+      "status": "approximation maison",
+      "sources": [
+        "dill"
+      ],
+      "parts": {
+        "ailp": 1,
+        "sel": 1
+      },
+      "reason": "Ratio volontairement modéré en sel, non équivalent au poids du sachet."
+    },
+    "mediterraneen": {
+      "name": "Herbes du soleil",
+      "parts": {
+        "origan": 3,
+        "basilicsec": 2,
+        "thym": 1,
+        "ailp": 1,
+        "persilsec": 1
+      },
+      "status": "approximation maison",
+      "sources": [
+        "compilation"
+      ],
+      "reason": "Profil herbacé maison; ne reprend pas une formule propriétaire."
+    },
+    "cumin-curcuma": {
+      "name": "Cumin et curcuma",
+      "parts": {
+        "cumin": 3,
+        "curcuma": 2,
+        "coriandrep": 1,
+        "ailp": 1,
+        "gingembrep": 0.5
+      },
+      "status": "approximation maison",
+      "sources": [
+        "community"
+      ],
+      "reason": "Pas de ratio canadien vérifiable trouvé; formulation maison."
+    },
+    "turc": {
+      "name": "Cumin et coriandre à la turque",
+      "parts": {
+        "cumin": 2,
+        "ailp": 2,
+        "coriandrep": 1,
+        "pimentjamaique": 0.25,
+        "cayenne": 0.125
+      },
+      "status": "copycat adapté",
+      "sources": [
+        "compilation"
+      ],
+      "reason": "Piment en poudre doux réduit à la place des flocons."
+    },
+    "marocain": {
+      "name": "Épices dorées à la marocaine",
+      "parts": {
+        "cumin": 3,
+        "coriandrep": 3,
+        "gingembrep": 1,
+        "curcuma": 1,
+        "cannelle": 0.5,
+        "paprikadoux": 1,
+        "ailp": 1,
+        "oignonp": 1,
+        "poivre": 0.5,
+        "pimentjamaique": 0.25
+      },
+      "status": "approximation maison",
+      "sources": [
+        "morocco"
+      ],
+      "reason": "Liste communautaire de composants; proportions originales Tred’meal, sans prétendre une identité exacte."
+    },
+    "chili-cumin": {
+      "name": "Chili et cumin",
+      "parts": {
+        "chili": 2,
+        "cumin": 2,
+        "ailp": 1,
+        "origan": 1
+      },
+      "status": "approximation maison",
+      "sources": [
+        "community"
+      ],
+      "reason": "Profil taco maison à partir des profils communautaires."
+    },
+    "herbes-italiennes": {
+      "name": "Herbes italiennes classiques",
+      "parts": {
+        "origan": 3,
+        "basilicsec": 3,
+        "thym": 1,
+        "romarin": 1,
+        "persilsec": 1
+      },
+      "status": "approximation maison",
+      "sources": [
+        "compilation"
+      ],
+      "reason": "Version sans ail pour les recettes qui distinguent assaisonnement italien et mélange à l’ail."
+    },
+    "thai": {
+      "name": "Sésame thaï épicé",
+      "parts": {
+        "sesame": 2.5,
+        "coriandrep": 1,
+        "oignonp": 1,
+        "ailp": 0.5,
+        "gingembrep": 0.5,
+        "cannelle": 0.25,
+        "cayenne": 0.125
+      },
+      "status": "copycat adapté",
+      "sources": [
+        "community"
+      ],
+      "reason": "Sans extrait de crevette; gingembre ajouté. Ce choix est explicite et le résultat ne prétend pas copier exactement le sachet."
+    },
+    "zaatar": {
+      "name": "Thym citronné et sésame",
+      "parts": {
+        "thym": 2,
+        "sesame": 2,
+        "zestecitron": 1,
+        "origan": 1,
+        "poivre": 0.5
+      },
+      "status": "approximation maison",
+      "sources": [
+        "zaatar",
+        "community"
+      ],
+      "reason": "Variante maison au zeste frais à la place du sumac. Réfrigérée; pas une copie exacte de zaatar sec."
+    },
+    "caraibes": {
+      "name": "Épices des îles",
+      "parts": {
+        "ailp": 3,
+        "thym": 3,
+        "oignonp": 2,
+        "origan": 2,
+        "paprikadoux": 1,
+        "cassonade": 1,
+        "pimentjamaique": 1,
+        "cannelle": 0.5,
+        "poivre": 0.25,
+        "cayenne": 0.125
+      },
+      "status": "copycat adapté",
+      "sources": [
+        "caribbean"
+      ],
+      "reason": "Profil jerk communautaire, chaleur réduite; pas de curry composé imbriqué."
+    },
+    "harissa": {
+      "name": "Paprika et carvi relevés",
+      "parts": {
+        "paprikadoux": 3,
+        "coriandrep": 2,
+        "cumin": 2,
+        "carvi": 1,
+        "ailp": 1,
+        "chipotle": 1,
+        "sel": 0.5
+      },
+      "status": "approximation maison",
+      "sources": [
+        "harissa"
+      ],
+      "reason": "Profil harissa maison, sans huile; carvi à écraser avant assemblage."
+    },
+    "rechauffantes": {
+      "name": "Cannelle et épices douces",
+      "parts": {
+        "cannelle": 4,
+        "cassonade": 4,
+        "muscade": 1,
+        "pimentjamaique": 1,
+        "clou": 0.5
+      },
+      "status": "composition communautaire, proportions maison",
+      "sources": [
+        "warming"
+      ],
+      "reason": "Composition rapportée par un utilisateur; proportions maison, non officielles."
+    },
+    "curcuma-dore": {
+      "name": "Curcuma doré au gingembre",
+      "parts": {
+        "curcuma": 3,
+        "cumin": 2,
+        "coriandrep": 2,
+        "gingembrep": 1,
+        "ailp": 1,
+        "poivre": 0.25
+      },
+      "status": "approximation maison",
+      "sources": [
+        "community"
+      ],
+      "reason": "Aucune formule exacte trouvée dans les sources consultées."
+    },
+    "moyen-orient": {
+      "name": "Paprika et épices orientales",
+      "parts": {
+        "paprikadoux": 5,
+        "ailp": 3,
+        "curcuma": 2,
+        "coriandrep": 2,
+        "poivre": 2,
+        "pimentjamaique": 1,
+        "sel": 2.5
+      },
+      "status": "copycat communautaire",
+      "sources": [
+        "community"
+      ],
+      "reason": "Ratio communautaire; variante canadienne non vérifiée."
+    },
+    "dal": {
+      "name": "Coriandre douce pour lentilles",
+      "parts": {
+        "coriandrep": 3,
+        "cumin": 2,
+        "curcuma": 2,
+        "gingembrep": 1,
+        "ailp": 1,
+        "paprikadoux": 1,
+        "cardamome": 0.25
+      },
+      "status": "approximation maison",
+      "sources": [
+        "dal",
+        "community"
+      ],
+      "reason": "Aucun ratio fiable de copycat trouvé; profil maison conçu pour les lentilles."
+    },
+    "dukka": {
+      "name": "Croquant d’amandes et sésame",
+      "parts": {
+        "amande": 4,
+        "sesame": 2,
+        "coriandrep": 2,
+        "cumin": 1
+      },
+      "status": "copycat adapté",
+      "sources": [
+        "community"
+      ],
+      "reason": "Amandes moulues et épices moulues pour obtenir un mélange mesurable; conservation réfrigérée."
+    },
+    "bbq": {
+      "name": "BBQ fumé",
+      "parts": {
+        "paprika": 8,
+        "cassonade": 6,
+        "ailp": 2,
+        "moutardep": 1,
+        "cumin": 1,
+        "gingembrep": 1,
+        "poivre": 0.5
+      },
+      "status": "copycat communautaire",
+      "sources": [
+        "compilation"
+      ],
+      "reason": "Sucre brun plutôt que granulé."
+    },
+    "marin": {
+      "name": "Céleri et paprika du littoral",
+      "parts": {
+        "celerigraine": 3,
+        "paprikadoux": 3,
+        "moutardep": 2,
+        "sel": 2,
+        "poivre": 1,
+        "gingembrep": 0.5,
+        "muscade": 0.25,
+        "clou": 0.125
+      },
+      "status": "approximation maison",
+      "sources": [
+        "compilation"
+      ],
+      "reason": "Profil marin original; ne revendique pas la formule Old Bay."
+    },
+    "italien-sept-herbes": {
+      "name": "Italiennes aux sept herbes",
+      "parts": {
+        "origan-seche": 33.333333333333336,
+        "basilic-seche": 25.0,
+        "marjolaine-sechee": 16.666666666666668,
+        "ail-poudre": 8.333333333333334,
+        "romarin-seche": 8.333333333333334,
+        "persil-seche": 6.25,
+        "laurier-moulu": 2.0833333333333335
+      },
+      "status": "formulation historique conservée",
+      "sources": [
+        "community"
+      ],
+      "reason": "Conserve les proportions existantes de la recette initiale; profil distinct de la variante récente."
+    },
+    "paprika-ail-grille": {
+      "name": "Paprika et ail grillé",
+      "parts": {
+        "paprika-fume": 50.0,
+        "ail-poudre": 50.0
+      },
+      "status": "formulation historique conservée",
+      "sources": [
+        "community"
+      ],
+      "reason": "Conserve les proportions existantes de la recette initiale; profil distinct de la variante récente."
+    },
+    "chili-mexicain": {
+      "name": "Chili mexicain",
+      "parts": {
+        "chili-poudre": 40.625,
+        "origan-seche": 19.791666666666668,
+        "paprika-fume": 19.791666666666668,
+        "cumin-moulu": 19.791666666666668
+      },
+      "status": "formulation historique conservée",
+      "sources": [
+        "community"
+      ],
+      "reason": "Conserve les proportions existantes de la recette initiale; profil distinct de la variante récente."
+    },
+    "piments-cumin-releves": {
+      "name": "Piments et cumin relevés",
+      "parts": {
+        "chili-poudre": 14.583333333333334,
+        "paprika-doux": 14.583333333333334,
+        "cumin-moulu": 10.416666666666668,
+        "cassonade": 10.416666666666668,
+        "sel": 10.416666666666668,
+        "oignon-poudre": 8.333333333333334,
+        "ail-poudre": 8.333333333333334,
+        "origan-seche": 8.333333333333334,
+        "chipotle": 4.166666666666667,
+        "coriandre-graines": 4.166666666666667,
+        "poivre-noir": 4.166666666666667,
+        "cayenne": 2.0833333333333335
+      },
+      "status": "formulation historique conservée",
+      "sources": [
+        "community"
+      ],
+      "reason": "Conserve les proportions existantes de la recette initiale; profil distinct de la variante récente."
+    },
+    "bbq-cassonade": {
+      "name": "BBQ à la cassonade",
+      "parts": {
+        "cassonade": 20.0,
+        "ail-poudre": 20.0,
+        "oignon-poudre": 20.0,
+        "paprika-fume": 12.5,
+        "paprika-doux": 10.0,
+        "moutarde-graines": 5.0,
+        "sel": 5.0,
+        "poivre-noir": 2.5,
+        "celeri-graines": 2.5,
+        "thym-seche": 2.5
+      },
+      "status": "formulation historique conservée",
+      "sources": [
+        "community"
+      ],
+      "reason": "Conserve les proportions existantes de la recette initiale; profil distinct de la variante récente."
+    },
+    "steak-grains": {
+      "name": "Steak à l’ail et aux grains",
+      "parts": {
+        "ail-poudre": 22.916666666666668,
+        "poivre-noir": 20.833333333333336,
+        "moutarde-graines": 16.666666666666668,
+        "sel": 16.666666666666668,
+        "aneth-graines": 10.416666666666668,
+        "coriandre-graines": 6.25,
+        "piment-flocons": 6.25
+      },
+      "status": "formulation historique conservée",
+      "sources": [
+        "community"
+      ],
+      "reason": "Conserve les proportions existantes de la recette initiale; profil distinct de la variante récente."
+    }
+  }
+}

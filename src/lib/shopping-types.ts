@@ -32,6 +32,7 @@ export type ShoppingState = {
   selections: Record<string, string[]>;
   postalCode?: string;
   thawed?: string[];
+  preparedBlends?: {id:string;blendId:string;volumeMl:number;at:string;untracked:{ingredientId:string;quantity:Quantity}[]}[];
   personalItems?: PersonalShoppingItem[];
   portions?: Record<string, number>;
   stockAliases?: Record<string, string>;

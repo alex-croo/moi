@@ -1,4 +1,6 @@
 "use client";
+import { RecipeBook, PrepareBlend } from "./spice-library";
+import type { SpiceBlend } from "@/lib/spice-blends";
 import { useText } from "./locale-provider";
 import { locales, languageNames, languageCodes, htmlLocale } from "@/lib/locale";
 
@@ -115,6 +117,7 @@ function DashboardBody({
   const [locale, setLocale] = useState(initialLocale);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [pantryEditId, setPantryEditId] = useState<string | undefined>();
+  const [preparingBlend, setPreparingBlend] = useState<{blend:SpiceBlend;volumeMl:number}|null>(null);
   const [cooking, setCooking] = useState<MealSlot | null>(null);
   const [view, setView] = useState<View>("overview");
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [view]);
@@ -945,11 +948,7 @@ function DashboardBody({
                   )}
                 </p>
               </div>
-              <RecipeLibrary
-                recipes={data.recipes}
-                locale={locale}
-                onOpen={setSelectedRecipe}
-              />
+              <RecipeBook data={data} locale={locale} onOpen={setSelectedRecipe} onBlend={(blend,volumeMl=100)=>setPreparingBlend({blend,volumeMl})}/>
             </>
           )}
           {view === "library" && (
@@ -1123,9 +1122,11 @@ function DashboardBody({
           ingredients={data.ingredients}
           units={data.preferences}
           locale={locale}
+          onPrepare={(blend,volumeMl)=>setPreparingBlend({blend,volumeMl})}
           onClose={() => setSelectedRecipe(null)}
         />
       )}
+      {preparingBlend&&<PrepareBlend blend={preparingBlend.blend} initialVolume={preparingBlend.volumeMl} data={data} locale={locale} onClose={()=>setPreparingBlend(null)} onSave={async value=>{await mutate("shopping",value);}}/>}
       <dialog
         ref={dialog}
         onCancel={(e) => {

@@ -1,3 +1,4 @@
+import { isSpiceBlend, blendComponents, blendGrams, linkedPreparations, directRecipeIngredients } from './spice-blends';
 import { recordInventory, undoInventory } from "./inventory-history";
 import { stockCatalog } from "./stock-catalog";
 import { z } from "zod";
@@ -22,6 +23,7 @@ const deliveryWindow = z.object({ start: z.string().regex(/^([01]\d|2[0-3]):[0-5
 const range = z.object({ start: z.iso.date(), end: z.iso.date() }).strict().refine(v => v.start <= v.end && v.end <= addDays(v.start, 90));
 const meal = z.object({ date: z.iso.date(), slot: z.enum(["breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner", "evening_snack"]), recipeId: id }).strict();
 export const shoppingMutation = z.discriminatedUnion("action", [
+  z.object({action:z.literal("prepareBlend"),id:z.uuid(),blendId:id,volumeMl:z.number().min(1).max(2000),confirmUntracked:z.boolean().default(false)}).strict(),
   z.object({action:z.literal("undoInventory"),id:z.uuid()}).strict(),
   z.object({action:z.literal("stockAlias"),from:id,to:id}).strict(),
   z.object({ action: z.literal("postalCode"), postalCode: z.string().max(12).transform(normalizePostalCode).refine(v => v === "" || postalCodePattern.test(v)) }).strict(),
@@ -137,15 +139,24 @@ export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, 
     const report: MealAvailability = { meal: slot, sources: [], complete: true, missing: [], frozen: [] };
     availability[mealKey(slot)] = report;
     const seen = new Set<string>();
-    for (const originalLine of recipe.ingredients) {
+    const servingFactor = (state.portions?.[mealKey(slot)] || recipe.servings) / recipe.servings;
+    const resolved:{line:RecipeIngredient;allocation?:ReturnType<typeof take>}[] = directRecipeIngredients(recipe,catalog.ingredients).map(line=>({line:{...line,...demand(line,servingFactor)}}));
+    for(const {preparation,blend,volumeMl} of linkedPreparations(recipe,catalog.ingredients)){
+      const required=volumeMl*servingFactor;
+      const need={ingredientId:stockIdentity(blend.id,catalog.ingredients)!,grams:blendGrams(blend,required),quantity:{kind:'volume' as const,value:required}};
+      const supply=take(stock,need,slot.date,mealHours[slot.slot]);
+      const covered=supply.onHand+supply.pending;
+      if(covered>1e-8)resolved.push({line:{...need,grams:blendGrams(blend,covered),quantity:{kind:'volume',value:covered}},allocation:{...supply,remaining:0,check:false,pendingCheck:false}});
+      const remainingFactor=required>0?supply.remaining/required:0;
+      for(const c of preparation.ingredients)if(remainingFactor>1e-8)resolved.push({line:demand(c,servingFactor*remainingFactor)});
+    }
+    for (const resolvedLine of resolved) {
+      const originalLine=resolvedLine.line;
       const line = { ...originalLine, ingredientId: stockIdentity(originalLine.ingredientId, catalog.ingredients)!, quantity: originalLine.quantity.kind === "count" && originalLine.quantity.content ? { kind:originalLine.quantity.content.kind, value:originalLine.quantity.value * originalLine.quantity.content.value, basis:originalLine.quantity.content.basis } : originalLine.quantity };
       if (line.optional && !includeOptional || line.ingredientId === "eau") continue;
       const ingredient = catalog.ingredients.find(i => i.id === line.ingredientId);
       if (!ingredient) { if (visible) missing++; report.complete = false; report.missing.push({ ingredientId: line.ingredientId, quantity: line.quantity, check: true }); continue; }
-      const servingFactor = (state.portions?.[mealKey(slot)] || recipe.servings) / recipe.servings;
-      line.quantity = { ...line.quantity, value: line.quantity.value * servingFactor };
-      line.grams *= servingFactor;
-      const allocation = take(stock, demand(line), slot.date, mealHours[slot.slot]);
+      const allocation = resolvedLine.allocation || take(stock, demand(line), slot.date, mealHours[slot.slot]);
       allocations.push({ meal: slot, ingredientId: ingredient.id, quantity: line.quantity, required: line.quantity.value, onHand: allocation.onHand, pending: allocation.pending, missing: allocation.remaining, check: allocation.check, visible, sources: allocation.sources, lots: allocation.deductions.filter(d => !d.pending).map(d => ({itemId: data.pantry[d.index].id, amount: d.amount})) });
       for (const source of allocation.sources) if (!report.sources.some(s => s.id === source.id)) report.sources.push(source);
       if (allocation.remaining > 1e-8) { report.complete = false; report.missing.push({ ingredientId: ingredient.id, quantity: { ...line.quantity, value: allocation.remaining }, check: allocation.check }); }
@@ -240,6 +251,14 @@ function addStock(pantry: PantryEntry[], line: PurchaseLine, catalog: ShoppingCa
     existing.quantity.value = clean((existing.inStock ? existing.quantity.value : 0) + line.quantity.value); existing.inStock = true; if (line.aisle) existing.aisle = line.aisle;
   } else pantry.push({ id: crypto.randomUUID(), ingredientId: line.ingredientId, name: catalog.ingredients.find(i => i.id === line.ingredientId)?.name || line.name || line.ingredientId!, location: line.location, quantity: { ...line.quantity }, inStock: true, ...(line.aisle ? { aisle: line.aisle } : {}), note: line.purchaseLabel || "" });
 }
+export function previewBlend(data:ShoppingPersonal,catalog:ShoppingCatalog,blendId:string,volumeMl:number){
+ catalog=stockCatalog(data,catalog);
+ const blend=catalog.ingredients.find(i=>i.id===blendId);
+ if(!blend||!isSpiceBlend(blend)||!Number.isFinite(volumeMl)||volumeMl<1||volumeMl>2000)throw Error('invalid_blend');
+ const stock=stockFrom(data.pantry,catalog);
+ const rows=blendComponents(blend,volumeMl).map(line=>({line,allocation:take(stock,{...line,ingredientId:stockIdentity(line.ingredientId,catalog.ingredients)!},'9999-12-31')}));
+ return {blend,rows,missing:rows.filter(r=>r.allocation.remaining>1e-8).map(r=>({ingredientId:r.line.ingredientId,quantity:{...r.line.quantity,value:r.allocation.remaining}}))};
+}
 export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value: object, catalog: ShoppingCatalog): T {
   const input = shoppingMutation.parse(value);
   if(input.action === "undoInventory") return undoInventory(data, input.id);
@@ -248,6 +267,18 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
   const next = { ...data, shopping: state, pantry: structuredClone(data.pantry) };
   const now = new Date().toISOString();
   switch (input.action) {
+    case "prepareBlend": {
+      if(state.preparedBlends?.some(b=>b.id===input.id))return data;
+      if(next.pantry.some(p=>p.id===input.id))throw Error('duplicate_lot');
+      const plan=previewBlend(data,catalog,input.blendId,input.volumeMl);
+      if(plan.missing.length&&!input.confirmUntracked)throw Error('blend_missing_stock');
+      for(const row of plan.rows)for(const d of row.allocation.deductions){
+        const item=next.pantry[d.index];item.quantity!.value=clean(item.quantity!.value-d.amount);item.inStock=item.quantity!.value>0;
+      }
+      next.pantry.push({id:input.id,ingredientId:plan.blend.id,name:plan.blend.name,quantity:{kind:'volume',value:input.volumeMl},location:plan.blend.blend.storage,note:plan.blend.blend.storageNote,inStock:true});
+      state.preparedBlends=[...(state.preparedBlends||[]),{id:input.id,blendId:input.blendId,volumeMl:input.volumeMl,at:now,untracked:plan.missing}];
+      break;
+    }
     case "stockAlias": {
       const source = catalog.ingredients.find(i => i.id === input.from), target = catalog.ingredients.find(i => i.id === input.to);
       if(!source || !target || source.id === target.id || stockIdentity(target.id, catalog.ingredients) === source.id) throw Error("invalid_alias");

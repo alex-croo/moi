@@ -26,6 +26,7 @@ export const schema = z
             nameEn: text,
             state: text,
             stockId:id.optional(),
+            blend:z.object({version:z.literal(1),yieldMl:z.number().positive().max(2000),components:z.array(z.object({ingredientId:id,grams:z.number().positive(),quantity}).strict()).min(1),storage:z.enum(["spices","fridge"]),storageNote:text,allergens:z.array(text)}).strict().optional(),
             translations,
             nutrition,
             source,
@@ -68,7 +69,7 @@ export const schema = z
                   .strict(),
               )
               .min(1),
-            preparations: z.array(z.object({id,title:text,titleEn:text,ingredients:z.array(z.object({ingredientId:id,grams:z.number().positive(),quantity}).strict()).min(1)}).strict()).optional(),
+            preparations: z.array(z.object({id,blendId:id.optional(),title:text,titleEn:text,ingredients:z.array(z.object({ingredientId:id,grams:z.number().positive(),quantity}).strict()).min(1)}).strict()).optional(),
             steps: z
               .array(
                 z
@@ -115,6 +116,13 @@ export function validateCatalog(raw) {
  for(const list of [catalog.recipes,catalog.ingredients,catalog.assets])if(new Set(list.map(x=>x.id)).size!==list.length)throw Error("Duplicate canonical ID");
  const ids=new Set(catalog.ingredients.map(i=>i.id));
  for(const ingredient of catalog.ingredients){
+  if(ingredient.blend){
+   const b=ingredient.blend;
+   if(ingredient.stockId||new Set(b.components.map(c=>c.ingredientId)).size!==b.components.length)throw Error("Invalid blend identity");
+   for(const c of b.components){const base=catalog.ingredients.find(i=>i.id===c.ingredientId);if(!base||base.blend||base.stockId||!["volume","spoon"].includes(c.quantity.kind))throw Error("Blend requires canonical volume components");}
+   if(Math.abs(b.components.reduce((n,c)=>n+c.quantity.value,0)-b.yieldMl)>1e-6)throw Error("Blend yield mismatch");
+   for(const locale of ["fr","en","es","pt-BR"])for(const field of [b.storageNote,...b.allergens])if(!ingredient.translations[locale][field])throw Error("Missing blend translation");
+  }
   if(ingredient.stockId&&(!ids.has(ingredient.stockId)||ingredient.stockId===ingredient.id||catalog.ingredients.find(i=>i.id===ingredient.stockId).stockId))throw Error("Invalid stock identity");
   for(const locale of ["fr","en","es","pt-BR"])if(!ingredient.translations[locale][ingredient.name])throw Error(`Missing ingredient translation ${locale}: ${ingredient.id}`);
  }
