@@ -69,7 +69,7 @@ export function measure(
 ): string {
   if (kind === "mass") {
     const factor={g:1,kg:1000,oz:28.349523125,lb:453.59237}[units.ingredientMass];
-    return `${["oz","lb"].includes(units.ingredientMass)?cookingAmount(value/factor,locale):n(value/factor,locale,3)} ${units.ingredientMass}`;
+    return `${["oz","lb"].includes(units.ingredientMass)?cookingAmount(value/factor,locale):n(value/factor,locale,units.ingredientMass==="kg"?3:1)} ${units.ingredientMass}`;
   }
   if (kind === "oven") {
     const raw=units.temperature==="C"?value:value*9/5+32;

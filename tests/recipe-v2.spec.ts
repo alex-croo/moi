@@ -53,6 +53,8 @@ test('receipt retains the explicit number and package weight of whole cuts, grou
  expect(r.items[0].line.quantity).toMatchObject({kind:'count',value:4,unit:'piece',weightBasis:'package'});expect(r.items[0].line.quantity.gramsPerItem).toBeCloseTo(340.1942775);
 });
 test('oven settings are practical while internal, storage and precise temperatures stay exact',()=>{
+ expect(measure('mass',453.59237,defaultUnits,'fr')).toBe('453,6 g');
+ expect(measure('mass',453.59237,{...defaultUnits,ingredientMass:'kg'},'fr')).toBe('0,454 kg');
  expect(measure('oven',205,{...defaultUnits,temperature:'F'},'fr')).toBe('400 °F');
  expect(measure('oven',(425-32)*5/9,defaultUnits,'fr')).toBe('220 °C');
  expect(measure('temp',74,{...defaultUnits,temperature:'F'},'fr')).toBe('165 °F');
