@@ -6,6 +6,7 @@ type State={locale:Locale;strings:Record<string,string>;load:(kind:Kind,id?:stri
 const LocaleContext=createContext<State>({locale:"fr",strings:{},load:async()=>{}});
 export function LocaleProvider({locale,children,enabled=false}:{locale:Locale;children:ReactNode;enabled?:boolean}){
  const [catalogs,setCatalogs]=useState<Record<string,Record<string,string>>>({});
+ const canonical=useRef<Record<string,Record<string,string>>>({});
  const requests=useRef(new Map<string,Promise<void>>());
  const activeLocale=useRef(locale);activeLocale.current=locale;
  const load=useCallback((kind:Kind,id?:string)=>{
@@ -13,7 +14,7 @@ export function LocaleProvider({locale,children,enabled=false}:{locale:Locale;ch
   const key=`${locale}:${kind}:${id||""}`;
   if(requests.current.has(key))return requests.current.get(key)!;
   const pending=fetch('/api/localization',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({locale,kind,id}),signal:AbortSignal.timeout(58000)})
-   .then(async r=>{if(!r.ok)throw Error('translation_unavailable');const data=await r.json();setCatalogs(c=>({...c,[locale]:{...c[locale],...data.strings}}));
+   .then(async r=>{if(!r.ok)throw Error('translation_unavailable');const data=await r.json();if(kind==='catalog')canonical.current[locale]=data.strings;setCatalogs(c=>({...c,[locale]:{...c[locale],...data.strings,...canonical.current[locale]}}));
     if(kind==='catalog'&&locale!=='en'&&data.recipes?.length){
      let next=0;const ids=data.recipes as string[];
      const worker=async()=>{while(next<ids.length&&activeLocale.current===locale){const id=ids[next++];try{await load('recipe',id);}catch{/* The recipe view offers a retry without changing the source. */}}};
