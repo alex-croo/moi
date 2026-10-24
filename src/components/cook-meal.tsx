@@ -20,7 +20,11 @@ export function CookMeal({ meal, data, locale, onSave, onClose }: { meal: MealSl
   async function save() {
     setBusy(true); setError("");
     try { await onSave({ action: "cook", id: id.current, meal, portions, includeOptional: optional }); onClose(); }
-    catch { setError(t("La préparation n’a pas pu être confirmée. Réessayez ou rechargez si vos réserves ont changé dans une autre page.", "Cooking could not be confirmed. Retry or reload if your pantry changed in another page.")); }
+    catch (cause) { setError(cause instanceof Error && cause.message === 'cooking_changed'
+      ? t("Vos réserves ont changé. Les quantités ci-dessous sont à jour; vérifiez-les avant de confirmer à nouveau.", "Your pantry changed. The quantities below are up to date; review them before confirming again.")
+      : cause instanceof Error && cause.message === 'meal_changed'
+      ? t("Ce repas a été déplacé ou remplacé. Fermez cette fenêtre et ouvrez le repas dans votre menu à jour.", "This meal was moved or replaced. Close this window and open the meal in your updated menu.")
+      : t("La préparation n’a pas pu être confirmée. Réessayez ou rechargez si vos réserves ont changé dans une autre page.", "Cooking could not be confirmed. Retry or reload if your pantry changed in another page.")); }
     finally { setBusy(false); }
   }
   return <dialog ref={dialog} className="shopping-dialog cook-dialog" aria-labelledby="cook-title" onCancel={e => { if (busy) e.preventDefault(); else onClose(); }}><header><h2 id="cook-title">{t("J’ai cuisiné", "I cooked this")}</h2><button className="icon-button" aria-label={t("Fermer", "Close")} disabled={busy} onClick={onClose}><X size={20}/></button></header>

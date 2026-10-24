@@ -12,6 +12,7 @@ import type { WorkspaceData } from "@/lib/types";
 import type { PersonalData } from "@/lib/private-types";
 import { applyPrivateMutation } from "@/lib/private-mutations";
 import { reconcileJournal } from "@/lib/journal-reconcile";
+import { reconcileCooking } from "@/lib/cooking-reconcile";
 import type { JournalWrite } from "@/lib/journal-autosave";
 import {
   decryptVault,
@@ -53,6 +54,7 @@ export function PrivateWorkspace({
   const journalSync = useRef<import("@/lib/journal-autosave").JournalSyncBridge>({});
   const state = useRef<Current | null>(null),
     queue = useRef<Promise<unknown>>(Promise.resolve());
+  const catalogRef = useRef<LoadedWorkspace['catalog'] | null>(null);
   useEffect(() => {
     let alive = true;
     void fetch("/api/vault", { cache: "no-store" })
@@ -62,6 +64,7 @@ export function PrivateWorkspace({
       })
       .then((v) => {
         if (!alive) return;
+        catalogRef.current = v.catalog;
         setLoaded(v);
         if (!v.envelope && v.standard) {
           state.current = {
@@ -122,6 +125,8 @@ export function PrivateWorkspace({
         let current = state.current;
         if (!current) throw Error("locked");
         const original = current;
+        const originalCatalog = catalogRef.current;
+        const isCooking = type === "shopping" && (value as {action?: string}).action === "cook";
         let mutation = value;
         for (let attempt = 0; attempt < 2; attempt++) {
           try {
@@ -130,7 +135,7 @@ export function PrivateWorkspace({
               next =
                 type === "program"
                   ? { ...current.data, program: value as PersonalData["program"] }
-                  : applyPrivateMutation(current.data, type, mutation, loaded?.catalog);
+                  : applyPrivateMutation(current.data, type, mutation, catalogRef.current || undefined);
               const envelope = await encryptVault(
                 current.key,
                 current.envelope,
@@ -165,7 +170,7 @@ export function PrivateWorkspace({
             setData(next);
             return next;
           } catch (error) {
-            if (type !== "journal" || attempt !== 0 || !(error instanceof Error) || error.message !== "conflict") throw error;
+            if ((type !== "journal" && !isCooking) || attempt !== 0 || !(error instanceof Error) || error.message !== "conflict") throw error;
             if (!state.current) throw Error("locked");
             const response = await fetch("/api/vault", { cache: "no-store" });
             if (!response.ok) throw Error("save");
@@ -178,6 +183,16 @@ export function PrivateWorkspace({
               : fresh.standard;
             if (!state.current) throw Error("locked");
             if (!remote) throw Error("conflict");
+            if (isCooking) {
+              current = { ...original, data: remote, envelope: fresh.envelope, revision: fresh.envelope?.revision ?? fresh.standardRevision ?? 0 };
+              state.current = current;
+              catalogRef.current = fresh.catalog;
+              setLoaded(fresh);
+              setData(remote);
+              if (!originalCatalog) throw Error("conflict");
+              if (reconcileCooking(original.data, remote, originalCatalog, fresh.catalog, value) === "acknowledged") return remote;
+              continue;
+            }
             const write = value as JournalWrite;
             const resolution = reconcileJournal(
               original.data.journal.find(entry => entry.date === write.date),
@@ -245,6 +260,7 @@ export function PrivateWorkspace({
       data: verified,
       revision: saved.envelope.revision,
     };
+    catalogRef.current = saved.catalog;
     setLoaded(saved);
     setData(verified);
     setRestore(null);
@@ -331,7 +347,7 @@ export function PrivateWorkspace({
           protection: current.envelope ? "enhanced" : "standard",
           mutate: async (type, value) => ({
             ...(await persist(type, value)),
-            ...loaded.catalog,
+            ...(catalogRef.current || loaded.catalog),
           }),
           saveProgress: async (p) => {
             await persist("program", p);
@@ -360,6 +376,7 @@ export function PrivateWorkspace({
                 const canonical = (value: unknown): string => JSON.stringify(value, function(_key, item) { return item && typeof item === "object" && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a],[b])=>a.localeCompare(b))) : item; });
                 if (saved.envelope || !saved.standard || canonical(saved.standard) !== canonical(expected.data)) throw Error("readback");
                 state.current = {key:null,envelope:null,data:saved.standard,revision:saved.standardRevision || 0};
+                catalogRef.current = saved.catalog;
                 setLoaded(saved); setData(saved.standard); setRestore(null); setSecret("");
               }}
               backup={() => {

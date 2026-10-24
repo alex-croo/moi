@@ -124,6 +124,9 @@ function DashboardBody({
   const [selectedWeek, setSelectedWeek] = useState(() => monday(today()));
   const [data, setData] = useState(initialData);
   const latestData = useRef(data); latestData.current = data;
+  // Conflict recovery can refresh the parent without completing a mutation.
+  // Keep the open cooking preview in sync with that authoritative snapshot.
+  useEffect(() => { latestData.current = initialData; setData(initialData); }, [initialData]);
   const [modal, setModal] = useState<Modal>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");

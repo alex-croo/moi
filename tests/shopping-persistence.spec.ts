@@ -4,6 +4,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { applyPrivateMutation } from "../src/lib/private-mutations";
 import { createVault, encryptVault, decryptVault } from "../src/lib/vault-crypto";
 import { demoData } from "../src/lib/demo";
+import { reconcileCooking } from "../src/lib/cooking-reconcile";
 import type { PersonalData } from "../src/lib/private-types";
 
 test("legacy schema: database persists receipt and cooking together with stock, survives reload, and rejects stale or foreign writes", async () => {
@@ -32,16 +33,25 @@ test("legacy schema: database persists receipt and cooking together with stock, 
     const undoPreview = applyPrivateMutation(received.data, "shopping", {action:"undoInventory",id:received.data.shopping!.inventoryEvents![0].id}, catalog);
     expect(undoPreview.shopping?.personalItems).toHaveLength(0);
     expect(undoPreview.pantry[0].quantity?.value).toBe(500); expect(received.data.pantry[0].quantity?.value).toBe(500); expect(received.data.shopping?.orders[0].status).toBe("received");
-    personal = applyPrivateMutation(received.data, "shopping", { action: "cook", id: cookId, meal: personal.slots[0], portions: 2, includeOptional: false }, catalog);
-    await save(1, personal);
+    const cook = { action: "cook", id: cookId, meal: personal.slots[0], portions: 2, includeOptional: false };
+    const concurrentlyUpdated = {...received.data, program:{completed:{lesson:'2026-10-24'},reflections:{}}};
+    await save(1, concurrentlyUpdated);
+    personal = applyPrivateMutation(received.data, "shopping", cook, catalog);
     await expect(save(1, received.data)).rejects.toThrow(/Workspace changed/);
+    await expect(save(1, personal)).rejects.toThrow(/Workspace changed/);
+    const fresh = await reload();
+    expect(reconcileCooking(received.data,fresh.data,catalog,catalog,cook)).toBe('retry');
+    personal = applyPrivateMutation(fresh.data, "shopping", cook, catalog);
+    await save(fresh.revision, personal);
+    expect((await reload()).data.program).toEqual(concurrentlyUpdated.program);
     expect((await reload()).data.pantry[0].quantity?.value).toBe(250);
+    expect(reconcileCooking(received.data,(await reload()).data,catalog,catalog,cook)).toBe('acknowledged');
     await asUser(admin);
     expect(await reload()).toBeUndefined();
     await db.query("update public.standard_workspaces set data='{}' where owner_id=$1", [owner]).then(() => { throw Error("direct write unexpectedly allowed"); }, error => expect(String(error)).toMatch(/permission/));
     await asUser(owner);
     const sealed = await createVault(owner, "Synthetic strong phrase for testing 42!", personal);
-    await db.query("select public.activate_personal_vault($1,$2)", [2, JSON.stringify(sealed.envelope)]);
+    await db.query("select public.activate_personal_vault($1,$2)", [3, JSON.stringify(sealed.envelope)]);
     expect(await reload()).toBeUndefined();
     const opened = await decryptVault<PersonalData>(sealed.key, sealed.envelope, owner);
     expect(opened.shopping?.personalItems).toEqual([personalFood]);
