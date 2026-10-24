@@ -1,3 +1,4 @@
+import { tr } from "./locale";
 import type { Ingredient, MealSlot, MealTime, Recipe } from "./types";
 import type { Locale } from "./locale";
 import { recipeNutrition } from "./units";
@@ -19,7 +20,7 @@ const labels: Record<MealTime, [string, string]> = {
   evening_snack: ["Collation du soir", "Evening snack"],
 };
 export const mealLabel = (slot: MealTime, locale: Locale) =>
-  labels[slot][locale === "fr" ? 0 : 1];
+  tr(locale, ...labels[slot]);
 
 // A day contains one serving of each chosen recipe. Round only the final total.
 export function dailyCalories(

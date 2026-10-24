@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useRef, useState } from "react";
 import { ArrowRight, BookOpen, Check, Circle, LockKeyhole, PenLine, Sprout, Flag } from "lucide-react";
 import type { Locale } from "@/lib/locale";
@@ -16,7 +19,7 @@ export function DailyProgram({ locale, progress, entries = [], onSave, onJournal
   onJournal: (p: JournalPrompt) => void;
   preview?: boolean;
 }) {
-  const t = (fr: string, en: string) => locale === "fr" ? fr : en;
+  const t = useText(locale);
   const lessonTitle = useRef<HTMLHeadingElement>(null);
   const state = programState(progress);
   const steps = programSteps(progress, entries);
@@ -117,7 +120,7 @@ export function DailyProgram({ locale, progress, entries = [], onSave, onJournal
           <small>{t("Quelques mots suffisent. Votre réflexion est cochée après son enregistrement. Écrire reste votre choix.", "A few words are enough. Your reflection is checked after you save it. Writing remains your choice.")}</small>
         </section>
         {!preview && reading && !state.finished && <div className="lesson-next"><button className="text-button" onClick={() => select(state.index)}>{t("Passer au jour", "Continue to day")} {lessons[state.index].day}<ArrowRight size={16}/></button></div>}
-        {error && <p role="alert">{error}</p>}
+        {error && <p role="alert">{t(error)}</p>}
         <details className="lesson-source"><summary>{t("Le repère scientifique", "Background source")}</summary><a href={programSources[lesson.source].url} target="_blank" rel="noreferrer">{programSources[lesson.source].label}</a><p>{t("Contenu éducatif général. Il ne remplace pas un accompagnement médical personnalisé.", "General educational content. It does not replace personalized medical care.")}</p></details>
       </article>
     </div>

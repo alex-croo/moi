@@ -1,4 +1,9 @@
 "use client";
+import { useText } from "./locale-provider";
+import { locales, languageNames, languageCodes, htmlLocale } from "@/lib/locale";
+
+
+import { L, LocaleProvider } from "@/components/locale-provider";
 import { useEffect } from "react";
 import { ArrowRight, LockKeyhole, Sprout } from "lucide-react";
 import { Brand } from "./brand";
@@ -14,12 +19,13 @@ export function Login({
   demo: boolean;
   error?: string;
 }) {
-  const t = (fr: string, en: string) => tr(locale, fr, en);
+  const t = useText(locale);
   useEffect(() => {
-    document.documentElement.lang = locale;
+    document.documentElement.lang = htmlLocale(locale);
+    document.title = `Tred’meal — ${tr(locale, "Un jour à la fois", "One day at a time")}`;
   }, [locale]);
   return (
-    <main className="login-layout">
+    <LocaleProvider locale={locale}><main className="login-layout">
       <section className="login-story">
         <Brand />
         <div className="login-story-content">
@@ -47,20 +53,12 @@ export function Login({
           </div>
         </div>
         <span className="login-copyright">
-          TRED’MEAL ·{" "}
+          <L text="TRED’MEAL ·" />{" "}
           {t("VOTRE PARCOURS, VOTRE RYTHME", "YOUR JOURNEY, YOUR PACE")}
         </span>
       </section>
       <section className="login-form-area">
-        <div className="login-language">
-          <a href="/fr" aria-current={locale === "fr" ? "page" : undefined}>
-            FR
-          </a>
-          <span>/</span>
-          <a href="/en" aria-current={locale === "en" ? "page" : undefined}>
-            EN
-          </a>
-        </div>
+        <div className="login-language">{locales.map(language=><a key={language} href={`/${language}`} title={languageNames[language]} aria-current={locale===language?"page":undefined}>{languageCodes[language]}</a>)}</div>
         <div className="login-box">
           <span className="lock-circle">
             <LockKeyhole size={22} />
@@ -150,6 +148,6 @@ export function Login({
           )}
         </p>
       </section>
-    </main>
+    </main></LocaleProvider>
   );
 }

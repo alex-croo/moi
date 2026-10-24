@@ -1,3 +1,4 @@
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { aisles, aisleLabel, ingredientAisle, type ShoppingIngredient } from "./grocery-aisles";
 import type { Ingredient } from "./types";
 import type { Grocer, GrocerCategory } from "./shopping-types";
@@ -10,9 +11,9 @@ export function normalizePostalCode(value: string) {
   return compact.length === 6 ? `${compact.slice(0, 3)} ${compact.slice(3)}` : compact;
 }
 export function grocerCategoryLabel(category: GrocerCategory, locale: Locale) {
-  if (category === "beef") return locale === "fr" ? "Bœuf" : "Beef";
-  if (category === "pork") return locale === "fr" ? "Porc" : "Pork";
-  if (category === "poultry") return locale === "fr" ? "Volaille" : "Poultry";
+  if (category === "beef") return regionalTr(locale, "Bœuf", "Beef");
+  if (category === "pork") return regionalTr(locale, "Porc", "Pork");
+  if (category === "poultry") return regionalTr(locale, "Volaille", "Poultry");
   return aisleLabel(category, locale);
 }
 export function ingredientGrocerCategory(ingredient: ShoppingIngredient): GrocerCategory {

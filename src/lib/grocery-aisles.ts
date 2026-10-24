@@ -1,3 +1,4 @@
+import { tr } from "./locale";
 import type { Ingredient, PantryLocation } from "./types";
 import type { Locale } from "./locale";
 
@@ -9,7 +10,7 @@ const labels: Record<Aisle, [string, string]> = {
   bakery: ["Boulangerie", "Bakery"], dry: ["Épicerie sèche et conserves", "Dry goods & canned food"],
   seasoning: ["Huiles, épices et condiments", "Oils, spices & condiments"], frozen: ["Surgelés", "Frozen food"], other: ["Autres", "Other"],
 };
-export const aisleLabel = (aisle: Aisle, locale: Locale) => labels[aisle][locale === "fr" ? 0 : 1];
+export const aisleLabel = (aisle: Aisle, locale: Locale) => tr(locale, ...labels[aisle]);
 // Taxonomy belongs to the canonical ingredient, independently of pantry location.
 // Future catalog publications may set `aisle` directly in ingredient details.
 const known: Record<string, Aisle> = {};

@@ -1,5 +1,8 @@
 "use client";
+import { useText } from "./locale-provider";
 
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useRef, useState } from "react";
 import { Utensils } from "lucide-react";
 import type { Locale } from "@/lib/locale";
@@ -19,7 +22,7 @@ export function JournalMeals({ data, date, locale, onCook, onUndo, onOpen, onPla
   onOpen: (recipe: Recipe) => void;
   onPlan: () => void;
 }) {
-  const t = (fr: string, en: string) => locale === "fr" ? fr : en;
+  const t = useText(locale);
   const meals = data.slots.filter(meal => meal.date === date)
     .sort((a, b) => mealTimes.indexOf(a.slot) - mealTimes.indexOf(b.slot));
   const cooked = shoppingState(data).cooked.filter(c => !c.undone);
@@ -42,11 +45,11 @@ export function JournalMeals({ data, date, locale, onCook, onUndo, onOpen, onPla
       <ul>{meals.map(meal => {
         const recipe = data.recipes.find(r => r.id === meal.recipeId);
         const done = cooked.find(c => mealKey(c.meal) === mealKey(meal));
-        const title = recipe ? (locale === "fr" ? recipe.title : recipe.titleEn) : t("Recette indisponible", "Recipe unavailable");
+        const title = recipe ? (t(recipe.title, recipe.titleEn)) : t("Recette indisponible", "Recipe unavailable");
         return <li key={mealKey(meal)} className={done ? "is-cooked" : ""}>
           {widget && recipe && <button className="journal-meal-thumbnail" aria-label={`${t("Ouvrir la recette", "Open recipe")} · ${title}`} onClick={() => onOpen(recipe)}><RecipeImage recipe={recipe} alt=""/></button>}
           <span className="journal-meal-time">{mealLabel(meal.slot, locale)}</span>
-          <div className="journal-meal-recipe"><button disabled={!recipe} onClick={() => recipe && onOpen(recipe)}>{title}</button>{done && <small>{done.portions.toLocaleString(locale)} {t("portions préparées · réserves mises à jour", "servings prepared · pantry updated")}</small>}</div>
+          <div className="journal-meal-recipe"><button disabled={!recipe} onClick={() => recipe && onOpen(recipe)}>{title}</button>{done && <small>{done.portions.toLocaleString(intlLocale(locale))} {t("portions préparées · réserves mises à jour", "servings prepared · pantry updated")}</small>}</div>
           <label className="journal-meal-check"><input type="checkbox" checked={!!done} disabled={busy || (!done && !recipe)} aria-label={`${t("Fait", "Done")} · ${mealLabel(meal.slot, locale)} · ${title}`} onChange={() => {
             if (done) void undo(done.id);
             else { setError(""); setStatus(""); onCook(meal); }
@@ -54,6 +57,6 @@ export function JournalMeals({ data, date, locale, onCook, onUndo, onOpen, onPla
         </li>;
       })}</ul>
     </> : <p>{t("Aucun repas prévu pour cette journée. Retrouvez vos recettes dans votre menu pour les ajouter.", "No meals planned for this day. Open your menu to add recipes.")}</p>}
-    {error && <p role="alert">{error}</p>}{status && <p role="status">{status}</p>}
+    {error && <p role="alert">{t(error)}</p>}{status && <p role="status">{t(status)}</p>}
   </section>;
 }

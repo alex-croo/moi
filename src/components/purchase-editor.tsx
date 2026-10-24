@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { AppSelect } from "./app-select";
 import { useRef, useState } from "react";
 import { X } from "lucide-react";
@@ -14,7 +17,7 @@ export function PurchaseEditor({ initialLines, order, mode, initialGrocerId, gro
   initialLines: PurchaseLine[]; order?: Purchase; initialGrocerId?: string; mode: "store" | "online" | "receive"; grocers: Grocer[];
   ingredients: Ingredient[]; units: UnitPreferences; locale: Locale; onClose: () => void; onSave: (m: ShoppingMutation) => Promise<void>;
 }) {
-  const t = (fr: string, en: string) => locale === "fr" ? fr : en;
+  const t = useText(locale);
   const dialog = useShoppingDialog(), operationId = useRef(order?.id || crypto.randomUUID());
   const [lines, setLines] = useState(initialLines), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const first = grocers.find(g => g.id === initialGrocerId) || grocers.find(g => g.favorite) || grocers[0];
@@ -38,14 +41,14 @@ export function PurchaseEditor({ initialLines, order, mode, initialGrocerId, gro
       {grocer?.url && <a className="text-button" href={grocer.url} target="_blank" rel="noopener noreferrer">{t("Ouvrir la boutique ↗", "Open store ↗")}</a>}</div>}
       {mode === "receive" && <p className="shopping-note">{order?.grocer} · {order?.expectedDate}{order?.deliveryWindow && ` · ${order.deliveryWindow.start}–${order.deliveryWindow.end}`} · {t("Cette réception clôturera la commande.", "This receipt will close the order.")}</p>}
       <div className="purchase-lines">{lines.map((line, i) => {
-        const ingredient = ingredients.find(x => x.id === line.ingredientId), name = line.name || (ingredient ? locale === "fr" ? ingredient.name : ingredient.nameEn : line.ingredientId || "");
+        const ingredient = ingredients.find(x => x.id === line.ingredientId), name = line.name || (ingredient ? t(ingredient.name, ingredient.nameEn) : line.ingredientId || "");
         const factor = pantryFactor(line.quantity.kind, units);
-        return <div className="purchase-line" key={purchaseLineKey(line)}><span>{name}<small>{line.purchaseLabel && `${line.purchaseLabel} · `}{t("Prévu : ", "Planned: ")}{quantityLabel(initialLines[i].quantity, units, locale)}</small></span>
-          <label><span>{t("Quantité", "Quantity")} · {line.quantity.kind === "count" ? (locale === "fr" ? line.quantity.label : line.quantity.labelEn) || pantryUnit("count", units, locale) : pantryUnit(line.quantity.kind, units, locale)}</span><input aria-label={`${t("Quantité", "Quantity")} ${name}`} required type="number" inputMode="decimal" min="0" step="any" max={1000000 / factor} defaultValue={Number((line.quantity.value / factor).toPrecision(10))} onChange={e => setLines(current => current.map((l, index) => index === i ? { ...l, quantity: { ...l.quantity, value: e.target.valueAsNumber * factor } } : l))} /></label>
+        return <div className="purchase-line" key={purchaseLineKey(line)}><span>{name}<small>{line.purchaseLabel && `${line.purchaseLabel} · `}{t("Prévu : ", "Planned: ")}{quantityLabel(initialLines[i].quantity, units, locale, 1, t)}</small></span>
+          <label><span>{t("Quantité", "Quantity")} · {line.quantity.kind === "count" ? (t(line.quantity.label, line.quantity.labelEn)) || pantryUnit("count", units, locale) : pantryUnit(line.quantity.kind, units, locale)}</span><input aria-label={`${t("Quantité", "Quantity")} ${name}`} required type="number" inputMode="decimal" min="0" step="any" max={1000000 / factor} defaultValue={Number((line.quantity.value / factor).toPrecision(10))} onChange={e => setLines(current => current.map((l, index) => index === i ? { ...l, quantity: { ...l.quantity, value: e.target.valueAsNumber * factor } } : l))} /></label>
           <label><span>{t("Rangement", "Storage")}</span><AppSelect aria-label={`${t("Rangement", "Storage")} ${name}`} value={line.location} onChange={e => setLines(current => current.map((l, index) => index === i ? { ...l, location: e.target.value as PurchaseLine["location"] } : l))}>{pantryLocations.map(loc => <option value={loc} key={loc}>{pantryLabel(loc, locale)}</option>)}</AppSelect></label>
         </div>;
       })}</div>
-      {error && <p role="alert" className="form-error">{error}</p>}
+      {error && <p role="alert" className="form-error">{t(error)}</p>}
       <footer><button type="button" disabled={busy} className="text-button" onClick={onClose}>{t("Annuler", "Cancel")}</button><button className="primary" disabled={busy}>{busy ? t("Enregistrement…", "Saving…") : mode === "online" ? t("J’ai passé ma commande", "I placed my order") : t("Confirmer et ajouter aux réserves", "Confirm and add to pantry")}</button></footer>
     </form>
   </dialog>;

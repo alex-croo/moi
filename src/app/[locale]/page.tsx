@@ -1,3 +1,4 @@
+import { isLocale } from "@/lib/locale";
 import { notFound, redirect } from "next/navigation";
 import { authorizedClient, configured } from "@/lib/supabase";
 import { demoEnabled, trustedOrigin } from "@/lib/security";
@@ -10,7 +11,7 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { locale } = await params;
-  if (locale !== "fr" && locale !== "en") notFound();
+  if (!isLocale(locale)) notFound();
   if (await authorizedClient()) redirect(`/${locale}/dashboard`);
   return (
     <Login

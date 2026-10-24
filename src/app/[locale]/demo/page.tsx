@@ -1,3 +1,4 @@
+import { isLocale } from "@/lib/locale";
 import { notFound } from "next/navigation";
 import { Dashboard } from "@/components/dashboard";
 import { demoData } from "@/lib/demo";
@@ -8,6 +9,6 @@ export default async function Demo({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!demoEnabled() || (locale !== "fr" && locale !== "en")) notFound();
+  if (!demoEnabled() || !isLocale(locale)) notFound();
   return <Dashboard locale={locale} mode="demo" initialData={demoData} />;
 }

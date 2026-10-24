@@ -1,3 +1,4 @@
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import type { Locale } from "./locale";
 import type {
   Ingredient,
@@ -16,7 +17,7 @@ export const defaultUnits: UnitPreferences = {
   length: "cm",
 };
 const n = (value: number, locale: Locale, digits = 1) =>
-  value.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA", {
+  value.toLocaleString(intlLocale(locale), {
     maximumFractionDigits: digits,
   });
 
@@ -75,15 +76,15 @@ export function measure(
   if (kind === "length")
     return units.length === "cm"
       ? `${n(value, locale)} cm`
-      : `${cookingAmount(value / 2.54, locale)} ${locale === "fr" ? "po" : "in"}`;
+      : `${cookingAmount(value / 2.54, locale)} ${regionalTr(locale, "po", "in")}`;
   if (kind === "spoon") {
     if (units.spoons === "ml") return `${n(value, locale, 2)} ml`;
     const tbsp = value >= 15 && Number.isInteger((value / 15) * 4);
-    return `${cookingAmount(value / (tbsp ? 15 : 5), locale)} ${locale === "fr" ? (tbsp ? "c. à soupe" : "c. à thé") : tbsp ? "tbsp" : "tsp"}`;
+    return `${cookingAmount(value / (tbsp ? 15 : 5), locale)} ${regionalTr(locale, tbsp ? "c. à soupe" : "c. à thé", tbsp ? "tbsp" : "tsp")}`;
   }
   if (kind === "volume") {
     if (units.volume === "cup")
-      return `${cookingAmount(value / 236.5882365, locale, true)} ${locale === "fr" ? "tasse US" : "US cup"}`;
+      return `${cookingAmount(value / 236.5882365, locale, true)} ${regionalTr(locale, "tasse US", "US cup")}`;
     if (units.volume === "fl_oz")
       return `${cookingAmount(value / 29.5735295625, locale)} fl oz US`;
     return `${n(value, locale)} ml`;
@@ -95,8 +96,9 @@ export function quantityLabel(
   units: UnitPreferences,
   locale: Locale,
   scale = 1,
+  translate?: (fr: string, en: string) => string,
 ) {
-  const label = locale === "fr" ? q.label : q.labelEn || q.label;
+  const label = translate ? translate(q.label || "", q.labelEn || q.label || "") : regionalTr(locale, q.label || "", q.labelEn || q.label || "");
   return `${measure(q.kind, q.value * scale, units, locale)}${q.kind === "count" && label ? ` ${label}` : ""}`;
 }
 // Stored instructions use SI tokens so a preference change never mutates source quantities.

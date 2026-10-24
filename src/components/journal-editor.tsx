@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -97,7 +100,7 @@ export function JournalEditor({
     after: string;
     date: string;
   } | null>(null);
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   const draft = drafts[date] || draftFromEntry(entries.find(e => e.date === date));
   function change(patch: Partial<Draft>) {
     // Successive edits can arrive before React paints the next render. Merge
@@ -426,7 +429,7 @@ export function JournalEditor({
         <div className="journal-properties">
           <span>
             {new Date(`${date}T12:00:00Z`).toLocaleDateString(
-              locale === "fr" ? "fr-CA" : "en-CA",
+              intlLocale(locale),
               {
                 weekday: "long",
                 day: "numeric",
@@ -657,13 +660,13 @@ export function JournalEditor({
           </button>
         )}
         <div className="journal-save journal-autosave-footer">
-          <span>{draft.text.length.toLocaleString(locale)} / 20 000</span>
+          <span>{draft.text.length.toLocaleString(intlLocale(locale))} / 20 000</span>
         </div>
         {saveState === "offline" && !sync.recoveryError && <p className="journal-sync-message" role="status">{t("Vos mots sont conservés dans cet onglet. L’enregistrement reprendra automatiquement dès que la connexion sera rétablie.", "Your words are kept in this tab. Saving will resume automatically when the connection returns.")}</p>}
         {saveState === "conflict" && <p className="journal-sync-message" role="alert">{t("Cette page a changé dans un autre onglet. Votre version reste affichée ici. Copiez-la, puis ouvrez le journal dans un nouvel onglet pour comparer les deux textes; aucune version n’est remplacée automatiquement.", "This page changed in another tab. Your version is still shown here. Copy it, then open the journal in a new tab to compare both texts; neither version is automatically replaced.")}</p>}
         {sync.recoveryError && <p className="journal-sync-message" role="alert">{t("La copie de récupération de cet onglet n’est pas disponible. Attendez l’indication « Enregistré » avant de fermer ou de rafraîchir la page.", "Recovery storage is unavailable in this tab. Wait for ‘Saved’ before closing or refreshing the page.")}</p>}
-        {error && <p role="alert">{error}</p>}
-        {status && <p role="status">{status}</p>}
+        {error && <p role="alert">{t(error)}</p>}
+        {status && <p role="status">{t(status)}</p>}
         </DailyJournal>
       </div>
       {renderMeals && <aside className="journal-day-sidebar" aria-label={t("Ma journée en pratique", "My day at a glance")}>{renderMeals(date)}</aside>}

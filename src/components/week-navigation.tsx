@@ -1,4 +1,6 @@
 "use client";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, localToday, monday } from "@/lib/units";
 import type { Locale } from "@/lib/locale";
@@ -14,7 +16,7 @@ export function WeekNavigation({
 }) {
   const date = (value: string, year = false) =>
     new Date(`${value}T12:00:00Z`).toLocaleDateString(
-      locale === "fr" ? "fr-CA" : "en-CA",
+      intlLocale(locale),
       {
         day: "numeric",
         month: "short",
@@ -26,7 +28,7 @@ export function WeekNavigation({
     <div className="week-navigation">
       <button
         className="icon-button"
-        aria-label={locale === "fr" ? "Semaine précédente" : "Previous week"}
+        aria-label={regionalTr(locale, "Semaine précédente", "Previous week")}
         onClick={() => onChange(addDays(week, -7))}
       >
         <ChevronLeft size={18} />
@@ -36,7 +38,7 @@ export function WeekNavigation({
       </strong>
       <button
         className="icon-button"
-        aria-label={locale === "fr" ? "Semaine suivante" : "Next week"}
+        aria-label={regionalTr(locale, "Semaine suivante", "Next week")}
         onClick={() => onChange(addDays(week, 7))}
       >
         <ChevronRight size={18} />
@@ -45,7 +47,7 @@ export function WeekNavigation({
         className="text-button"
         onClick={() => onChange(monday(localToday()))}
       >
-        {locale === "fr" ? "Aujourd’hui" : "Today"}
+        {regionalTr(locale, "Aujourd’hui", "Today")}
       </button>
     </div>
   );

@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useEffect, useRef, useState } from "react";
 import { LockKeyhole } from "lucide-react";
 import { Dashboard } from "./dashboard";
@@ -39,7 +42,7 @@ export function PrivateWorkspace({
   userId: string;
   admin: boolean;
 }) {
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   const [loaded, setLoaded] = useState<LoadedWorkspace | null>(null),
     [data, setData] = useState<PersonalData | null>(null);
   const [error, setError] = useState(""),
@@ -503,7 +506,7 @@ export function PrivateWorkspace({
             />
           </>
         ) : null}
-        {error && <p role="alert">{error}</p>}
+        {error && <p role="alert">{t(error)}</p>}
         <form method="post" action="/auth/logout">
           <input type="hidden" name="locale" value={locale} />
           <button className="text-button">
@@ -524,7 +527,7 @@ export function RestoreFile({
   onSelect: (e: VaultEnvelope) => void;
 }) {
   const [error, setError] = useState("");
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   return (
     <details>
       <summary>
@@ -554,7 +557,7 @@ export function RestoreFile({
           }}
         />
       </label>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert">{t(error)}</p>}
     </details>
   );
 }

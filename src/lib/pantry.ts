@@ -1,3 +1,4 @@
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import type { Locale } from "./locale";
 import { ingredientAisle, type Aisle } from "./grocery-aisles";
 import { quantityLabel } from "./units";
@@ -14,9 +15,9 @@ export function pantryAisle(item: PantryEntry, ingredients: Ingredient[]): Aisle
   const ingredient = ingredients.find(i => i.id === item.ingredientId);
   return item.aisle || (ingredient ? ingredientAisle(ingredient) : "other");
 }
-export function pantryQuantityLabel(q: Quantity, units: UnitPreferences, locale: Locale) {
+export function pantryQuantityLabel(q: Quantity, units: UnitPreferences, locale: Locale, translate?: (fr:string,en:string)=>string) {
   return quantityLabel(q.kind === "count" && !q.label && !q.labelEn
-    ? { ...q, label: "unités", labelEn: "items" } : q, units, locale);
+    ? { ...q, label: "unités", labelEn: "items" } : q, units, locale, 1, translate);
 }
 
 export const pantryLocations: PantryLocation[] = [
@@ -25,13 +26,15 @@ export const pantryLocations: PantryLocation[] = [
   "freezer",
   "spices",
 ];
-export const pantryLabel = (location: PantryLocation, locale: Locale) =>
-  ({
+export const pantryLabel = (location: PantryLocation, locale: Locale) => {
+  const labels = ({
     cupboard: ["Garde-manger", "Cupboard"],
     fridge: ["Réfrigérateur", "Fridge"],
     freezer: ["Congélateur", "Freezer"],
     spices: ["Épices et condiments", "Spices & seasonings"],
-  })[location][locale === "fr" ? 0 : 1];
+  })[location];
+ return regionalTr(locale, labels[0], labels[1]);
+};
 export function pantryName(
   item: PantryItem,
   ingredients: Ingredient[],
@@ -39,9 +42,7 @@ export function pantryName(
 ) {
   const ingredient = ingredients.find((i) => i.id === item.ingredientId);
   return ingredient
-    ? locale === "fr"
-      ? ingredient.name
-      : ingredient.nameEn
+    ? regionalTr(locale, ingredient.name, ingredient.nameEn)
     : item.name;
 }
 export function pantryForIngredient(
@@ -70,17 +71,13 @@ export function pantryUnit(
   if (kind === "mass") return units.ingredientMass;
   if (kind === "volume")
     return units.volume === "cup"
-      ? locale === "fr"
-        ? "tasses US"
-        : "US cups"
+      ? regionalTr(locale, "tasses US", "US cups")
       : units.volume === "fl_oz"
         ? "fl oz US"
         : "ml";
   if (kind === "spoon")
     return units.spoons === "ml"
       ? "ml"
-      : locale === "fr"
-        ? "c. à soupe"
-        : "tbsp";
-  return locale === "fr" ? "unités" : "items";
+      : regionalTr(locale, "c. à soupe", "tbsp");
+  return regionalTr(locale, "unités", "items");
 }

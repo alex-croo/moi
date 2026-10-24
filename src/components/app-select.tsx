@@ -2,9 +2,11 @@
 import { Children, isValidElement, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type KeyboardEvent } from "react";
 import { Check, ChevronDown } from "lucide-react";
 
+import { tr } from "@/lib/locale";
+import { L, useLocale } from "./locale-provider";
 type Option = { value: string; label: ReactNode; text: string; disabled?: boolean };
-function textOf(node: ReactNode): string {
-  return Children.toArray(node).map(n => typeof n === "string" || typeof n === "number" ? String(n) : isValidElement<{ children?: ReactNode }>(n) ? textOf(n.props.children) : "").join("");
+function textOf(node: ReactNode, locale: import("@/lib/locale").Locale): string {
+  return Children.toArray(node).map(n => typeof n === "string" || typeof n === "number" ? String(n) : isValidElement<{ children?: ReactNode; text?: string; en?: string }>(n) ? n.type === L ? tr(locale, n.props.text || "", n.props.en) : textOf(n.props.children, locale) : "").join("");
 }
 type Props = { children: ReactNode; value?: string | number; defaultValue?: string | number; name?: string; id?: string;
   disabled?: boolean; required?: boolean; className?: string; "aria-label"?: string;
@@ -13,10 +15,11 @@ type Props = { children: ReactNode; value?: string | number; defaultValue?: stri
 
 /** A shared, keyboard-accessible picker in the top layer, including inside dialogs. */
 export function AppSelect(props: Props) {
+ const locale=useLocale();
   const generated = useId(), id = props.id || `select-${generated}`, listId = `${id}-options`;
   const options: Option[] = Children.toArray(props.children).filter(isValidElement).map(n => {
     const option = n as React.ReactElement<{ value?: string | number; children?: ReactNode; disabled?: boolean }>;
-    return { value: String(option.props.value ?? textOf(option.props.children)), label: option.props.children, text: textOf(option.props.children), disabled: option.props.disabled };
+    return { value: String(option.props.value ?? textOf(option.props.children, locale)), label: option.props.children, text: textOf(option.props.children, locale), disabled: option.props.disabled };
   });
   const [internal, setInternal] = useState(String(props.defaultValue ?? options[0]?.value ?? ""));
   const value = String(props.value ?? internal), selected = options.findIndex(o => o.value === value);

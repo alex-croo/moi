@@ -1,4 +1,8 @@
 "use client";
+import { useText, useContentTranslation, TranslationStatus } from "./locale-provider";
+
+import { L } from "@/components/locale-provider";
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
@@ -43,9 +47,10 @@ export function RecipeImage({
   image?: string;
   alt?: string;
 }) {
+  const t=useText();
   const src = image || recipe?.image;
   return src ? (
-    <img src={src} alt={alt || recipe?.title || ""} loading="lazy" />
+    <img src={src} alt={alt || t(recipe?.title,recipe?.titleEn) || ""} loading="lazy" />
   ) : (
     <Plate kind="bowl" />
   );
@@ -62,13 +67,13 @@ export function RecipeLibrary({
   onChoose?: (r: Recipe) => void;
 }) {
   const [query, setQuery] = useState("");
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   const [vocabulary, setVocabulary] = useState<RecipeTag[]>(defaultRecipeTags);
   const [diet, setDiet] = useState(""), [type, setType] = useState(""), [tags, setTags] = useState<string[]>([]);
   useEffect(() => { let alive = true; fetch("/api/recipes/tags").then(async r => { if (r.ok) { const data = await r.json(); if (alive) setVocabulary(mergeRecipeTags(data.tags)); } }).catch(() => {}); return () => { alive = false; }; }, []);
-  const filtered = recipes.filter(recipe => matchesRecipe(recipe, { query, diet, type, tags }, vocabulary));
+  const filtered = recipes.filter(recipe => matchesRecipe(recipe, { query: "", diet, type, tags }, vocabulary) && (!query || `${t(recipe.title,recipe.titleEn)} ${t(recipe.subtitle,recipe.subtitleEn)}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase().includes(query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase())));
   const filteredActive = !!(query || diet || type || tags.length);
-  const label = (tag: RecipeTag) => locale === "fr" ? tag.label : tag.label_en;
+  const label = (tag: RecipeTag) => t(tag.label, tag.label_en);
   return (
     <>
       <div className="recipe-filter-bar"><label className="recipe-search">
@@ -118,12 +123,11 @@ export function RecipeLibrary({
               </div>
               <div className="recipe-card-copy">
                 <span className="recipe-card-tags">{vocabulary.filter(tag => tag.category === "type" && tag.id !== "main" && recipeTagIds(recipe).includes(tag.id)).slice(0,1).map(tag => <span className="recipe-tag" key={tag.id}>{label(tag)}</span>)}</span>
-                <h3>{locale === "fr" ? recipe.title : recipe.titleEn}</h3>
-                <p>{locale === "fr" ? recipe.subtitle : recipe.subtitleEn}</p>
+                <h3>{t(recipe.title, recipe.titleEn)}</h3>
+                <p>{t(recipe.subtitle, recipe.subtitleEn)}</p>
                 <span className="recipe-meta">
                   <Clock3 size={14} />
-                  {recipe.minutes} min · {recipe.servings} portions
-                </span>
+                  {recipe.minutes} <L text={" min · "} />{recipe.servings} <L text={" portions"} /></span>
               </div>
             </button>
             {onChoose && (
@@ -156,7 +160,8 @@ export function RecipeSheet({
   useEffect(() => {
     dialog.current?.showModal();
   }, []);
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const translation=useContentTranslation("recipe",recipe.id);
+  const t = useText(locale);
   const nutrition = recipeNutrition(recipe, ingredients);
   const factor = servings / recipe.servings;
   return (
@@ -179,14 +184,14 @@ export function RecipeSheet({
           <X />
         </button>
       </div>
-      <header className="sheet-heading">
+      <TranslationStatus {...translation}/><header className="sheet-heading">
         <span className="eyebrow">
           {t("LE PLAISIR DE CUISINER CHEZ SOI", "THE JOY OF HOME COOKING")}
         </span>
         <h1 id="recipe-title">
-          {locale === "fr" ? recipe.title : recipe.titleEn}
+          {t(recipe.title, recipe.titleEn)}
         </h1>
-        <p>{locale === "fr" ? recipe.subtitle : recipe.subtitleEn}</p>
+        <p>{t(recipe.subtitle, recipe.subtitleEn)}</p>
       </header>
       <div className="sheet-hero">
         <RecipeImage recipe={recipe} />
@@ -215,19 +220,17 @@ export function RecipeSheet({
                   <li key={i}>
                     <span>
                       {ingredient
-                        ? locale === "fr"
-                          ? ingredient.name
-                          : ingredient.nameEn
+                        ? t(ingredient.name, ingredient.nameEn)
                         : line.ingredientId}
                       {line.optional ? t(" (facultatif)", " (optional)") : ""}
                       <small>
                         {line.note
-                          ? instructionText(line.note, units, locale, factor)
+                          ? instructionText(t(line.note), units, locale, factor)
                           : ""}
                       </small>
                     </span>
                     <strong>
-                      {quantityLabel(line.quantity, units, locale, factor)}
+                      {quantityLabel(line.quantity, units, locale, factor, t)}
                     </strong>
                   </li>
                 );
@@ -253,7 +256,7 @@ export function RecipeSheet({
                     <div key={k}>
                       <dt>{label}</dt>
                       <dd>
-                        {nutrition[k].toLocaleString(locale, {
+                        {nutrition[k].toLocaleString(intlLocale(locale), {
                           maximumFractionDigits: 1,
                         })}{" "}
                         g
@@ -291,7 +294,7 @@ export function RecipeSheet({
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {item.name} · {item.sourceLabel}
+                      {t(item.name, item.nameEn)} · {item.sourceLabel}
                     </a>
                     <br />
                     {item.sourceDescription}
@@ -307,7 +310,7 @@ export function RecipeSheet({
         {recipe.note && (
           <p className="recipe-note">
             {instructionText(
-              locale === "fr" ? recipe.note : recipe.noteEn || recipe.note,
+              t(recipe.note, recipe.noteEn || recipe.note),
               units,
               locale,
               factor,
@@ -325,16 +328,16 @@ export function RecipeSheet({
                 {step.image && <div className="step-image">
                   <RecipeImage
                     image={step.image}
-                    alt={locale === "fr" ? step.title : step.titleEn}
+                    alt={t(step.title, step.titleEn)}
                   />
                 </div>}
                 <h3>
                   <span>{i + 1}</span>
-                  {locale === "fr" ? step.title : step.titleEn}
+                  {t(step.title, step.titleEn)}
                 </h3>
                 <p>
                   {instructionText(
-                    locale === "fr" ? step.text : step.textEn,
+                    t(step.text, step.textEn),
                     units,
                     locale,
                     factor,
@@ -405,10 +408,10 @@ export function WeeklyPlanner({
     if (pick) picker.current?.showModal();
     else picker.current?.close();
   }, [pick]);
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   const date = (d: string, opts: Intl.DateTimeFormatOptions) =>
     new Date(`${d}T12:00:00Z`).toLocaleDateString(
-      locale === "fr" ? "fr-CA" : "en-CA",
+      intlLocale(locale),
       { ...opts, timeZone: "UTC" },
     );
   async function choose(recipeId: string | null, target = pick) {
@@ -453,7 +456,7 @@ export function WeeklyPlanner({
         )}
       </div>
       <WeekNavigation week={week} locale={locale} onChange={onWeekChange} />
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert">{t(error)}</p>}
       <div className="week-grid">
         {Array.from({ length: 7 }, (_, i) => {
           const d = addDays(week, i);
@@ -498,7 +501,7 @@ export function WeeklyPlanner({
                         >
                           <RecipeImage recipe={r} />
                           <strong>
-                            {locale === "fr" ? r.title : r.titleEn}
+                            {t(r.title, r.titleEn)}
                           </strong>
                           <small>
                             {r.minutes} min
@@ -559,7 +562,7 @@ export function WeeklyPlanner({
                     ? "—"
                     : total.missing
                       ? t("À compléter", "Incomplete")
-                      : `≈ ${Math.round(total.kcal).toLocaleString(locale)} kcal`}
+                      : `≈ ${Math.round(total.kcal).toLocaleString(intlLocale(locale))} kcal`}
                 </strong>
                 <small>
                   {!total.meals
@@ -620,7 +623,7 @@ export function WeeklyPlanner({
             onChoose={(r) => void choose(r.id)}
           />
         )}{" "}
-        {error && <p role="alert">{error}</p>}
+        {error && <p role="alert">{t(error)}</p>}
       </dialog>
     </section>
   );

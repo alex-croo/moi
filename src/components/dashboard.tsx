@@ -1,4 +1,10 @@
 "use client";
+import { useText } from "./locale-provider";
+import { locales, languageNames, languageCodes, htmlLocale } from "@/lib/locale";
+
+
+import { L, LocaleProvider } from "@/components/locale-provider";
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { LearningJourney } from "./learning-journal";
 import { AppSelect } from "./app-select";
 
@@ -83,13 +89,15 @@ const today = () =>
     day: "2-digit",
   }).format(new Date());
 
-export function Dashboard({
+function DashboardBody({
   locale: initialLocale,
   mode,
   initialData,
   privateActions,
+  onLanguageChange,
 }: {
   locale: Locale;
+  onLanguageChange: (locale: Locale) => void;
   mode: "demo" | "private";
   initialData: WorkspaceData;
   privateActions?: PrivateActions;
@@ -113,7 +121,7 @@ export function Dashboard({
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
-  const t = (fr: string, en: string) => tr(locale, fr, en);
+  const t = useText(locale);
   const demo = mode === "demo";
   const weights = [...data.weights].sort((a, b) =>
     a.date.localeCompare(b.date),
@@ -128,11 +136,11 @@ export function Dashboard({
     options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" },
   ) =>
     new Date(`${date}T12:00:00Z`).toLocaleDateString(
-      locale === "fr" ? "fr-CA" : "en-CA",
+      intlLocale(locale),
       { ...options, timeZone: "UTC" },
     );
   const number = (n: number) =>
-    n.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA", {
+    n.toLocaleString(intlLocale(locale), {
       maximumFractionDigits: 1,
     });
   const nav: { id: View; icon: LucideIcon; label: string }[] = [
@@ -179,7 +187,8 @@ export function Dashboard({
   const navOrder: View[] = ["overview", "program", "journal", "menus", "recipes", "groceries", "pantry", "orders", "weight", "library", "circles", "admin"];
   nav.sort((a,b) => navOrder.indexOf(a.id) - navOrder.indexOf(b.id));
   useEffect(() => {
-    document.documentElement.lang = locale;
+    document.documentElement.lang = htmlLocale(locale);
+    document.title = `Tred’meal — ${regionalTr(locale, "Un jour à la fois", "One day at a time")}`;
   }, [locale]);
   useEffect(() => {
     if (modal && !dialog.current?.open) dialog.current?.showModal();
@@ -192,6 +201,8 @@ export function Dashboard({
   }, [notice]);
   function changeLanguage(value: Locale) {
     setLocale(value);
+    onLanguageChange(value);
+    document.cookie = `tredmeal-language=${value};path=/;max-age=31536000;SameSite=Lax;Secure`;
     window.history.replaceState(
       null,
       "",
@@ -625,20 +636,7 @@ export function Dashboard({
               className="language-switch"
               aria-label={t("Langue", "Language")}
             >
-              <button
-                aria-pressed={locale === "fr"}
-                className={locale === "fr" ? "selected" : ""}
-                onClick={() => changeLanguage("fr")}
-              >
-                FR
-              </button>
-              <button
-                aria-pressed={locale === "en"}
-                className={locale === "en" ? "selected" : ""}
-                onClick={() => changeLanguage("en")}
-              >
-                EN
-              </button>
+              {locales.map(language => <button key={language} aria-pressed={locale===language} className={locale===language?"selected":""} title={languageNames[language]} onClick={()=>changeLanguage(language)}>{languageCodes[language]}</button>)}
             </div>
           </div>
         </header>
@@ -764,7 +762,7 @@ export function Dashboard({
               <div className="overview-columns">
                 <div>
                   <section className="home-meals"><header><div><span className="eyebrow">{t("À TABLE AUJOURD’HUI", "ON TODAY’S MENU")}</span><h2>{t("De quoi se régaler.", "Something to enjoy.")}</h2></div><button className="text-button" onClick={() => go("menus")}>{t("Tout mon menu", "My full menu")}<ArrowRight size={15}/></button></header><div className="home-meal-grid">
-                    {data.slots.filter(slot => slot.date === today()).sort((a,b) => mealTimes.indexOf(a.slot) - mealTimes.indexOf(b.slot)).map(slot => { const recipe = data.recipes.find(r => r.id === slot.recipeId); return recipe && <button className="home-meal" key={slot.slot} onClick={() => setSelectedRecipe(recipe)}><RecipeImage recipe={recipe}/><span><small>{mealLabel(slot.slot,locale)}</small><strong>{locale === "fr" ? recipe.title : recipe.titleEn}</strong><small>{recipe.minutes} min · {recipe.servings} portions</small></span></button>; })}
+                    {data.slots.filter(slot => slot.date === today()).sort((a,b) => mealTimes.indexOf(a.slot) - mealTimes.indexOf(b.slot)).map(slot => { const recipe = data.recipes.find(r => r.id === slot.recipeId); return recipe && <button className="home-meal" key={slot.slot} onClick={() => setSelectedRecipe(recipe)}><RecipeImage recipe={recipe}/><span><small>{mealLabel(slot.slot,locale)}</small><strong>{t(recipe.title, recipe.titleEn)}</strong><small>{recipe.minutes} <L text={" min · "} />{recipe.servings} <L text={" portions"} /></small></span></button>; })}
                     {!data.slots.some(slot => slot.date === today()) && <button className="home-meal-empty" onClick={() => go("menus")}><CalendarDays size={28}/><strong>{t("Qu’est-ce qui vous ferait plaisir?", "What would you enjoy?")}</strong><span>{t("Choisissez vos repas pour aujourd’hui.", "Choose your meals for today.")}</span><span className="primary">{t("Composer mon menu", "Plan my menu")}<Plus size={15}/></span></button>}
                   </div></section>
                   <section className="daily-note">
@@ -969,7 +967,7 @@ export function Dashboard({
                   <Cloud size={26} />
                 </span>
                 <div>
-                  <strong>Google Drive</strong>
+                  <strong><L text="Google Drive" /></strong>
                   <p>
                     {t(
                       "Liens privés disponibles ici. La synchronisation automatique n’est pas connectée.",
@@ -992,7 +990,7 @@ export function Dashboard({
                   >
                     <span className="document-cover drive-cover">
                       <Cloud size={37} strokeWidth={1} />
-                      <strong>Google Drive</strong>
+                      <strong><L text="Google Drive" /></strong>
                       <ExternalLink size={19} />
                     </span>
                     <span className="document-title">{d.title}</span>
@@ -1041,8 +1039,7 @@ export function Dashboard({
                     value={locale}
                     onChange={(e) => changeLanguage(e.target.value as Locale)}
                   >
-                    <option value="fr">Français</option>
-                    <option value="en">English</option>
+                    {locales.map(language=><option key={language} value={language}>{languageNames[language]}</option>)}
                   </AppSelect>
                 </div>
                 <UnitSettings
@@ -1071,7 +1068,7 @@ export function Dashboard({
                 </div>
                 <div>
                   <div>
-                    <h3>Google Drive</h3>
+                    <h3><L text="Google Drive" /></h3>
                     <p>
                       {t(
                         "La connexion Drive sera activée séparément. Aucun fichier n’est importé automatiquement.",
@@ -1284,4 +1281,9 @@ export function Dashboard({
       </dialog>
     </div>
   );
+}
+
+export function Dashboard(props: Omit<React.ComponentProps<typeof DashboardBody>, "onLanguageChange">) {
+ const [locale,setLocale]=useState(props.locale);
+ return <LocaleProvider locale={locale} enabled={props.mode==="private"}><DashboardBody {...props} locale={locale} onLanguageChange={setLocale}/></LocaleProvider>;
 }

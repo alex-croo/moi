@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { AppSelect } from "./app-select";
 import { useEffect, useState } from "react";
 import { Heart, Users, Plus } from "lucide-react";
@@ -57,7 +60,7 @@ export function Community({
   locale: Locale;
   userId: string;
 }) {
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   const [data, setData] = useState<CommunityData | null>(null),
     [selected, setSelected] = useState(""),
     [name, setName] = useState(""),
@@ -146,7 +149,7 @@ export function Community({
           )}
         </p>
       </aside>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert">{t(error)}</p>}
       {!!incoming.length && (
         <section className="card">
           <h2>{t("Une place vous attend", "You’re invited")}</h2>
@@ -337,7 +340,7 @@ export function Community({
                       </strong>
                       <p>{phrases[e.kind] ? t(...phrases[e.kind]) : ""}</p>
                       <time>
-                        {new Date(e.created_at).toLocaleString(locale)}
+                        {new Date(e.created_at).toLocaleString(intlLocale(locale))}
                       </time>
                     </div>
                   </article>

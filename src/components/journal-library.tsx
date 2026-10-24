@@ -1,4 +1,8 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { L } from "@/components/locale-provider";
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useState } from "react";
 import { ArrowUpRight, BookOpen, FileText, PenLine, Search, LayoutGrid, List } from "lucide-react";
 import type { Locale } from "@/lib/locale";
@@ -13,10 +17,10 @@ export function JournalLibrary({ pages, locale, onOpen }: {
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [query, setQuery] = useState("");
   const [draftsOnly, setDraftsOnly] = useState(false);
-  const t = (fr: string, en: string) => locale === "fr" ? fr : en;
+  const t = useText(locale);
   const filtered = filterJournalPages(pages, query, draftsOnly);
   const groups = [...new Set(filtered.map(page => page.date.slice(0, 7)))];
-  const format = (date: string, options: Intl.DateTimeFormatOptions) => new Date(`${date}T12:00:00Z`).toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA", { ...options, timeZone: "UTC" });
+  const format = (date: string, options: Intl.DateTimeFormatOptions) => new Date(`${date}T12:00:00Z`).toLocaleDateString(intlLocale(locale), { ...options, timeZone: "UTC" });
   const draftCount = pages.filter(page => page.dirty).length;
   return <div className={`journal-library layout-${layout}`}>
     <header className="journal-cover">
@@ -26,7 +30,7 @@ export function JournalLibrary({ pages, locale, onOpen }: {
         <p>{t("Les petits moments, les idées qui restent. Retrouvez vos mots et faites de la place aux prochains.", "Small moments, lasting thoughts. Revisit your words and make room for what comes next.")}</p>
         <button className="primary" onClick={() => onOpen(localToday())}><PenLine size={15}/>{t("Écrire aujourd’hui", "Write today")}</button>
       </div>
-      <div className="journal-cover-illustration" aria-hidden="true"><div><span>Un moment pour moi.</span><i/><i/><i/><i/><b>✦</b></div></div>
+      <div className="journal-cover-illustration" aria-hidden="true"><div><span><L text="Un moment pour moi." /></span><i/><i/><i/><i/><b>✦</b></div></div>
     </header>
     <div className="journal-library-toolbar">
       <div className="journal-view-filters" aria-label={t("Afficher les pages", "Show pages")}>

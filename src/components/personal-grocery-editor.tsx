@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { AppSelect } from "./app-select";
 import { useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
@@ -12,7 +15,7 @@ import { useShoppingDialog } from "./use-shopping-dialog";
 export function PersonalGroceryEditor({ locale, units, onClose, onSave }: {
   locale: Locale; units: UnitPreferences; onClose: () => void; onSave: (m: ShoppingMutation) => Promise<void>;
 }) {
-  const t = (fr: string, en: string) => locale === "fr" ? fr : en;
+  const t = useText(locale);
   const dialog = useShoppingDialog(), id = useRef(crypto.randomUUID());
   const [name, setName] = useState(""), [aisle, setAisle] = useState<Aisle>("other");
   const [kind, setKind] = useState<Quantity["kind"]>("volume"), [amount, setAmount] = useState(""), [unit, setUnit] = useState("");
@@ -37,7 +40,7 @@ export function PersonalGroceryEditor({ locale, units, onClose, onSave }: {
         <label>{t("Quantité", "Quantity")} · {pantryUnit(kind, units, locale)}<input aria-label={t("Quantité", "Quantity")} required type="number" inputMode="decimal" min="0.000001" step="any" max={1000000 / pantryFactor(kind, units)} value={amount} onChange={e => setAmount(e.target.value)}/></label>
         {kind === "count" && <label>{t("Unité comptée (facultatif)", "Counted unit (optional)")}<input maxLength={80} value={unit} onChange={e => setUnit(e.target.value)} placeholder={t("Ex. : paquets", "E.g. packages")}/></label>}
       </div>
-      {error && <p role="alert" className="form-error">{error}</p>}
+      {error && <p role="alert" className="form-error">{t(error)}</p>}
       <footer><button type="button" className="text-button" disabled={busy} onClick={onClose}>{t("Annuler", "Cancel")}</button><button className="primary" disabled={busy}><Plus size={16}/>{busy ? t("Ajout…", "Adding…") : t("Ajouter à ma liste", "Add to my list")}</button></footer>
     </form>
   </dialog>;

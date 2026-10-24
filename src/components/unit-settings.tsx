@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { AppSelect } from "./app-select";
 import { useState } from "react";
 import type { Locale } from "@/lib/locale";
@@ -14,7 +17,7 @@ export function UnitSettings({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   const fields: {
     id: keyof UnitPreferences;
     name: string;
@@ -124,7 +127,7 @@ export function UnitSettings({
         ))}
       </div>
       {busy && <p role="status">{t("Enregistrement…", "Saving…")}</p>}
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert">{t(error)}</p>}
     </section>
   );
 }

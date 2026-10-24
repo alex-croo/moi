@@ -1,3 +1,6 @@
+import { LocaleProvider } from "@/components/locale-provider";
+import { isLocale } from "@/lib/locale";
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { notFound } from "next/navigation";
 import { Brand } from "@/components/brand";
 export default async function Privacy({
@@ -6,8 +9,8 @@ export default async function Privacy({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (locale !== "fr" && locale !== "en") notFound();
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  if (!isLocale(locale)) notFound();
+  const t = (fr: string, en: string) => regionalTr(locale, fr, en);
   const sections = [
     [t("Votre espace personnel", "Your personal space"), t("Votre compte Google ouvre un espace isolé des autres usagers. Le centre documentaire et l’administration ne donnent pas accès aux journaux. Les données sont protégées en transit et dans l’hébergement; les opérateurs techniques peuvent toutefois y accéder. Le journal accompagné n’est pas chiffré de bout en bout.", "Google sign-in opens a space isolated from other users. Editorial and admin tools do not expose journals. Data is protected in transit and at rest; technical operators may access it. The guided journal is not end-to-end encrypted.")],
     [t("La personnalisation reste votre choix", "Personalization is your choice"), t("La personnalisation est désactivée par défaut. Avec votre accord, des extraits récents de votre journal, vos notes de lecture et vos repères confirmés peuvent être envoyés à Fireworks pour Ember-1. Lorsque vous demandez une correction ou une amélioration, le passage sélectionné est également envoyé à Fireworks. L’application ne journalise pas ces requêtes ni leurs réponses. Leur traitement, leur conservation éventuelle, les métadonnées techniques et le cache temporaire relèvent des politiques du fournisseur. Vous pouvez désactiver la personnalisation dans Préférences.", "Personalization is off by default. With your consent, recent journal excerpts, reading notes and confirmed memories may be sent to Fireworks for Ember-1. When you request a correction or improvement, the selected passage is also sent to Fireworks. The application does not log these requests or responses. Processing, any retention, technical metadata and temporary caches are governed by the provider’s policies. Disable personalization in Preferences at any time.")],
@@ -16,7 +19,7 @@ export default async function Privacy({
     [t("Gérer vos informations", "Manage your information"), t("Vous pouvez quitter vos cercles et demander la suspension ou la suppression de votre compte à l’administrateur qui vous a invité. La suspension conserve vos données. La suppression définitive doit être confirmée séparément. Aucun outil publicitaire n’est intégré.", "Leave circles or ask your inviting administrator to suspend or delete your account. Suspension retains data. Permanent deletion requires separate confirmation. No advertising tools are integrated.")],
   ];
   return (
-    <main className="vault-screen">
+    <LocaleProvider locale={locale}><main className="vault-screen">
       <a href={`/${locale}`}>
         <Brand />
       </a>
@@ -39,6 +42,6 @@ export default async function Privacy({
           {t("Retour à la connexion", "Back to sign-in")}
         </a>
       </article>
-    </main>
+    </main></LocaleProvider>
   );
 }

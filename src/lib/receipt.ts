@@ -1,3 +1,5 @@
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
+import type { Locale } from "./locale";
 import { z } from "zod";
 import type { Ingredient, Quantity } from "./types";
 import type { Purchase, PurchaseLine } from "./shopping-types";
@@ -11,7 +13,7 @@ export const receiptImageCount = 3;
 // Inline images only: no external URLs, SVGs, or persistent upload locations.
 export const receiptImage = z.string().max(receiptImageLimit).regex(/^data:image\/(?:jpeg|png);base64,(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)
   .refine(value => value.startsWith("data:image/jpeg;base64,/9j/") || value.startsWith("data:image/png;base64,iVBORw0KGgo"));
-export const receiptInput = z.object({ orderId: z.uuid(), text: z.string().trim().max(20000).default(""), images: z.array(receiptImage).max(receiptImageCount).default([]), locale: z.enum(["fr", "en"]) }).strict()
+export const receiptInput = z.object({ orderId: z.uuid(), text: z.string().trim().max(20000).default(""), images: z.array(receiptImage).max(receiptImageCount).default([]), locale: z.enum(["fr", "en", "es", "pt-BR"]) }).strict()
   .refine(value => value.text.length >= 3 || value.images.length > 0);
 // The model extracts package counts and sizes; arithmetic stays deterministic.
 export const receiptOutput = z.object({ items: z.array(z.object({
@@ -40,10 +42,10 @@ export function receiptQuantity(amount: number, unit: ReceiptUnit, packs = 1, la
   return { kind, value, ...(kind === "count" && label ? { label, labelEn: label } : {}) };
 }
 const normalize = (text: string) => text.normalize("NFKC").replace(/\s+/g, " ").trim().toLocaleLowerCase();
-export function prepareReceipt(raw: unknown, text: string, order: Purchase, ingredients: Ingredient[], locale: "fr" | "en"): ReceiptPreview {
+export function prepareReceipt(raw: unknown, text: string, order: Purchase, ingredients: Ingredient[], locale: Locale): ReceiptPreview {
   const output = receiptOutput.parse(raw), source = normalize(text);
   const usedSources = new Map<string, number>();
-  const t = (fr: string, en: string) => locale === "fr" ? fr : en;
+  const t = (fr: string, en: string) => regionalTr(locale, fr, en);
   return { note: output.note, items: output.items.map(item => {
     const excerpt = normalize(item.source), used = (usedSources.get(excerpt) || 0) + 1;
     if (!source.includes(excerpt)) throw Error("ungrounded_item");

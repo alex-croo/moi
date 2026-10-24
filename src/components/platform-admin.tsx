@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useEffect, useState } from "react";
 import { ShieldCheck, UserPlus, Eye } from "lucide-react";
 import type { Locale } from "@/lib/locale";
@@ -21,7 +24,7 @@ type AdminData = {
   }[];
 };
 export function PlatformAdmin({ locale }: { locale: Locale }) {
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   const [data, setData] = useState<AdminData | null>(null),
     [email, setEmail] = useState(""),
     [busy, setBusy] = useState(false),
@@ -70,7 +73,7 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
           {t("← Retour à l’administration", "← Back to administration")}
         </button>
         <LearningAdmin/>
-        <p role="status">{status}</p>
+        <p role="status">{t(status)}</p>
       </>
     );
   return (
@@ -164,8 +167,8 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
         </section>
       </div>
       <RecipeTagAdmin locale={locale}/>
-      {error && <p role="alert">{error}</p>}
-      {status && <p role="status">{status}</p>}
+      {error && <p role="alert">{t(error)}</p>}
+      {status && <p role="status">{t(status)}</p>}
       <section className="card">
         <h2>{t("Les comptes", "Accounts")}</h2>
         {!data ? (
@@ -232,7 +235,7 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
                     ? t("Annulée", "Cancelled")
                     : new Date(i.expires_at) < new Date()
                       ? t("Expirée", "Expired")
-                      : `${t("Valide jusqu’au", "Valid until")} ${new Date(i.expires_at).toLocaleDateString(locale)}`}
+                      : `${t("Valide jusqu’au", "Valid until")} ${new Date(i.expires_at).toLocaleDateString(intlLocale(locale))}`}
               </small>
             </div>
             {!i.accepted_at && !i.revoked_at && (

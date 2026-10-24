@@ -1,4 +1,7 @@
 "use client";
+import { useText } from "./locale-provider";
+
+import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { AppSelect } from "./app-select";
 import { useState, type ReactNode } from "react";
 import { Archive, Check, Pencil, Plus, Search, Trash2, Snowflake, X } from "lucide-react";
@@ -30,7 +33,7 @@ function PantryEditor({ title, locale, busy, onClose, children }: {
 }) {
   const dialog = useShoppingDialog();
   return <dialog ref={dialog} className="shopping-dialog pantry-editor" aria-labelledby="pantry-editor-title" onCancel={e => busy ? e.preventDefault() : onClose()}>
-    <header><h2 id="pantry-editor-title">{title}</h2><button type="button" className="icon-button" disabled={busy} onClick={onClose} aria-label={locale === "fr" ? "Fermer" : "Close"}><X size={20}/></button></header>
+    <header><h2 id="pantry-editor-title">{title}</h2><button type="button" className="icon-button" disabled={busy} onClick={onClose} aria-label={regionalTr(locale, "Fermer", "Close")}><X size={20}/></button></header>
     {children}
   </dialog>;
 }
@@ -56,7 +59,7 @@ export function Pantry({
   deliveries?: ReactNode;
   initialItemId?: string;
 }) {
-  const t = (fr: string, en: string) => (locale === "fr" ? fr : en);
+  const t = useText(locale);
   const initialItem = items.find(p => p.id === initialItemId);
   const displayAmount = (q: Quantity | null | undefined) => q ? String(Number((q.value / pantryFactor(q.kind, units)).toPrecision(12))) : "";
   const [query, setQuery] = useState("");
@@ -70,8 +73,8 @@ export function Pantry({
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const sortedIngredients = [...ingredients].sort((a, b) =>
-    (locale === "fr" ? a.name : a.nameEn).localeCompare(
-      locale === "fr" ? b.name : b.nameEn,
+    (t(a.name, a.nameEn)).localeCompare(
+      t(b.name, b.nameEn),
       locale,
     ),
   );
@@ -81,7 +84,7 @@ export function Pantry({
       .replace(/\p{Diacritic}/gu, "")
       .toLowerCase();
   const filtered = items.filter((p) =>
-    (showEmpty || p.inStock) && normalize(pantryName(p, ingredients, locale)).includes(normalize(query)) && (filter === "all" || p.location === filter),
+    (showEmpty || p.inStock) && normalize(t(pantryName(p, ingredients, "fr"), pantryName(p, ingredients, "en"))).includes(normalize(query)) && (filter === "all" || p.location === filter),
   );
   function closeEditor() {
     setEditing(null);
@@ -212,12 +215,12 @@ export function Pantry({
       </div>
       {error && !editing && (
         <p className="form-error" role="alert">
-          {error}
+          {t(error)}
         </p>
       )}
       {status && (
         <p className="grocery-status" role="status">
-          {status}
+          {t(status)}
         </p>
       )}
       {editing && (
@@ -252,7 +255,7 @@ export function Pantry({
                 <option value="custom">{t("Mon aliment personnel…", "My own food…")}</option>
                 {sortedIngredients.map((i) => (
                   <option key={i.id} value={i.id}>
-                    {locale === "fr" ? i.name : i.nameEn}
+                    {t(i.name, i.nameEn)}
                   </option>
                 ))}
               </AppSelect>
@@ -322,7 +325,7 @@ export function Pantry({
               {countMeasures(editing.ingredientId).length > 0
                 ? <AppSelect aria-label={t("Unité comptée", "Counted unit")} value={countMeasure(editing.ingredientId, { kind: "count", value: 1, label: countUnit })?.label || ""} disabled={busy} onChange={e => setCountUnit(e.target.value)}>
                     <option value="">{t("Unités non précisées", "Unspecified items")}</option>
-                    {countMeasures(editing.ingredientId).map(m => <option key={m.label} value={m.label}>{locale === "fr" ? m.label : m.labelEn}</option>)}
+                    {countMeasures(editing.ingredientId).map(m => <option key={m.label} value={m.label}>{t(m.label, m.labelEn)}</option>)}
                   </AppSelect>
                 : <input maxLength={80} value={countUnit} disabled={busy} placeholder={t("pièces, paquets…", "pieces, packs…")} onChange={e => setCountUnit(e.target.value)}/>}
             </label>}
@@ -365,7 +368,7 @@ export function Pantry({
               )}
             </p>
           )}
-          {error && <p className="form-error" role="alert">{error}</p>}
+          {error && <p className="form-error" role="alert">{t(error)}</p>}
           <footer>
             <button
               type="button"
@@ -439,17 +442,17 @@ export function Pantry({
       <div className="pantry-groups pantry-list">
         {filtered.length > 0 && <div className="pantry-columns" aria-hidden="true"><span>{t("Aliment", "Food")}</span><span>{t("Emplacement", "Location")}</span><span>{t("En réserve", "On hand")}</span><span/></div>}
         {aisles.map(aisle => {
-          const group = filtered.filter(p => pantryAisle(p, ingredients) === aisle).sort((a, b) => Number(b.inStock) - Number(a.inStock) || pantryName(a, ingredients, locale).localeCompare(pantryName(b, ingredients, locale), locale));
+          const group = filtered.filter(p => pantryAisle(p, ingredients) === aisle).sort((a, b) => Number(b.inStock) - Number(a.inStock) || t(pantryName(a, ingredients, "fr"), pantryName(a, ingredients, "en")).localeCompare(t(pantryName(b, ingredients, "fr"), pantryName(b, ingredients, "en")), locale));
           return group.length ? <section className="pantry-group" key={aisle} aria-label={aisleLabel(aisle, locale)}>
             <h2>{aisleLabel(aisle, locale)} <small>{group.length}</small></h2>
             <ul>{group.map(item => <li key={item.id} className={item.inStock ? "" : "pantry-empty-item"}>
-              <div className="pantry-item-copy"><h3>{pantryName(item, ingredients, locale)}</h3>{item.note && <p>{item.note}</p>}{!item.inStock && <small>{t("À renouveler", "To replenish")}</small>}</div>
+              <div className="pantry-item-copy"><h3>{t(pantryName(item, ingredients, "fr"), pantryName(item, ingredients, "en"))}</h3>{item.note && <p>{item.note}</p>}{!item.inStock && <small>{t("À renouveler", "To replenish")}</small>}</div>
               <span className="pantry-item-location">{item.location === "freezer" && <Snowflake size={14} aria-label={t("Congelé", "Frozen")}/>} {pantryLabel(item.location, locale)}</span>
-              <strong className="pantry-item-quantity">{item.quantity ? pantryQuantityLabel(item.quantity, units, locale) : t("Quantité à préciser", "Quantity to specify")}</strong>
+              <strong className="pantry-item-quantity">{item.quantity ? pantryQuantityLabel(item.quantity, units, locale, t) : t("Quantité à préciser", "Quantity to specify")}</strong>
               <div className="pantry-item-actions">
                 <button className="icon-button pantry-stock-toggle" disabled={busy || !!editing} aria-label={item.inStock ? t("Il n’en reste plus", "All used up") : t("J’en ai de nouveau", "Restocked")} title={item.inStock ? t("Il n’en reste plus", "All used up") : t("J’en ai de nouveau", "Restocked")} aria-pressed={item.inStock} onClick={() => void perform(() => onSave({ ...item, inStock: !item.inStock }), t("Vos réserves sont à jour.", "Your pantry is up to date."))}><Check size={15}/></button>
-                <button className="icon-button" disabled={busy || !!editing} aria-label={`${t("Modifier", "Edit")} ${pantryName(item, ingredients, locale)}`} onClick={() => edit(item)}><Pencil size={15}/></button>
-                <button className="icon-button" disabled={busy || !!editing} aria-label={`${t("Retirer des réserves", "Remove from pantry")} ${pantryName(item, ingredients, locale)}`} onClick={() => void perform(() => onDelete(item.id), t("Aliment retiré de vos réserves.", "Food removed from your pantry."))}><Trash2 size={15}/></button>
+                <button className="icon-button" disabled={busy || !!editing} aria-label={`${t("Modifier", "Edit")} ${t(pantryName(item, ingredients, "fr"), pantryName(item, ingredients, "en"))}`} onClick={() => edit(item)}><Pencil size={15}/></button>
+                <button className="icon-button" disabled={busy || !!editing} aria-label={`${t("Retirer des réserves", "Remove from pantry")} ${t(pantryName(item, ingredients, "fr"), pantryName(item, ingredients, "en"))}`} onClick={() => void perform(() => onDelete(item.id), t("Aliment retiré de vos réserves.", "Food removed from your pantry."))}><Trash2 size={15}/></button>
               </div>
             </li>)}</ul>
           </section> : null;
