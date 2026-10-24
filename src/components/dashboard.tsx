@@ -627,8 +627,7 @@ function DashboardBody({
               {t("Mon espace", "My space")}
               <span>/</span>
               <strong>
-                {nav.find((n) => n.id === view)?.label ||
-                  t("Préférences", "Preferences")}
+                {nav.find((n) => n.id === view)?.label || (view === "inventoryMeals" ? t("Mes repas prévus", "My planned meals") : view === "inventoryCatalog" ? t("Aliments et formats", "Foods and formats") : view === "inventoryHistory" ? t("Mes mouvements", "My stock activity") : t("Préférences", "Preferences"))}
               </strong>
             </span>
           </div>
