@@ -73,3 +73,8 @@ export function freshCoachQuestion(question:string, context:ReturnType<typeof co
  });
  return repeated?"":question;
 }
+
+/** Teaching receives approved concepts only, not biography or editorial constraints. */
+export function coachTeachingContext(context:{lesson:{title:string;body:string};recall:{sourceTitle:string;lesson:{body:string}}|null}){
+ return {lesson:{title:context.lesson.title,body:context.lesson.body},previousConcept:context.recall?{title:context.recall.sourceTitle,body:context.recall.lesson.body}:null};
+}

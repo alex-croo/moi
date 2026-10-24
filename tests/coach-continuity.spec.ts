@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {PGlite} from '@electric-sql/pglite';
 import {readFile,readdir} from 'node:fs/promises';
-import {coachContext,validateCoachRecall,freshCoachQuestion} from '../src/lib/coach-context';
+import {coachContext,validateCoachRecall,freshCoachQuestion,coachTeachingContext} from '../src/lib/coach-context';
 import {companionOutput} from '../src/lib/learning-validation';
 import type {LearningDay,LearningMemory} from '../src/lib/learning-types';
 const lesson={title:'Un geste après le dîner',objective:'Retrouver une intention personnelle',body:'Une lecture approuvée sur les intentions personnelles.',action:'Choisir un geste simple après le dîner.',question:'Que souhaitez-vous essayer?',sources:[],limits:'',adaptations:'',reviewedOn:'2026-10-01',moduleTitle:'Motivation',version:1};
@@ -60,4 +60,11 @@ test('next day follows the proposed step with attributed reports, and suppresses
  expect(context.previousExperiments[0].outcome).toContain('unknown unless');
  expect(freshCoachQuestion(prior.questions[0].text,context)).toBe('');
  expect(freshCoachQuestion('Quel moment rendrait ce geste plus simple demain?',context)).not.toBe('');
+});
+
+test('the teaching call cannot retell a personal episode or editorial warning absent from its input',()=>{
+ const current=day('2026-10-24','today');const prior=day('2026-10-23','prior');prior.notes.reflection={text:'Private experiment in the rain',revision:1};
+ const context=coachContext(current.date,current,[{date:prior.date,text:'Personal secret'}],[prior],[],[{document_id:'prior',completed_on:prior.date}]);
+ const teaching=coachTeachingContext(context);expect(Object.keys(teaching.lesson)).toEqual(['title','body']);
+ expect(JSON.stringify(teaching)).not.toMatch(/Private experiment|Personal secret|reports|journal|limits/);
 });

@@ -45,3 +45,11 @@ de mémoire et l’actualisation volontaire sont dans des options repliées. Les
 questions identiques ou très proches sont supprimées avant persistance; SQL
 empêche aussi la duplication exacte. Le rechargement conserve le même fil et la
 limite d’une nouvelle étape par jour reste inchangée.
+
+La préparation utilise deux appels parallèles : le fil personnel reçoit les
+notes autorisées, tandis que l’enseignement reçoit uniquement le titre et le
+texte des lectures approuvées, actuelle et précédente. Cette séparation évite
+que l’anecdote personnelle soit racontée une seconde fois dans la lecture ou
+que des indications éditoriales internes apparaissent dans la page. Les deux
+résultats sont validés puis enregistrés ensemble; une réponse partielle ne
+remplace pas la journée existante.

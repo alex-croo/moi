@@ -4,10 +4,10 @@ import { authorizedClient } from "@/lib/supabase";
 import { sameOrigin } from "@/lib/security";
 import { boundedJson, privateReply } from "@/lib/private-http";
 import { requirePrivateFireworks, fireworksText, fireworksStatus } from "@/lib/fireworks";
-import { companionInstructions } from "@/lib/learning-prompts";
-import { companionOutput } from "@/lib/learning-validation";
+import { companionInstructions, teachingInstructions } from "@/lib/learning-prompts";
+import { companionOutput, teachingOutput } from "@/lib/learning-validation";
 import type { LearningDay } from "@/lib/learning-types";
-import { coachContext, validateCoachRecall, freshCoachQuestion } from "@/lib/coach-context";
+import { coachContext, validateCoachRecall, freshCoachQuestion, coachTeachingContext } from "@/lib/coach-context";
 export const maxDuration = 60;
 export async function POST(request:Request) {
  if (!sameOrigin(request)) return privateReply({error:"forbidden"},403);
@@ -32,11 +32,16 @@ export async function POST(request:Request) {
   const context=coachContext(input.date,day,workspace.data?.data?.journal||[],history.data||[],memories.data||[],completed.data||[]);
   const allowedDates=new Set([...context.journal,...context.notes].map(d=>d.date));
   if(context.recall&&(context.recall.ownJournal||context.recall.ownNotes.length))allowedDates.add(context.recall.sourceDate);
-  const text=await fireworksText(companionInstructions.replace("Write warm professional French, using vous,",languageInstruction(localeOf(input.locale||"fr")) + " Write warmly and professionally,"),{...context,mode:input.kind},true,true,auth.user.id,{maxTokens:4500,reasoning:"none",timeoutMs:42000,schema:z.toJSONSchema(companionOutput)});
+  const language=languageInstruction(localeOf(input.locale||"fr"));
+  const [text,teachingText]=await Promise.all([
+   fireworksText(companionInstructions.replace("Write warm professional French, using vous,",language+" Write warmly and professionally,"),{...context,mode:input.kind},true,true,auth.user.id,{maxTokens:3000,reasoning:"none",timeoutMs:42000,schema:z.toJSONSchema(companionOutput)}),
+   fireworksText(teachingInstructions.replace("Write warm professional French using vous.",language),coachTeachingContext(context),false,true,undefined,{maxTokens:2000,reasoning:"none",timeoutMs:35000,schema:z.toJSONSchema(teachingOutput)}),
+  ]);
+  const teaching=teachingOutput.parse(JSON.parse(teachingText)).teaching;
   const output=validateCoachRecall(companionOutput.parse(JSON.parse(text.replace(/^```json\s*|\s*```$/g,""))),context);
   output.question=freshCoachQuestion(output.question,context);
   output.memories=output.memories.filter(m=>allowedDates.has(m.sourceDate));
-  const {data:finished,error:failed}=await auth.db.rpc("learning_action",{action:"finish_ai",payload:{requestId,expectedRevision:day.revision,expectedWorkspaceRevision:workspace.data?.revision||0,result:{...output,version:3,locale:input.locale||"fr"}}});
+  const {data:finished,error:failed}=await auth.db.rpc("learning_action",{action:"finish_ai",payload:{requestId,expectedRevision:day.revision,expectedWorkspaceRevision:workspace.data?.revision||0,result:{...output,teaching,version:3,locale:input.locale||"fr"}}});
   if(failed) throw Error("save");
   if(finished.stale) return privateReply({error:"changed"},409);
   return privateReply({...finished,ai:fireworksStatus(auth.user.id)});

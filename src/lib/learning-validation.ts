@@ -11,8 +11,9 @@ export const learningContent = z.object({
 export const editorialRewrite = learningContent.pick({ title: true, body: true, action: true, question: true });
 export const companionOutput = z.object({
   introduction: z.string().trim().min(10).max(700), experiment: z.string().trim().min(10).max(700), question: z.string().trim().min(10).max(500),
-  teaching: z.string().trim().min(40).max(2400),
   bridge: z.string().trim().min(10).max(500),
   recall: z.object({sourceDate:z.iso.date(),prompt:z.string().trim().min(10).max(400),hint:z.string().trim().min(10).max(600)}).strict().nullable(),
   memories: z.array(z.object({ text: z.string().min(5).max(400), sourceDate: z.iso.date(), category: z.enum(["motivation", "constraint", "preference", "experiment", "observation"]) }).strict()).max(3),
 }).strict();
+
+export const teachingOutput=z.object({teaching:z.string().trim().min(40).max(2400)}).strict();
