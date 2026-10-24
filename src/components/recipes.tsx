@@ -225,7 +225,7 @@ export function RecipeSheet({
                       {line.optional ? t(" (facultatif)", " (optional)") : ""}
                       <small>
                         {line.note
-                          ? instructionText(t(line.note), units, locale, factor)
+                          ? instructionText(t(line.note), units, locale, factor, recipe)
                           : ""}
                       </small>
                     </span>
@@ -313,7 +313,7 @@ export function RecipeSheet({
               t(recipe.note, recipe.noteEn || recipe.note),
               units,
               locale,
-              factor,
+              factor, recipe,
             )}
           </p>
         )}
@@ -340,7 +340,7 @@ export function RecipeSheet({
                     t(step.text, step.textEn),
                     units,
                     locale,
-                    factor,
+                    factor, recipe,
                   )}
                 </p>
               </article>

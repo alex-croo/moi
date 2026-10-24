@@ -37,6 +37,7 @@ export function UnitSettings({
       options: [
         ["g", t("Grammes (g)", "Grams (g)")],
         ["oz", t("Onces (oz)", "Ounces (oz)")],
+        ["kg", "kg"], ["lb", t("Livres (lb)", "Pounds (lb)")],
       ],
     },
     {
@@ -44,6 +45,7 @@ export function UnitSettings({
       name: t("Volumes et liquides", "Volumes and liquids"),
       options: [
         ["ml", t("Millilitres (ml)", "Millilitres (ml)")],
+        ["l", "L"], ["cup_metric", t("Tasses de 250 ml", "250 ml cups")],
         ["cup", t("Tasses US (236,6 ml)", "US cups (236.6 ml)")],
         [
           "fl_oz",

@@ -916,5 +916,14 @@
   "Cuire": "Cozinhar",
   "Exemple de conversion : {{spoon:15}} et {{volume:240}}.": "Exemplo de conversão: {{spoon:15}} e {{volume:240}}.",
   "Un petit mémo (facultatif)": "Um lembrete (opcional)",
-  "L’assistance IA n’est pas disponible pour ce compte. Vous pouvez continuer à écrire.": "A assistência de IA não está disponível para esta conta. Você pode continuar escrevendo."
+  "L’assistance IA n’est pas disponible pour ce compte. Vous pouvez continuer à écrire.": "A assistência de IA não está disponível para esta conta. Você pode continuar escrevendo.",
+  "Poids par pièce (facultatif)": "Peso por unidade (opcional)",
+  "Tasses de 250 ml": "Xícaras de 250 ml",
+  "tasse de 250 ml": "xícara de 250 ml",
+  "pièces": "unidades",
+  "têtes": "cabeças",
+  "boîtes": "latas",
+  "paquets": "pacotes",
+  "bottes": "maços",
+  "tranches": "fatias"
 }

@@ -7,6 +7,7 @@ import type {
   PantryItem,
 } from "./types";
 import { addDays } from "./units";
+import { compatibleQuantity, stockIdentity } from "./stock-units";
 
 export type GroceryItem = {
   ingredient: Ingredient;
@@ -27,21 +28,7 @@ export function groceriesAfterPantry(
     )) {
       const q = stock.quantity;
       const required = item.quantity;
-      const volume = (kind: Quantity["kind"]) =>
-        kind === "volume" || kind === "spoon";
-      const sameCount =
-        q?.kind === "count" &&
-        required.kind === "count" &&
-        (q.label || "").trim().toLowerCase() ===
-          (required.label || "").trim().toLowerCase() &&
-        (q.labelEn || "").trim().toLowerCase() ===
-          (required.labelEn || "").trim().toLowerCase();
-      if (
-        q &&
-        ((q.kind === "mass" && required.kind === "mass") ||
-          (volume(q.kind) && volume(required.kind)) ||
-          sameCount)
-      )
+      if (q && compatibleQuantity(q, required))
         available += q.value;
       else needsStockCheck = true;
     }
@@ -72,13 +59,7 @@ function totalQuantity(
     };
   }
   const first = lines[0].quantity;
-  const sameCountUnit = lines.every(
-    ({ quantity: q }) =>
-      (q.label || "").trim().toLowerCase() ===
-        (first.label || "").trim().toLowerCase() &&
-      (q.labelEn || "").trim().toLowerCase() ===
-        (first.labelEn || "").trim().toLowerCase(),
-  );
+  const sameCountUnit = lines.every(({quantity})=>compatibleQuantity(quantity,first));
   if (kinds.size === 1 && (first.kind === "mass" || sameCountUnit)) {
     return {
       quantity: {
@@ -128,7 +109,8 @@ export function weeklyGroceries(
     }
     meals++;
     const used = new Set<string>();
-    for (const line of recipe.ingredients) {
+    for (const originalLine of recipe.ingredients) {
+      const line={...originalLine,ingredientId:stockIdentity(originalLine.ingredientId,ingredients)!};
       if (line.optional && !includeOptional) continue;
       if (!ingredientById.has(line.ingredientId)) {
         missing++;

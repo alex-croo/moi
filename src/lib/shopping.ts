@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { quantitySchema } from "./quantity-schema";
+import { compatibleQuantity, stockIdentity, stockConversion, sameStockFormat } from "./stock-units";
 import type { MealSlot, PantryItem, Quantity, RecipeIngredient } from "./types";
 import type { ShoppingCatalog, ShoppingPersonal, ShoppingState, PurchaseLine, CookedMeal } from "./shopping-types";
 import { addDays } from "./units";
@@ -8,7 +10,7 @@ import type { PantryEntry } from "./pantry";
 import { countMeasure } from "./ingredient-measures";
 
 const id = z.string().regex(/^[a-z0-9-]{1,100}$/);
-const quantity = z.object({ kind: z.enum(["mass", "volume", "spoon", "count"]), value: z.number().finite().min(0).max(1000000), label: z.string().max(80).optional(), labelEn: z.string().max(80).optional() }).strict();
+const quantity = quantitySchema;
 const location = z.enum(["cupboard", "fridge", "freezer", "spices"]);
 export const purchaseLineKey = (line: PurchaseLine) => line.id || line.ingredientId!;
 const line = z.object({ id: z.uuid().optional(), ingredientId: id.nullable(), name: z.string().trim().min(1).max(160).optional(), quantity, location, personalItemId: z.uuid().optional(), aisle: z.enum(aisles).optional(), purchaseLabel: z.string().trim().max(160).optional(), priceCents: z.number().int().min(0).max(100000000).optional() }).strict().refine(l => l.ingredientId !== null || !!l.id && !!l.name);
@@ -50,23 +52,14 @@ export function shoppingState(data: ShoppingPersonal): ShoppingState {
   return { grocers: [], orders: [], cooked: [], selections };
 }
 const clean = (n: number) => Math.max(0, Math.round(n * 1e8) / 1e8);
-const volume = (q: Quantity) => q.kind === "volume" || q.kind === "spoon";
-export function compatible(a: Quantity, b: Quantity) {
-  return volume(a) && volume(b) || a.kind === b.kind && (a.kind !== "count" || (a.label || "") === (b.label || "") && (a.labelEn || "") === (b.labelEn || ""));
-}
+export const compatible = compatibleQuantity;
 type Need = { ingredientId: string; quantity: Quantity; grams: number };
 function demand(line: RecipeIngredient, factor = 1): Need {
   return { ingredientId: line.ingredientId, quantity: { ...line.quantity, value: line.quantity.value * factor }, grams: line.grams * factor };
 }
 // Bridge dimensions using documented recipe weights and explicit ingredient measures.
 function conversion(from: Quantity, need: Need): number | null {
-  if (compatible(from, need.quantity)) return 1;
-  if (need.grams <= 0 || need.quantity.value <= 0) return null;
-  if (from.kind === "mass") return need.quantity.value / need.grams;
-  const piece = countMeasure(need.ingredientId, from);
-  if (piece) return piece.grams * need.quantity.value / need.grams;
-  if (need.quantity.kind === "mass") return null;
-  return null;
+  return stockConversion(from, need.quantity, need.grams, need.ingredientId);
 }
 export const mealHours: Record<MealSlot["slot"], string> = { breakfast: "08:00", morning_snack: "10:00", lunch: "12:00", afternoon_snack: "15:00", dinner: "18:00", evening_snack: "21:00" };
 export type OrderSource = { id: string; grocer: string; date: string };
@@ -95,8 +88,8 @@ function take(stock: Stock[], need: Need, date: string, time = "23:59") {
   if (remaining > 1e-8) for (const source of uncertainSources.values()) sources.set(source.id, source);
   return { remaining, onHand, pending, check: check && remaining > 1e-8, pendingCheck: pendingCheck && remaining > 1e-8, estimated, deductions, sources: [...sources.values()] };
 }
-function stockFrom(pantry: PantryItem[]): Stock[] {
-  return pantry.map((p, index) => ({ ingredientId: p.ingredientId, quantity: p.quantity, available: p.inStock ? p.quantity?.value || 0 : 0, date: "0000-01-01", pending: false, index }))
+function stockFrom(pantry: PantryItem[], catalog: ShoppingCatalog): Stock[] {
+  return pantry.map((p, index) => ({ ingredientId: stockIdentity(p.ingredientId, catalog.ingredients), quantity: p.quantity, available: p.inStock ? p.quantity?.value || 0 : 0, date: "0000-01-01", pending: false, index }))
     .filter((_, index) => pantry[index].inStock)
     .sort((a, b) => Number(pantry[a.index].location === "freezer") - Number(pantry[b.index].location === "freezer"));
 }
@@ -117,9 +110,9 @@ export function shoppingPurchaseLine(item: ShoppingItem): PurchaseLine {
     quantity: { ...item.quantity }, location: suggestedLocation(item.ingredient) };
 }
 export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, start: string, end: string, includeOptional = false) {
-  const state = shoppingState(data), stock = stockFrom(data.pantry);
+  const state = shoppingState(data), stock = stockFrom(data.pantry, catalog);
   for (const order of state.orders.filter(o => o.status === "pending").sort((a, b) => a.expectedDate.localeCompare(b.expectedDate)))
-    for (const line of order.lines) stock.push({ ingredientId: line.ingredientId, quantity: line.quantity, available: line.quantity.value, date: order.expectedDate, time: order.deliveryWindow?.end, source: { id: order.id, grocer: order.grocer, date: order.expectedDate }, pending: true, index: -1 });
+    for (const line of order.lines) stock.push({ ingredientId: stockIdentity(line.ingredientId, catalog.ingredients), quantity: line.quantity, available: line.quantity.value, date: order.expectedDate, time: order.deliveryWindow?.end, source: { id: order.id, grocer: order.grocer, date: order.expectedDate }, pending: true, index: -1 });
   const result = new Map<string, ShoppingItem>();
   const grams = new Map<string, { required: number; remaining: number; onHand: number; pending: number; awaitingConfirmation: number }>();
   const availability: Record<string, MealAvailability> = {};
@@ -136,7 +129,8 @@ export function shoppingNeeds(data: ShoppingPersonal, catalog: ShoppingCatalog, 
     const report: MealAvailability = { meal: slot, sources: [], complete: true, missing: [], frozen: [] };
     availability[mealKey(slot)] = report;
     const seen = new Set<string>();
-    for (const line of recipe.ingredients) {
+    for (const originalLine of recipe.ingredients) {
+      const line = { ...originalLine, ingredientId: stockIdentity(originalLine.ingredientId, catalog.ingredients)!, quantity: originalLine.quantity.kind === "count" && originalLine.quantity.content ? { kind:originalLine.quantity.content.kind, value:originalLine.quantity.value * originalLine.quantity.content.value, basis:originalLine.quantity.content.basis } : originalLine.quantity };
       if (line.optional && !includeOptional || line.ingredientId === "eau") continue;
       const ingredient = catalog.ingredients.find(i => i.id === line.ingredientId);
       if (!ingredient) { if (visible) missing++; report.complete = false; report.missing.push({ ingredientId: line.ingredientId, quantity: line.quantity, check: true }); continue; }
@@ -205,8 +199,9 @@ function timeOrder(slot: MealSlot["slot"]) { return ["breakfast", "morning_snack
 export function previewCooking(data: ShoppingPersonal, catalog: ShoppingCatalog, meal: MealSlot, portions: number, includeOptional: boolean) {
   const recipe = catalog.recipes.find(r => r.id === meal.recipeId);
   if (!recipe) throw Error("recipe_missing");
-  const stock = stockFrom(data.pantry), deductions: CookedMeal["deductions"] = [], missing: CookedMeal["missing"] = [];
-  for (const line of recipe.ingredients) {
+  const stock = stockFrom(data.pantry, catalog), deductions: CookedMeal["deductions"] = [], missing: CookedMeal["missing"] = [];
+  for (const originalLine of recipe.ingredients) {
+      const line = { ...originalLine, ingredientId: stockIdentity(originalLine.ingredientId, catalog.ingredients)!, quantity: originalLine.quantity.kind === "count" && originalLine.quantity.content ? { kind:originalLine.quantity.content.kind, value:originalLine.quantity.value * originalLine.quantity.content.value, basis:originalLine.quantity.content.basis } : originalLine.quantity };
     if (line.optional && !includeOptional || line.ingredientId === "eau") continue;
     const need = demand(line, portions / recipe.servings), result = take(stock, need, meal.date);
     for (const d of result.deductions) deductions.push({ item: structuredClone(data.pantry[d.index]), amount: d.amount });
@@ -216,7 +211,8 @@ export function previewCooking(data: ShoppingPersonal, catalog: ShoppingCatalog,
 }
 function addStock(pantry: PantryEntry[], line: PurchaseLine, catalog: ShoppingCatalog) {
   if (line.quantity.value <= 0) return;
-  const existing = pantry.find(p => p.ingredientId === line.ingredientId && (line.ingredientId !== null || p.name === line.name) && p.location === line.location && p.quantity && compatible(p.quantity, line.quantity));
+  line = { ...line, ingredientId: stockIdentity(line.ingredientId, catalog.ingredients) };
+  const existing = pantry.find(p => stockIdentity(p.ingredientId, catalog.ingredients) === line.ingredientId && (line.ingredientId !== null || p.name === line.name) && p.location === line.location && p.quantity && sameStockFormat(p.quantity, line.quantity));
   if (existing?.quantity) {
     existing.quantity.value = clean((existing.inStock ? existing.quantity.value : 0) + line.quantity.value); existing.inStock = true; if (line.aisle) existing.aisle = line.aisle;
   } else pantry.push({ id: crypto.randomUUID(), ingredientId: line.ingredientId, name: catalog.ingredients.find(i => i.id === line.ingredientId)?.name || line.name || line.ingredientId!, location: line.location, quantity: { ...line.quantity }, inStock: true, ...(line.aisle ? { aisle: line.aisle } : {}), note: line.purchaseLabel || "" });
@@ -309,7 +305,7 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
         item.quantity!.value = clean(item.quantity!.value - d.amount);
         item.inStock = item.quantity!.value > 0;
       }
-      state.cooked.push({ id: input.id, meal: input.meal, portions: input.portions, at: now, ...result });
+      state.cooked.push({ id: input.id, meal: input.meal, portions: input.portions, at: now, recipeSnapshot: structuredClone(catalog.recipes.find(r => r.id === input.meal.recipeId)!), ...result });
       break;
     }
     case "undoCook": {
@@ -317,7 +313,7 @@ export function applyShoppingMutation<T extends ShoppingPersonal>(data: T, value
       if (!record || record.undone) return data;
       for (const d of record.deductions) {
         const current = next.pantry.find(p => p.id === d.item.id);
-        if (current?.quantity && compatible(current.quantity, d.item.quantity!) && current.ingredientId === d.item.ingredientId) {
+        if (current?.quantity && sameStockFormat(current.quantity, d.item.quantity!) && current.ingredientId === d.item.ingredientId) {
           current.quantity.value = clean((current.inStock ? current.quantity.value : 0) + d.amount); current.inStock = true;
         } else addStock(next.pantry, { ingredientId: d.item.ingredientId!, quantity: { ...d.item.quantity!, value: d.amount }, location: d.item.location }, catalog);
       }

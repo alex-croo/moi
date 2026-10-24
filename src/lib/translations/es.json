@@ -915,5 +915,14 @@
   "Oignon": "Cebolla",
   "Cuire": "Cocinar",
   "Exemple de conversion : {{spoon:15}} et {{volume:240}}.": "Ejemplo de conversión: {{spoon:15}} y {{volume:240}}.",
-  "L’assistance IA n’est pas disponible pour ce compte. Vous pouvez continuer à écrire.": "La asistencia de IA no está disponible para esta cuenta. Puedes seguir escribiendo."
+  "L’assistance IA n’est pas disponible pour ce compte. Vous pouvez continuer à écrire.": "La asistencia de IA no está disponible para esta cuenta. Puedes seguir escribiendo.",
+  "Poids par pièce (facultatif)": "Peso por pieza (opcional)",
+  "Tasses de 250 ml": "Tazas de 250 ml",
+  "tasse de 250 ml": "taza de 250 ml",
+  "pièces": "piezas",
+  "têtes": "cabezas",
+  "boîtes": "latas",
+  "paquets": "paquetes",
+  "bottes": "manojos",
+  "tranches": "rebanadas"
 }

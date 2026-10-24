@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { quantitySchema } from "./quantity-schema";
 import { aisles } from "./grocery-aisles";
 const date = z.iso.date();
 const title = z.string().trim().min(1).max(160);
@@ -9,14 +10,7 @@ export const pantrySchema = z.object({
   name: title,
   location: z.enum(["cupboard", "fridge", "freezer", "spices"]),
   aisle: z.enum(aisles).optional(),
-  quantity: z
-    .object({
-      kind: z.enum(["mass", "volume", "spoon", "count"]),
-      value: z.number().min(0).max(1000000),
-      label: z.string().max(80).optional(),
-      labelEn: z.string().max(80).optional(),
-    })
-    .nullable(),
+  quantity: quantitySchema.nullable(),
   note: z.string().trim().max(160),
   inStock: z.boolean(),
 });
@@ -69,8 +63,8 @@ export const documentSchema = z.object({
 });
 export const unitSchema = z.object({
   bodyMass: z.enum(["lb", "kg"]),
-  ingredientMass: z.enum(["g", "oz"]),
-  volume: z.enum(["ml", "cup", "fl_oz"]),
+  ingredientMass: z.enum(["g", "kg", "oz", "lb"]),
+  volume: z.enum(["ml", "l", "cup", "cup_metric", "fl_oz"]),
   spoons: z.enum(["spoon", "ml"]),
   temperature: z.enum(["C", "F"]),
   length: z.enum(["cm", "in"]),

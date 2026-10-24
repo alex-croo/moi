@@ -13,11 +13,13 @@ export async function POST(request:Request){
   if(p.kind==="catalog"){
    const [r,i,days,lines]=await Promise.all([auth.db.from("recipes").select("id,details").eq("owner_id",auth.user.id),auth.db.from("ingredients").select("details").eq("owner_id",auth.user.id),auth.db.from("learning_days").select("snapshot").eq("owner_id",auth.user.id),auth.db.from("recipe_ingredients").select("quantity,note").eq("owner_id",auth.user.id)]);
    if(r.error||i.error||days.error||lines.error)throw Error("catalog");
+   if((r.data||[]).every(r=>r.details.importVersion===2&&r.details.translations?.[p.locale]))return privateReply({recipes:[],strings:Object.assign({},...(r.data||[]).map(r=>r.details.translations[p.locale]),...(i.data||[]).map(i=>i.details.translations?.[p.locale]||{}))});
    recipes=(r.data||[]).map(r=>r.id);
    strings=[...(r.data||[]).flatMap(r=>[r.details.title,r.details.subtitle]),...(i.data||[]).flatMap(i=>[i.details.name]),...(days.data||[]).flatMap(d=>[d.snapshot.title,d.snapshot.moduleTitle]),...(lines.data||[]).flatMap(l=>[l.note,l.quantity?.label])].filter(Boolean);
   }else if(p.kind==="recipe"){
    const r=await auth.db.from("recipes").select("details").eq("owner_id",auth.user.id).eq("id",p.id||"").maybeSingle();if(r.error||!r.data)return privateReply({error:"not_found"},404);
    const d=r.data.details;
+   if(d.importVersion===2&&d.translations?.[p.locale])return privateReply({strings:d.translations[p.locale]});
    strings=[d.title,d.subtitle,d.note,...(d.steps||[]).flatMap((s:{title:string;text:string})=>[s.title,s.text])].filter(Boolean);
   }else{
    // Only the user's assigned, approved snapshot. Never notes, memories, personal journal text or drafts.

@@ -62,15 +62,20 @@ export function bodyWeight(value: number, from: "kg" | "lb", to: "kg" | "lb") {
       : value * 0.45359237;
 }
 export function measure(
-  kind: Quantity["kind"] | "temp" | "length",
+  kind: Quantity["kind"] | "temp" | "oven" | "length",
   value: number,
   units: UnitPreferences,
   locale: Locale,
 ): string {
-  if (kind === "mass")
-    return units.ingredientMass === "g"
-      ? `${n(value, locale)} g`
-      : `${cookingAmount(value / 28.349523125, locale)} oz`;
+  if (kind === "mass") {
+    const factor={g:1,kg:1000,oz:28.349523125,lb:453.59237}[units.ingredientMass];
+    return `${["oz","lb"].includes(units.ingredientMass)?cookingAmount(value/factor,locale):n(value/factor,locale,3)} ${units.ingredientMass}`;
+  }
+  if (kind === "oven") {
+    const raw=units.temperature==="C"?value:value*9/5+32;
+    const step=units.temperature==="C"?5:25;
+    return `${Math.round(raw/step)*step} °${units.temperature}`;
+  }
   if (kind === "temp")
     return `${n(units.temperature === "C" ? value : (value * 9) / 5 + 32, locale, 0)} °${units.temperature}`;
   if (kind === "length")
@@ -83,6 +88,8 @@ export function measure(
     return `${cookingAmount(value / (tbsp ? 15 : 5), locale)} ${regionalTr(locale, tbsp ? "c. à soupe" : "c. à thé", tbsp ? "tbsp" : "tsp")}`;
   }
   if (kind === "volume") {
+    if (units.volume === "l") return `${n(value / 1000, locale, 3)} L`;
+    if (units.volume === "cup_metric") return `${cookingAmount(value / 250, locale)} ${regionalTr(locale, "tasse de 250 ml", "250 ml cup")}`;
     if (units.volume === "cup")
       return `${cookingAmount(value / 236.5882365, locale, true)} ${regionalTr(locale, "tasse US", "US cup")}`;
     if (units.volume === "fl_oz")
@@ -98,6 +105,8 @@ export function quantityLabel(
   scale = 1,
   translate?: (fr: string, en: string) => string,
 ) {
+  const labels: Record<string,[string,string]> = {piece:["pièces","pieces"],clove:["gousses","cloves"],bulb:["têtes","bulbs"],can:["boîtes","cans"],pack:["paquets","packs"],bunch:["bottes","bunches"],slice:["tranches","slices"]};
+  if(q.unit&&labels[q.unit])q={...q,label:labels[q.unit][0],labelEn:labels[q.unit][1]};
   const label = translate ? translate(q.label || "", q.labelEn || q.label || "") : regionalTr(locale, q.label || "", q.labelEn || q.label || "");
   return `${measure(q.kind, q.value * scale, units, locale)}${q.kind === "count" && label ? ` ${label}` : ""}`;
 }
@@ -107,9 +116,14 @@ export function instructionText(
   units: UnitPreferences,
   locale: Locale,
   scale = 1,
+  recipe?: Recipe,
 ) {
+  text = text.replace(/\{\{qty:([a-z0-9-]+)\}\}/g, (token,id) => {
+    const line=recipe?.ingredients.find(l=>l.ingredientId===id);
+    return line?quantityLabel(line.quantity,units,locale,scale):token;
+  });
   return text.replace(
-    /\{\{(mass|volume|spoon|temp|length):([\d.]+)\}\}/g,
+    /\{\{(mass|volume|spoon|temp|oven|length):([\d.]+)\}\}/g,
     (_, kind, value) =>
       measure(
         kind,

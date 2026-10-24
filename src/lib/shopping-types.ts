@@ -21,6 +21,7 @@ export type Purchase = {
   deliveryWindow?: DeliveryWindow;
 };
 export type CookedMeal = {
+  recipeSnapshot?: import("./types").Recipe;
   id: string; meal: MealSlot; portions: number; at: string; undone?: boolean;
   deductions: { item: PantryItem; amount: number }[];
   missing: { ingredientId: string; quantity: Quantity }[];

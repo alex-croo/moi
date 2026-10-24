@@ -53,8 +53,8 @@ export type WorkspaceData = {
 
 export type UnitPreferences = {
   bodyMass: "lb" | "kg";
-  ingredientMass: "g" | "oz";
-  volume: "ml" | "cup" | "fl_oz";
+  ingredientMass: "g" | "kg" | "oz" | "lb";
+  volume: "ml" | "l" | "cup" | "cup_metric" | "fl_oz";
   spoons: "spoon" | "ml";
   temperature: "C" | "F";
   length: "cm" | "in";
@@ -66,6 +66,8 @@ export type Nutrition = {
   fat: number;
 };
 export type Ingredient = {
+  stockId?: string;
+  translations?: Record<string, Record<string, string>>;
   id: string;
   name: string;
   nameEn: string;
@@ -77,6 +79,12 @@ export type Ingredient = {
   estimated: boolean;
 };
 export type Quantity = {
+  unit?: "piece" | "clove" | "bulb" | "can" | "pack" | "bunch" | "slice";
+  // Weight per counted item: information, never a license to invent a piece count.
+  gramsPerItem?: number;
+  weightBasis?: "measured" | "package" | "estimated";
+  content?: { kind: "mass" | "volume"; value: number; basis: "net" | "drained" };
+  basis?: "net" | "drained";
   kind: "mass" | "volume" | "spoon" | "count";
   value: number;
   label?: string;
@@ -90,6 +98,9 @@ export type RecipeIngredient = {
   optional?: boolean;
 };
 export type Recipe = {
+  importVersion?: 2;
+  translations?: Record<string, Record<string, string>>;
+  provenance?: { importedAt: string; original: unknown; decisions: string[] };
   id: string;
   title: string;
   titleEn: string;

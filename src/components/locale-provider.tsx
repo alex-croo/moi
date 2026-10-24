@@ -1,15 +1,19 @@
 "use client";
 import {createContext,useContext,useEffect,useRef,useState,useCallback,type ReactNode} from "react";
+import type { Recipe, Ingredient } from "@/lib/types";
 import {tr,type Locale} from "@/lib/locale";
 type Kind="catalog"|"recipe"|"lesson";
 type State={locale:Locale;strings:Record<string,string>;load:(kind:Kind,id?:string)=>Promise<void>};
 const LocaleContext=createContext<State>({locale:"fr",strings:{},load:async()=>{}});
-export function LocaleProvider({locale,children,enabled=false}:{locale:Locale;children:ReactNode;enabled?:boolean}){
+export function LocaleProvider({locale,children,enabled=false,catalog}:{locale:Locale;children:ReactNode;enabled?:boolean;catalog?:{recipes:Recipe[];ingredients:Ingredient[]}}){
+ const baked:Record<string,string>=Object.assign({},...(catalog?.recipes||[]).map(r=>r.translations?.[locale]||{}),...(catalog?.ingredients||[]).map(i=>i.translations?.[locale]||{}));
+ const bakedReady=!!catalog?.recipes.length&&catalog.recipes.every(r=>r.importVersion===2&&r.translations?.[locale]);
  const [catalogs,setCatalogs]=useState<Record<string,Record<string,string>>>({});
  const canonical=useRef<Record<string,Record<string,string>>>({});
  const requests=useRef(new Map<string,Promise<void>>());
  const activeLocale=useRef(locale);activeLocale.current=locale;
  const load=useCallback((kind:Kind,id?:string)=>{
+  if(bakedReady&&kind!=="lesson")return Promise.resolve();
   if(!enabled||locale==="fr"||(locale==="en"&&kind!=="lesson"))return Promise.resolve();
   const key=`${locale}:${kind}:${id||""}`;
   if(requests.current.has(key))return requests.current.get(key)!;
@@ -22,9 +26,9 @@ export function LocaleProvider({locale,children,enabled=false}:{locale:Locale;ch
     }})
    .catch(error=>{requests.current.delete(key);throw error;});
   requests.current.set(key,pending);return pending;
- },[locale,enabled]);
+ },[locale,enabled,bakedReady]);
  useEffect(()=>{void load('catalog').catch(()=>{});},[load]);
- return <LocaleContext.Provider value={{locale,strings:catalogs[locale]||{},load}}>{children}</LocaleContext.Provider>;
+ return <LocaleContext.Provider value={{locale,strings:{...catalogs[locale],...baked},load}}>{children}</LocaleContext.Provider>;
 }
 export function useLocale(){return useContext(LocaleContext).locale;}
 export function useText(locale?:Locale){const context=useContext(LocaleContext);const language=locale||context.locale;return (fr:string|undefined,en:string|undefined=fr)=>language!=="fr"&&language===context.locale&&context.strings[fr||""]!==undefined?context.strings[fr||""]:tr(language,fr||"",en||fr||"");}

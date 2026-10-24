@@ -342,6 +342,11 @@ export function Pantry({
                 onChange={(e) => setAmount(e.target.value)}
               />
             </label>
+            {kind === "count" && <label>{t("Poids par pièce (facultatif)", "Weight per piece (optional)")} · {units.ingredientMass}
+              <input aria-label={t("Poids par pièce (facultatif)", "Weight per piece (optional)")} inputMode="decimal" type="number" min="0" step="any" disabled={busy}
+                value={editing.quantity?.gramsPerItem ? Number((editing.quantity.gramsPerItem / pantryFactor("mass", units)).toPrecision(8)) : ""}
+                onChange={e => setEditing({...editing,quantity:{...(editing.quantity||{kind:"count",value:0}),kind:"count",gramsPerItem:e.target.value?Number(e.target.value)*pantryFactor("mass",units):undefined,weightBasis:e.target.value?"measured":undefined}})}/>
+            </label>}
             <label className="pantry-note-field">
               {t("Petit repère (facultatif)", "A little reminder (optional)")}
               <input

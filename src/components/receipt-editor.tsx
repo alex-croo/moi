@@ -94,7 +94,7 @@ export function ReceiptEditor({ order, ingredients, units, locale, onSave, onClo
       const lines = rows.map(row => {
         const value = Number(row.amount.replace(",", "."));
         if (!Number.isFinite(value) || value < 0) throw Error("quantity");
-        const quantity = receiptQuantity(value, row.unit, 1, row.line.quantity.label);
+        const quantity = { ...(row.unit === "count" && row.line.quantity.kind === "count" ? row.line.quantity : {}), ...receiptQuantity(value, row.unit, 1, row.line.quantity.label) };
         const original = order.lines.find(l => l.personalItemId && l.personalItemId === row.line.personalItemId);
         return { ...row.line, quantity, personalItemId: original && compatible(original.quantity, quantity) ? row.line.personalItemId : undefined };
       });
@@ -103,7 +103,7 @@ export function ReceiptEditor({ order, ingredients, units, locale, onSave, onClo
     } catch { setError(t("La réception n’a pas été enregistrée. Vérifiez les quantités et réessayez. Si la commande a changé ailleurs, rechargez la page.", "Receipt was not saved. Check quantities and retry. If the order changed elsewhere, reload the page.")); }
     finally { running.current = false; setBusy(null); }
   }
-  const unitName = (unit: ReceiptUnit) => ({ g: "g", kg: "kg", oz: "oz", lb: "lb", ml: "ml", l: "L", fl_oz: "fl oz US", cup: t("tasses US", "US cups"), tsp: t("c. à thé", "tsp"), tbsp: t("c. à soupe", "tbsp"), count: t("unités", "items") })[unit];
+  const unitName = (unit: ReceiptUnit) => ({ g: "g", kg: "kg", oz: "oz", lb: "lb", ml: "ml", l: "L", fl_oz: "fl oz US", cup: t("tasses US", "US cups"), cup_metric:t("Tasses de 250 ml", "250 ml cups"), tsp: t("c. à thé", "tsp"), tbsp: t("c. à soupe", "tbsp"), count: t("unités", "items") })[unit];
   const flagged = rows?.filter(row => !row.checked || !row.amount.trim()).length || 0;
   return <dialog ref={dialog} className="shopping-dialog receipt-dialog" aria-labelledby="receipt-title" onCancel={e => { e.preventDefault(); close(); }}>
     <header><div className="receipt-heading"><span className="receipt-icon"><PackageCheck size={23}/></span><div><h2 id="receipt-title">{t("J’ai reçu ma commande", "I received my order")}</h2><span>{order.grocer || t("Ma commande", "My order")} · {rows === null ? t("1. Ajouter mon reçu", "1. Add your receipt") : t("2. Vérifier les articles", "2. Review items")}</span></div></div><button type="button" className="icon-button" disabled={busy === "save"} aria-label={t("Fermer", "Close")} onClick={close}><X size={20}/></button></header>
@@ -130,7 +130,7 @@ export function ReceiptEditor({ order, ingredients, units, locale, onSave, onClo
             <label>{t("Unité", "Unit")}<AppSelect disabled={!!busy} value={row.unit} onChange={e => edit(index, { unit: e.target.value as ReceiptUnit })}>{receiptUnits.map(u => <option value={u} key={u}>{unitName(u)}</option>)}</AppSelect></label>
             <label>{t("Où le ranger", "Storage")}<AppSelect disabled={!!busy} value={row.line.location} onChange={e => editLine(index, { location: e.target.value as PurchaseLine["location"] })}>{pantryLocations.map(l => <option key={l} value={l}>{pantryLabel(l, locale)}</option>)}</AppSelect></label>
           </div>
-          {row.unit === "count" && <label className="receipt-count">{t("Type d’unité (gousses, pièces…)", "Count type (cloves, items…)")}<input maxLength={80} disabled={!!busy} value={row.line.quantity.label || ""} onChange={e => editLine(index, { quantity: { ...row.line.quantity, label: e.target.value, labelEn: e.target.value } })}/></label>}
+          {row.unit === "count" && <label className="receipt-count">{t("Type d’unité (gousses, pièces…)", "Count type (cloves, items…)")}<input maxLength={80} disabled={!!busy} value={row.line.quantity.label || ""} onChange={e => editLine(index, { quantity: { kind:"count", value:row.line.quantity.value, label: e.target.value, labelEn: e.target.value } })}/></label>}
           {row.review && <div className="receipt-review"><p>{row.review}</p><label><input type="checkbox" disabled={!!busy} checked={row.checked} onChange={e => edit(index, { checked: e.target.checked })}/>{t("J’ai vérifié cet article", "I reviewed this item")}</label></div>}
           <details><summary>{t("Rayon et correspondance", "Aisle and ingredient match")}</summary><div className="receipt-matching"><label>{t("Rayon", "Aisle")}<AppSelect disabled={!!busy} value={row.line.aisle || "other"} onChange={e => editLine(index, { aisle: e.target.value as PurchaseLine["aisle"] })}>{aisles.map(a => <option key={a} value={a}>{aisleLabel(a, locale)}</option>)}</AppSelect></label><label>{t("Ingrédient de mes recettes", "Recipe ingredient")}<AppSelect disabled={!!busy} value={row.line.ingredientId || ""} onChange={e => editLine(index, { ingredientId: e.target.value || null, personalItemId: undefined })}><option value="">{t("Aliment personnel", "Personal food")}</option>{ingredients.map(i => <option key={i.id} value={i.id}>{t(i.name, i.nameEn)}</option>)}</AppSelect></label></div>{row.source && <p className="receipt-source">{row.source}</p>}</details>
         </section>)}</div>

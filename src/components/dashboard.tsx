@@ -1285,5 +1285,5 @@ function DashboardBody({
 
 export function Dashboard(props: Omit<React.ComponentProps<typeof DashboardBody>, "onLanguageChange">) {
  const [locale,setLocale]=useState(props.locale);
- return <LocaleProvider locale={locale} enabled={props.mode==="private"}><DashboardBody {...props} locale={locale} onLanguageChange={setLocale}/></LocaleProvider>;
+ return <LocaleProvider locale={locale} enabled={props.mode==="private"} catalog={props.initialData}><DashboardBody {...props} locale={locale} onLanguageChange={setLocale}/></LocaleProvider>;
 }

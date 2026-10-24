@@ -53,31 +53,14 @@ export function pantryForIngredient(
 }
 // Values are stored in grams or millilitres, just like recipe quantities.
 export function pantryFactor(kind: Quantity["kind"], units: UnitPreferences) {
-  if (kind === "mass") return units.ingredientMass === "oz" ? 28.349523125 : 1;
-  if (kind === "volume")
-    return units.volume === "cup"
-      ? 236.5882365
-      : units.volume === "fl_oz"
-        ? 29.5735295625
-        : 1;
-  if (kind === "spoon") return units.spoons === "spoon" ? 15 : 1;
-  return 1;
+ if(kind==="mass")return {g:1,kg:1000,oz:28.349523125,lb:453.59237}[units.ingredientMass];
+ if(kind==="volume")return {ml:1,l:1000,cup:236.5882365,cup_metric:250,fl_oz:29.5735295625}[units.volume];
+ if(kind==="spoon")return units.spoons==="ml"?1:15;
+ return 1;
 }
-export function pantryUnit(
-  kind: Quantity["kind"],
-  units: UnitPreferences,
-  locale: Locale,
-) {
-  if (kind === "mass") return units.ingredientMass;
-  if (kind === "volume")
-    return units.volume === "cup"
-      ? regionalTr(locale, "tasses US", "US cups")
-      : units.volume === "fl_oz"
-        ? "fl oz US"
-        : "ml";
-  if (kind === "spoon")
-    return units.spoons === "ml"
-      ? "ml"
-      : regionalTr(locale, "c. à soupe", "tbsp");
-  return regionalTr(locale, "unités", "items");
+export function pantryUnit(kind: Quantity["kind"], units: UnitPreferences, locale: Locale) {
+ if(kind==="mass")return units.ingredientMass;
+ if(kind==="volume")return {ml:"ml",l:"L",cup:regionalTr(locale,"tasse US","US cup"),cup_metric:regionalTr(locale,"tasse de 250 ml","250 ml cup"),fl_oz:"fl oz US"}[units.volume];
+ if(kind==="spoon")return units.spoons==="ml"?"ml":regionalTr(locale,"c. à soupe","tbsp");
+ return regionalTr(locale,"unités","items");
 }
