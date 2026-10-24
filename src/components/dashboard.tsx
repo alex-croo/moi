@@ -66,10 +66,16 @@ import { Brand } from "./brand";
 import { tr, type Locale } from "@/lib/locale";
 import { documentSchema } from "@/lib/validation";
 
+import { recordInventory } from "@/lib/inventory-history";
+import { InventoryHub, InventoryNav, type InventoryView } from "./inventory-hub";
+
 type View =
   | "overview"
   | "recipes"
   | "menus"
+  | "inventoryMeals"
+  | "inventoryCatalog"
+  | "inventoryHistory"
   | "groceries"
   | "orders"
   | "pantry"
@@ -352,6 +358,7 @@ function DashboardBody({
       if (!refresh.ok) throw new Error("refresh");
       next = await refresh.json();
     }
+    if (demo && ["pantry", "pantryDelete", "slot"].includes(type)) next = recordInventory(data, next, type);
     latestData.current = next;
     setData(next);
     return next;
@@ -834,12 +841,14 @@ function DashboardBody({
               {menuSection(true)}
             </div>
           )}
+          {(["groceries", "pantry", "inventoryMeals", "orders", "inventoryCatalog", "inventoryHistory"] as string[]).includes(view) && <InventoryNav view={view as InventoryView} locale={locale} onNavigate={go}/>}
+          {(view === "inventoryMeals" || view === "inventoryCatalog" || view === "inventoryHistory") && <InventoryHub view={view} data={data} locale={locale} onSave={async m => { await mutate("shopping", m); }} onCook={setCooking} onPlan={() => go("menus")} onPantry={id => {go("pantry");setPantryEditId(id);}}/>}
           {view === "groceries" && (
             <GroceryList
               data={data}
               locale={locale}
               week={selectedWeek}
-              onPlan={() => { setSelectedWeek(monday(shoppingState(data).range?.start || selectedWeek)); go("menus"); }}
+              onPlan={() => go("inventoryMeals")}
               onOpen={setSelectedRecipe}
               onSave={async (value: ShoppingMutation) => { await mutate("shopping", value); }}
               onSettings={() => go("settings")}
@@ -852,6 +861,8 @@ function DashboardBody({
             <Pantry
               key={pantryEditId || "pantry"}
               initialItemId={pantryEditId}
+              workspace={data}
+              onMeals={() => go("inventoryMeals")}
               deliveries={<PendingOrders data={data} locale={locale} showEmpty onSave={async value => { await mutate("shopping", value); }}/>}
               items={data.pantry}
               ingredients={data.ingredients}

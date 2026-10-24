@@ -33,6 +33,9 @@ export type ShoppingState = {
   postalCode?: string;
   thawed?: string[];
   personalItems?: PersonalShoppingItem[];
+  portions?: Record<string, number>;
+  stockAliases?: Record<string, string>;
+  inventoryEvents?: import("./inventory-history").InventoryEvent[];
 };
 export type ShoppingWorkspace = WorkspaceData & { shopping?: ShoppingState };
 export type ShoppingCatalog = { recipes: Recipe[]; ingredients: Ingredient[] };

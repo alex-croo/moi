@@ -1,3 +1,4 @@
+import { recordInventory } from "./inventory-history";
 import { mutationSchema } from "./validation";
 import type { PersonalData } from "./private-types";
 import { progressWithJournal } from "./program-journal";
@@ -39,6 +40,9 @@ export function applyPrivateMutation(
       break;
     case "slot":
       if (shoppingState(current).cooked.some(c => !c.undone && c.meal.date === parsed.data.date && c.meal.slot === parsed.data.slot)) throw Error("cooked_meal");
+      next.shopping = structuredClone(shoppingState(current));
+      for (const old of current.slots.filter(x => x.date === parsed.data.date && x.slot === parsed.data.slot))
+        if (old.recipeId !== parsed.data.recipeId && next.shopping.portions) delete next.shopping.portions[`${old.date}:${old.slot}:${old.recipeId}`];
       next.slots = current.slots.filter(
         (x) => x.date !== parsed.data.date || x.slot !== parsed.data.slot,
       );
@@ -81,5 +85,5 @@ export function applyPrivateMutation(
       break;
     }
   }
-  return next;
+  return ["pantry", "pantryDelete", "slot"].includes(type) ? recordInventory(current, next, type) : next;
 }

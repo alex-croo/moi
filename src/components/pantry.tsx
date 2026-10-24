@@ -3,7 +3,7 @@ import { useText } from "./locale-provider";
 
 import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { AppSelect } from "./app-select";
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Archive, Check, Pencil, Plus, Search, Trash2, Snowflake, X } from "lucide-react";
 import type { Locale } from "@/lib/locale";
 import type {
@@ -28,6 +28,12 @@ import { countLabels, countMeasure, countMeasures } from "@/lib/ingredient-measu
 import { pantrySchema } from "@/lib/validation";
 import { useShoppingDialog } from "./use-shopping-dialog";
 
+import type { ShoppingWorkspace } from '@/lib/shopping-types';
+import { shoppingNeeds } from '@/lib/shopping';
+import { InventoryDetail } from './inventory-detail';
+import { stockCatalog } from '@/lib/stock-catalog';
+import { stockIdentity } from '@/lib/stock-units';
+
 function PantryEditor({ title, locale, busy, onClose, children }: {
   title: string; locale: Locale; busy: boolean; onClose: () => void; children: ReactNode;
 }) {
@@ -47,7 +53,7 @@ export function Pantry({
   onDelete,
   onGroceries,
   deliveries,
-  initialItemId,
+  initialItemId, workspace, onMeals,
 }: {
   items: PantryEntry[];
   ingredients: Ingredient[];
@@ -58,8 +64,11 @@ export function Pantry({
   onGroceries: () => void;
   deliveries?: ReactNode;
   initialItemId?: string;
+  workspace?: ShoppingWorkspace; onMeals?: () => void;
 }) {
   const t = useText(locale);
+  const report = useMemo(() => workspace ? shoppingNeeds(workspace, workspace, "0001-01-01", "9999-12-31") : null, [workspace]);
+  const [detail, setDetail] = useState<string | null>(null);
   const initialItem = items.find(p => p.id === initialItemId);
   const displayAmount = (q: Quantity | null | undefined) => q ? String(Number((q.value / pantryFactor(q.kind, units)).toPrecision(12))) : "";
   const [query, setQuery] = useState("");
@@ -444,16 +453,18 @@ export function Pantry({
             )}
           </p>
         )}
-      <div className="pantry-groups pantry-list">
-        {filtered.length > 0 && <div className="pantry-columns" aria-hidden="true"><span>{t("Aliment", "Food")}</span><span>{t("Emplacement", "Location")}</span><span>{t("En réserve", "On hand")}</span><span/></div>}
+      <div className="pantry-groups pantry-list inventory-pantry">
+        {filtered.length > 0 && <div className="pantry-columns" aria-hidden="true"><span>{t("Aliment", "Food")}</span><span>{t("Emplacement", "Location")}</span><span>{t("À la maison", "At home")}</span><span>{t("Réservé aux repas", "Reserved for meals")}</span><span>{t("Libre", "Free")}</span><span/></div>}
         {aisles.map(aisle => {
           const group = filtered.filter(p => pantryAisle(p, ingredients) === aisle).sort((a, b) => Number(b.inStock) - Number(a.inStock) || t(pantryName(a, ingredients, "fr"), pantryName(a, ingredients, "en")).localeCompare(t(pantryName(b, ingredients, "fr"), pantryName(b, ingredients, "en")), locale));
           return group.length ? <section className="pantry-group" key={aisle} aria-label={aisleLabel(aisle, locale)}>
             <h2>{aisleLabel(aisle, locale)} <small>{group.length}</small></h2>
             <ul>{group.map(item => <li key={item.id} className={item.inStock ? "" : "pantry-empty-item"}>
-              <div className="pantry-item-copy"><h3>{t(pantryName(item, ingredients, "fr"), pantryName(item, ingredients, "en"))}</h3>{item.note && <p>{item.note}</p>}{!item.inStock && <small>{t("À renouveler", "To replenish")}</small>}</div>
+              <div className="pantry-item-copy"><h3>{item.ingredientId && report ? <button className="inventory-food-name" onClick={() => setDetail(stockIdentity(item.ingredientId, workspace ? stockCatalog(workspace, workspace).ingredients : ingredients))}>{t(pantryName(item, ingredients, "fr"), pantryName(item, ingredients, "en"))}</button> : t(pantryName(item, ingredients, "fr"), pantryName(item, ingredients, "en"))}</h3>{item.note && <p>{item.note}</p>}{!item.inStock && <small>{t("À renouveler", "To replenish")}</small>}</div>
               <span className="pantry-item-location">{item.location === "freezer" && <Snowflake size={14} aria-label={t("Congelé", "Frozen")}/>} {pantryLabel(item.location, locale)}</span>
               <strong className="pantry-item-quantity">{item.quantity ? pantryQuantityLabel(item.quantity, units, locale, t) : t("Quantité à préciser", "Quantity to specify")}</strong>
+              <span className="inventory-number">{item.quantity ? pantryQuantityLabel({...item.quantity, value: report?.lots.find(l => l.item.id === item.id)?.reserved || 0}, units, locale, t) : "—"}</span>
+              <span className="inventory-number inventory-positive">{item.quantity ? pantryQuantityLabel({...item.quantity, value: report?.lots.find(l => l.item.id === item.id)?.free ?? (item.inStock ? item.quantity.value : 0)}, units, locale, t) : "—"}</span>
               <div className="pantry-item-actions">
                 <button className="icon-button pantry-stock-toggle" disabled={busy || !!editing} aria-label={item.inStock ? t("Il n’en reste plus", "All used up") : t("J’en ai de nouveau", "Restocked")} title={item.inStock ? t("Il n’en reste plus", "All used up") : t("J’en ai de nouveau", "Restocked")} aria-pressed={item.inStock} onClick={() => void perform(() => onSave({ ...item, inStock: !item.inStock }), t("Vos réserves sont à jour.", "Your pantry is up to date."))}><Check size={15}/></button>
                 <button className="icon-button" disabled={busy || !!editing} aria-label={`${t("Modifier", "Edit")} ${t(pantryName(item, ingredients, "fr"), pantryName(item, ingredients, "en"))}`} onClick={() => edit(item)}><Pencil size={15}/></button>
@@ -463,6 +474,7 @@ export function Pantry({
           </section> : null;
         })}
       </div>
+      {detail && workspace && report && <InventoryDetail ingredientId={detail} data={workspace} report={report} locale={locale} onClose={() => setDetail(null)} onEdit={id => {setDetail(null);const item=items.find(p=>p.id===id);if(item)edit(item);}} onMeals={onMeals || onGroceries}/>}
     </section>
   );
 }

@@ -4,6 +4,7 @@ import "./studio.css";
 import "./learning.css";
 import "./elan.css";
 import "./receipt.css";
+import "./inventory.css";
 export const metadata: Metadata = {
   title: "Tred’meal — Un jour à la fois",
   description:

@@ -28,7 +28,10 @@ test("legacy schema: database persists receipt and cooking together with stock, 
     personal = applyPrivateMutation(personal, "shopping", { action: "selectMany", range: { start: "2026-10-25", end: "2026-10-31" }, updates: [{ ingredientId: personalFood.id, checked: true }] }, catalog);
     await save(0, personal);
     expect((await reload()).data.shopping?.personalItems).toEqual([personalFood]);
-    const received = await reload(); expect(received.data.pantry[0].quantity?.value).toBe(500); expect(received.data.shopping?.orders[0].status).toBe("received");
+    const received = await reload();
+    const undoPreview = applyPrivateMutation(received.data, "shopping", {action:"undoInventory",id:received.data.shopping!.inventoryEvents![0].id}, catalog);
+    expect(undoPreview.shopping?.personalItems).toHaveLength(0);
+    expect(undoPreview.pantry[0].quantity?.value).toBe(500); expect(received.data.pantry[0].quantity?.value).toBe(500); expect(received.data.shopping?.orders[0].status).toBe("received");
     personal = applyPrivateMutation(received.data, "shopping", { action: "cook", id: cookId, meal: personal.slots[0], portions: 2, includeOptional: false }, catalog);
     await save(1, personal);
     await expect(save(1, received.data)).rejects.toThrow(/Workspace changed/);
