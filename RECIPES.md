@@ -41,3 +41,17 @@ Les fiches illustrées se consultent directement dans l’application. Les quant
 `/api/journal/edit` utilise Vercel AI SDK et AI Gateway, modèle `deepseek/deepseek-v4.1-flash-1017`, avec l'OIDC du projet Vercel. Ce modèle est admissible aux crédits gratuits au 19 octobre 2026. Le routage exige `zeroDataRetention` et `disallowPromptTraining`; une requête échoue si aucun fournisseur admissible n'est disponible. Aucun secret de fournisseur n'est nécessaire. Le texte est envoyé uniquement sur action explicite; aucune écriture du journal n'est faite par cette route. L'utilisateur accepte ou rejette le résultat, peut annuler la correction, puis enregistre sa page. Les requêtes sont limitées à 8 000 caractères, 5 000 jetons de sortie et 20 propositions par heure et par membre. Le SDK ne journalise ni les entrées ni les sorties. Seuls les crédits gratuits du workspace sont activés, sans achat ni recharge automatique. La disponibilité dépend de leur solde et de l'admissibilité du modèle. Le routage ZDR par requête nécessite le plan Vercel Pro déjà actif du workspace.
 
 Les journaux utilisent un numéro de révision pour refuser l'écrasement concurrent. Les préférences d'unités sont conservées dans Supabase par propriétaire et s'appliquent à tous ses appareils.
+
+### Mélanges maison à l’import
+
+Un mélange préparé pour une recette n’est pas un produit à commander. Les imports
+peuvent fournir `ingredientLayout: "direct-only"` avec les ingrédients directs,
+et `preparations: [{id, title, titleEn, ingredients: [{ingredientId, grams, quantity}]}]`.
+Le validateur ajoute les composants aux ingrédients d’achat, une seule fois. Sans
+ce marqueur, la liste est déjà aplatie et doit contenir tous les composants des
+préparations. Les mélanges virtuels `maison-mix-*` sont refusés dans cette liste.
+Les titres et les étapes ont les quatre traductions habituelles; les mesures
+restent en SI et suivent les préférences d’affichage. Préparer la dose consommée,
+sans créer automatiquement une réserve de mélange non réalisée. Garder les
+références et les décisions de conversion dans la provenance. Les mêmes lignes
+servent aux courses, aux calories, à la réservation et au débit « J’ai cuisiné ».

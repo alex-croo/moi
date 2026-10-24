@@ -21,3 +21,13 @@
 .coach-memories>div{padding:8px 0;border-bottom:1px solid #d5ddca;font-size:13px;line-height:1.7}
 .coach-memories .text-button{padding-left:0;margin-right:12px;font-size:12px}
 @media(max-width:600px){.coach-welcome{padding:18px;margin-bottom:22px;border-radius:16px}.coach-introduction,.coach-welcome>p{font-size:15px}.coach-recall-heading{flex-wrap:wrap;gap:4px 12px}.coach-welcome .marie-identity img{width:44px;height:44px}.daily-followup{padding:18px}.coach-bridge{padding-left:12px}}
+.coach-options{margin:12px 0 24px;font-size:12px;color:var(--muted)}
+.coach-options>summary{cursor:pointer;padding:6px 0;min-height:32px}
+.coach-journal-prompt{font-size:19px;line-height:1.6;font-weight:500;margin:20px 0 12px;color:var(--ink)}
+.recipe-homemade{margin:28px 0;padding:24px;background:var(--sage,#eef2e6);border-radius:16px}
+.recipe-homemade>p{font-size:13px;color:var(--muted);line-height:1.6}
+.recipe-homemade>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:24px}
+.recipe-homemade h3{font-weight:600;font-size:16px;line-height:1.4;margin:10px 0}
+.recipe-homemade ul{list-style:none;padding:0;margin:0}
+.recipe-homemade li{display:flex;justify-content:space-between;gap:18px;padding:7px 0;font-size:13px;border-bottom:1px solid #d5ddca}
+.recipe-homemade li strong{white-space:nowrap;font-weight:500}

@@ -13,7 +13,7 @@ export type LearningQuestion = { id: string; text: string; source: "assistant"; 
 export type LearningDay = {
   date: string; document_id: string; snapshot: LearningContent & { moduleTitle: string; version: number };
   revision: number; notes: Record<string, { text: string; revision: number }>;
-  adaptation: { introduction: string; experiment: string; version?:number; bridge?:string; locale?:string; recall?: {sourceDate:string;sourceTitle:string;prompt:string;hint:string;questionId:string} | null } | null;
+  adaptation: { introduction: string; experiment: string; version?:number; teaching?:string; question?:string; bridge?:string; locale?:string; recall?: {sourceDate:string;sourceTitle:string;prompt:string;hint:string;questionId:string} | null } | null;
   questions: LearningQuestion[]; quiet: boolean; reflection_skipped: boolean;
 };
 export type LearningMemory = { id: string; text: string; source_date: string; status: "suggested" | "confirmed"; category: string };

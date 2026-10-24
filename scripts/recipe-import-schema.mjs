@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { assertPreparations, flattenPreparations } from "./recipe-preparations.mjs";
 const id = z.string().regex(/^[a-z0-9-]{1,100}$/);
 const text = z.string().min(1).max(20000);
 const number = z.number().finite().nonnegative();
@@ -67,6 +68,7 @@ export const schema = z
                   .strict(),
               )
               .min(1),
+            preparations: z.array(z.object({id,title:text,titleEn:text,ingredients:z.array(z.object({ingredientId:id,grams:z.number().positive(),quantity}).strict()).min(1)}).strict()).optional(),
             steps: z
               .array(
                 z
@@ -103,7 +105,12 @@ export const schema = z
   .strict();
 
 export function validateCatalog(raw) {
- const catalog=schema.parse(raw);
+ // Explicit direct-only input is expanded once; saved catalogs are already flat.
+ const expanded={...raw,recipes:raw.recipes?.map(recipe=>{
+  if(recipe.ingredientLayout!=="direct-only")return recipe;
+  const {ingredientLayout,...rest}=recipe;return flattenPreparations(rest);
+ })};
+ const catalog=schema.parse(expanded);
  const tokens=s=>(s.match(/\{\{[^}]+\}\}/g)||[]).sort().join("|");
  for(const list of [catalog.recipes,catalog.ingredients,catalog.assets])if(new Set(list.map(x=>x.id)).size!==list.length)throw Error("Duplicate canonical ID");
  const ids=new Set(catalog.ingredients.map(i=>i.id));
@@ -112,7 +119,8 @@ export function validateCatalog(raw) {
   for(const locale of ["fr","en","es","pt-BR"])if(!ingredient.translations[locale][ingredient.name])throw Error(`Missing ingredient translation ${locale}: ${ingredient.id}`);
  }
  for(const r of catalog.recipes){
-  const fields=[r.title,r.subtitle,r.note,...r.steps.flatMap(s=>[s.title,s.text]),...r.ingredients.map(l=>l.note)].filter(Boolean);
+  assertPreparations(r,catalog.ingredients);
+  const fields=[r.title,r.subtitle,r.note,...(r.preparations||[]).map(p=>p.title),...r.steps.flatMap(s=>[s.title,s.text]),...r.ingredients.map(l=>l.note)].filter(Boolean);
   for(const text of fields){
    for(const locale of ["fr","en","es","pt-BR"]){
     const translated=r.translations[locale][text];

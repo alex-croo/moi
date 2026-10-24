@@ -29,3 +29,19 @@ Ces choix visent à soutenir apprentissage et autonomie. La rétention d’une i
 Le serveur vérifie le consentement et l’accès Fireworks avant de charger les textes. Il sélectionne au plus quatre extraits récents, quatre journées de notes, dix repères confirmés et une lecture passée parmi 45 journées. Les données futures et les repères non confirmés sont exclus. Le titre et la date du rappel sont validés contre les journées du propriétaire. Une question ou un exercice généré n’est pas un fait autobiographique.
 
 Aucune modification de la politique Fireworks ni du modèle Ember-1. Les requêtes utilisent `store:false`, un schéma de sortie et des délais bornés. Le verrou de rétention des comptes non pilotes et le consentement restent actifs. Les échecs libèrent la requête en cours; la limite quotidienne reste quatre tentatives. Un retour tardif ne remplace pas une note plus récente. Les textes privés ne figurent pas dans les journaux techniques ni dans les tests de fournisseur.
+
+## Suivi du petit pas et fil unique (24 octobre, version 3)
+
+Le contexte relie chaque proposition récente à sa date, aux réponses avec leur
+question d’origine et aux mots du journal. Une proposition n’atteste jamais un
+résultat. Marie reprend l’essai le plus récent, reconnaît seulement ce qui a été
+rapporté et ajuste le geste, notamment s’il n’a pas été essayé. Son enseignement
+reste fondé sur la lecture approuvée et ses références.
+
+La page présente une introduction, l’enseignement contextualisé, un seul petit
+pas et une seule invitation au journal libre. Les anciennes réponses restent
+accessibles sous « Mes notes déjà écrites »; aucune n’est effacée. Les suggestions
+de mémoire et l’actualisation volontaire sont dans des options repliées. Les
+questions identiques ou très proches sont supprimées avant persistance; SQL
+empêche aussi la duplication exacte. Le rechargement conserve le même fil et la
+limite d’une nouvelle étape par jour reste inchangée.

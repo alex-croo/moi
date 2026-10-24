@@ -1,4 +1,5 @@
 "use client";
+import { recipePreparations } from "@/lib/recipe-preparations";
 import { useText, useContentTranslation, TranslationStatus } from "./locale-provider";
 
 import { L } from "@/components/locale-provider";
@@ -307,6 +308,11 @@ export function RecipeSheet({
             </details>
           </aside>
         </div>
+        {recipePreparations(recipe).length>0&&<section className="recipe-homemade" aria-label={t("Les mélanges à préparer","Mixtures to prepare")}>
+          <h2>{t("Les mélanges à préparer","Mixtures to prepare")}</h2>
+          <p>{t("Préparez seulement la quantité pour cette recette. Ces ingrédients sont déjà inclus dans la liste ci-dessus et dans vos courses.","Prepare only the amount for this recipe. These ingredients are already included above and in your shopping list.")}</p>
+          <div>{recipePreparations(recipe).map(prep=><article key={prep.id}><h3>{t(prep.title,prep.titleEn)}</h3><ul>{prep.ingredients.map((line,i)=>{const item=ingredients.find(x=>x.id===line.ingredientId);return <li key={i}><span>{item?t(item.name,item.nameEn):line.ingredientId}</span><strong>{quantityLabel(line.quantity,units,locale,factor,t)}</strong></li>})}</ul></article>)}</div>
+        </section>}
         {recipe.note && (
           <p className="recipe-note">
             {instructionText(

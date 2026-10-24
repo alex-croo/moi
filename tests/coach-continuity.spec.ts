@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {PGlite} from '@electric-sql/pglite';
 import {readFile,readdir} from 'node:fs/promises';
-import {coachContext,validateCoachRecall} from '../src/lib/coach-context';
+import {coachContext,validateCoachRecall,freshCoachQuestion} from '../src/lib/coach-context';
 import {companionOutput} from '../src/lib/learning-validation';
 import type {LearningDay,LearningMemory} from '../src/lib/learning-types';
 const lesson={title:'Un geste après le dîner',objective:'Retrouver une intention personnelle',body:'Une lecture approuvée sur les intentions personnelles.',action:'Choisir un geste simple après le dîner.',question:'Que souhaitez-vous essayer?',sources:[],limits:'',adaptations:'',reviewedOn:'2026-10-01',moduleTitle:'Motivation',version:1};
@@ -33,20 +33,31 @@ test('daily coach persists recall safely, caches opening, releases failures, gua
   await as(owner);const first=await run('ensure');await run('complete');await run('preferences',{enabled:true});
   await db.exec('reset role');await db.query('update public.learning_days set date=date-1 where owner_id=$1',[owner]);await db.query('update public.learning_completions set completed_on=completed_on-1 where owner_id=$1',[owner]);
   await as(owner);const current=await run('ensure');const yesterday=current.dates.find((d:string)=>d!==current.today);
-  const reserved=await run('reserve_ai',{kind:'opening'});
-  const output={version:2,locale:'fr',introduction:'Vous aviez choisi de prendre une pause.',experiment:'Après le dîner, essayez une courte pause.',bridge:'Votre intention peut orienter le petit geste du jour.',question:'Quel repère vous aiderait à faire cette pause?',recall:{sourceDate:yesterday,sourceTitle:'Forged title',prompt:'Quelle idée vous revient de la lecture précédente?',hint:'Une intention personnelle aide à choisir ce qui compte.'},memories:[]};
+  const reserved=await run('reserve_ai',{kind:'opening',version:3});
+  const output={version:3,teaching:'Un repère quotidien peut aider à retrouver une intention personnelle dans une situation ordinaire.',locale:'fr',introduction:'Vous aviez choisi de prendre une pause.',experiment:'Après le dîner, essayez une courte pause.',bridge:'Votre intention peut orienter le petit geste du jour.',question:'Quel repère vous aiderait à faire cette pause?',recall:{sourceDate:yesterday,sourceTitle:'Forged title',prompt:'Quelle idée vous revient de la lecture précédente?',hint:'Une intention personnelle aide à choisir ce qui compte.'},memories:[]};
   const saved=await run('finish_ai',{requestId:reserved.requestId,expectedRevision:reserved.day.revision,result:output});
-  expect(saved.day.adaptation.version).toBe(2);expect(saved.day.adaptation.recall.sourceTitle).toBe(first.day.snapshot.title);expect(saved.day.questions).toHaveLength(2);
-  const recallId=saved.day.adaptation.recall.questionId;await run('note',{key:recallId,text:'My own recall, never replaced.',expectedRevision:0});
-  const cached=await run('reserve_ai',{kind:'opening'});expect(cached.cached).toBe(true);expect(cached.state.day.questions).toHaveLength(2);
+  expect(saved.day.adaptation.version).toBe(3);expect(saved.day.adaptation.recall.sourceTitle).toBe(first.day.snapshot.title);expect(saved.day.questions).toHaveLength(1);
+  const recallId=saved.day.questions[0].id;await run('note',{key:recallId,text:'My own recall, never replaced.',expectedRevision:0});
+  const cached=await run('reserve_ai',{kind:'opening',version:3});expect(cached.cached).toBe(true);expect(cached.state.day.questions).toHaveLength(1);
   const fail=await run('reserve_ai',{kind:'followup'});await run('fail_ai',{requestId:fail.requestId});
   const follow=await run('reserve_ai',{kind:'followup'});
   await run('note',{key:'reflection',text:'I have changed this note.',expectedRevision:0});
   expect((await run('finish_ai',{requestId:follow.requestId,expectedRevision:follow.day.revision,result:output})).stale).toBe(true);
   const last=await run('reserve_ai',{kind:'followup'});const final=await run('finish_ai',{requestId:last.requestId,expectedRevision:last.day.revision,result:{...output,question:'Quel ajustement aimeriez-vous essayer maintenant?'}});
-  expect(final.day.notes[recallId].text).toBe('My own recall, never replaced.');expect(final.day.questions.filter((q:any)=>q.kind==='recall')).toHaveLength(1);expect(final.day.adaptation.introduction).toBe(output.introduction);
-  expect((await run('reserve_ai',{kind:'opening'})).cached).toBe(true);await expect(run('reserve_ai',{kind:'followup'})).rejects.toThrow();
+  expect(final.day.notes[recallId].text).toBe('My own recall, never replaced.');expect(final.day.questions.filter((q:any)=>q.kind==='recall')).toHaveLength(0);expect(final.day.adaptation.introduction).toBe(output.introduction);
+  expect((await run('reserve_ai',{kind:'opening',version:3})).cached).toBe(true);await expect(run('reserve_ai',{kind:'followup'})).rejects.toThrow();
   await as(other);expect((await db.query('select * from public.learning_days')).rows).toHaveLength(0);await expect(run('finish_ai',{requestId:reserved.requestId,expectedRevision:1,result:output})).rejects.toThrow();
-  await as(owner);await run('preferences',{enabled:false});await expect(run('reserve_ai',{kind:'opening'})).rejects.toThrow();
+  await as(owner);await run('preferences',{enabled:false});await expect(run('reserve_ai',{kind:'opening',version:3})).rejects.toThrow();
  } finally{await db.close();}
+});
+
+test('next day follows the proposed step with attributed reports, and suppresses repeated questions',()=>{
+ const prior=day('2026-10-23','yesterday');prior.adaptation={introduction:'Welcome',experiment:'Try a walk after lunch'};
+ prior.questions=[{id:'q1',text:'Qu’est-ce qui vous a aidé à essayer cette marche?',source:'assistant',createdAt:''}];
+ prior.notes.q1={text:'La pluie; j’ai fait des étirements à la place.',revision:1};
+ const context=coachContext('2026-10-24',day('2026-10-24','today'),[],[prior],[],[]);
+ expect(context.previousExperiments[0]).toMatchObject({date:'2026-10-23',suggested:'Try a walk after lunch',reports:[{question:prior.questions[0].text,answer:prior.notes.q1.text}]});
+ expect(context.previousExperiments[0].outcome).toContain('unknown unless');
+ expect(freshCoachQuestion(prior.questions[0].text,context)).toBe('');
+ expect(freshCoachQuestion('Quel moment rendrait ce geste plus simple demain?',context)).not.toBe('');
 });

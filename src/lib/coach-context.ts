@@ -43,7 +43,13 @@ export function coachContext(date: string, day: LearningDay, journal: Journal[],
   return {
     today: date, lesson: day.snapshot, journal: safeJournal, notes: safeNotes, memories: confirmed, recall,
     previousQuestions: history.filter(h=>h.date<=date).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7).flatMap(h=>h.questions.map(q=>({text:q.text,answered:!!h.notes[q.id]?.text.trim()}))).slice(0,14),
-    previousExperiments: past.slice(0,3).map(h=>({date:h.date,suggested:h.adaptation?.experiment||h.snapshot.action})),
+    previousExperiments: past.slice(0,3).map(h=>({
+      date:h.date, suggested:h.adaptation?.experiment||h.snapshot.action,
+      // Only the person can report an attempt. Keep the question with its answer.
+      reports:Object.entries(h.notes).filter(([,n])=>n.text.trim()).slice(0,4).map(([key,n])=>({question:key==="reflection"?h.snapshot.question:h.questions.find(q=>q.id===key)?.text||"",answer:n.text.slice(0,1200)})),
+      ownJournal:journal.find(e=>e.date===h.date)?.text.slice(0,2500)||"",
+      outcome:"unknown unless explicitly reported in these own words",
+    })),
   };
 }
 
@@ -54,4 +60,16 @@ export function validateCoachRecall<T extends { recall: { sourceDate:string; pro
   }
   if (output.recall) throw Error("invented_recall");
   return {...output, recall:null};
+}
+
+/** Suppress exact/near rephrasing of an earlier question; never erase an answer. */
+export function freshCoachQuestion(question:string, context:ReturnType<typeof coachContext>) {
+ const normalize=(s:string)=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+ const q=normalize(question), a=words(question);
+ const repeated=context.previousQuestions.some(p=>{
+  if(normalize(p.text)===q)return true;
+  const b=words(p.text), common=[...a].filter(w=>b.has(w)).length;
+  return a.size>=3&&b.size>=3&&common/Math.max(a.size,b.size)>=0.8;
+ });
+ return repeated?"":question;
 }
