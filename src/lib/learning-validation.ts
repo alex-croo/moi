@@ -10,6 +10,8 @@ export const learningContent = z.object({
 // The editor can rewrite prose, but cannot alter approved facts, sources or review metadata.
 export const editorialRewrite = learningContent.pick({ title: true, body: true, action: true, question: true });
 export const companionOutput = z.object({
-  introduction: z.string().max(700), experiment: z.string().max(700), question: z.string().min(10).max(500),
+  introduction: z.string().trim().min(10).max(700), experiment: z.string().trim().min(10).max(700), question: z.string().trim().min(10).max(500),
+  bridge: z.string().trim().min(10).max(500),
+  recall: z.object({sourceDate:z.iso.date(),prompt:z.string().trim().min(10).max(400),hint:z.string().trim().min(10).max(600)}).strict().nullable(),
   memories: z.array(z.object({ text: z.string().min(5).max(400), sourceDate: z.iso.date(), category: z.enum(["motivation", "constraint", "preference", "experiment", "observation"]) }).strict()).max(3),
 }).strict();

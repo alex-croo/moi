@@ -4,6 +4,7 @@ import { useText, useLocale, useContentTranslation, TranslationStatus } from "./
 import { L } from "@/components/locale-provider";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Marie } from "./marie";
+import { CoachPanel } from "./coach-panel";
 import { BookOpen, Check, ArrowRight, Sparkles, Flag } from "lucide-react";
 import { useJournalAutosave } from "@/hooks/use-journal-autosave";
 import { draftFromEntry, type JournalSyncBridge } from "@/lib/journal-autosave";
@@ -35,39 +36,55 @@ function AutoNote({owner,date,noteKey,label,initial,onSaved}:{owner:string;date:
  const status=sync.recoveryError?"Attendez l’enregistrement avant de fermer cette page.":state==="conflict"?t("Cette note a changé sur un autre appareil. Votre version est conservée ici."):state==="offline"?t("Vos mots sont conservés. L’enregistrement reprend automatiquement dès le retour de la connexion."):state==="pending"||state==="saving"?"Enregistrement automatique…":state==="saved"?t("Enregistré"):"";
  return <label className="learning-note"><span>{label}</span><textarea disabled={!sync.ready} aria-label={label} value={draft.text} rows={3} maxLength={20000} placeholder={t("Quelques mots, à votre rythme…")} onBlur={()=>void sync.flush()} onChange={e=>sync.update(date,{...draft,text:e.target.value})}/>{status&&<small role="status">{t(status)}</small>}{state==="offline"&&<button type="button" className="text-button" onClick={()=>void sync.flush()}><L text="Réessayer maintenant" /></button>}{state==="conflict"&&<p><L text="Copiez votre brouillon avant de recharger pour comparer les versions." /></p>}</label>;
 }
-export function DailyJournal({date,owner,enabled,children,beforeAI}:{date:string;owner:string;enabled:boolean;children:ReactNode;beforeAI:()=>Promise<void>}) {
+export function DailyJournal({date,owner,enabled,children,beforeAI,onOpen}:{date:string;owner:string;enabled:boolean;children:ReactNode;beforeAI:()=>Promise<void>;onOpen?:(date:string)=>void}) {
  const t=useText(); const locale=useLocale();
-
- const [data,setData]=useState<LearningState|null>(null),[error,setError]=useState(""),[busy,setBusy]=useState(false);
- const active=useRef(true), autoAsked=useRef(false);
+ const [data,setData]=useState<LearningState|null>(null),[error,setError]=useState(""),[aiError,setAiError]=useState(""),[busy,setBusy]=useState(false);
+ const active=useRef(true), autoAsked=useRef(false), asking=useRef(false);
  const noteFlushers=useRef(new Set<()=>Promise<void>>());
  const registerNotes=useMemo(()=>(flush:()=>Promise<void>)=>{noteFlushers.current.add(flush);return()=>{noteFlushers.current.delete(flush);};},[]);
- async function load(){try{const next=await learningCall("ensure",{date,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone});if(active.current){setData(next);setError("");}}catch(e){if(active.current)setError((e as Error).message);}}
+ function accept(next:LearningState){if(active.current)setData(current=>current?.day&&next.day&&current.day.date===next.day.date&&current.day.revision>next.day.revision?current:next);}
+ async function load(){try{const next=await learningCall("ensure",{date,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone});accept(next);if(active.current)setError("");}catch(e){if(active.current)setError((e as Error).message);}}
  useEffect(()=>{active.current=true;if(enabled)void load();return()=>{active.current=false;};},[date,enabled]);
- async function ask(){setBusy(true);setError("");try{await Promise.all([...noteFlushers.current].map(flush=>flush()));await beforeAI();const r=await fetch("/api/learning/companion",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({date,locale})});if(!r.ok)throw Error("Marie n’est pas disponible pour le moment. Votre journal reste accessible.");const next=await r.json();if(active.current)setData(next);}catch(e){if(active.current)setError((e as Error).message);}finally{if(active.current)setBusy(false);}}
- async function action(name:string,payload:object={}){setBusy(true);try{const next=await learningCall(name,{date,...payload});setData(next);if(name==="complete"&&next.personalization&&next.ai.ready&&!next.day?.quiet)void ask();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
- useEffect(()=>{if(enabled && data?.personalization && data.ai.ready && data.day && !data.day.adaptation && !data.day.quiet && date===data.today && !autoAsked.current){autoAsked.current=true;void ask();}},[data?.personalization,data?.ai.ready,data?.day?.document_id,enabled]);
-
+ async function ask(kind:"opening"|"followup"="followup"){
+  if(asking.current)return;asking.current=true;setBusy(true);setAiError("");
+  try {
+   await Promise.all([...noteFlushers.current].map(flush=>flush()));await beforeAI();
+   const r=await fetch("/api/learning/companion",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({date,locale,kind}),signal:AbortSignal.timeout(55000)});
+   if(!r.ok)throw Error(r.status===429?t("Marie a déjà préparé plusieurs pistes aujourd’hui. Retrouvez-les ci-dessous, ou reprenez demain.","Marie has already prepared several ideas today. Revisit them below, or come back tomorrow."):r.status===409?t("Vos notes ont changé pendant la préparation. Relancez Marie pour en tenir compte.","Your notes changed while Marie was preparing. Try again to include them."):t("Marie n’est pas disponible pour le moment. Vos notes sont conservées; vous pouvez réessayer.","Marie is unavailable for now. Your notes are safe; you can try again."));
+   accept(await r.json());
+  }catch(e){if(active.current)setAiError(e instanceof Error&&e.name!=="TimeoutError"?e.message:t("Marie prend plus de temps que prévu. Réessayez dans un moment; votre journal reste accessible.","Marie is taking longer than expected. Try again shortly; your journal remains accessible."));}
+  finally{asking.current=false;if(active.current)setBusy(false);}
+ }
+ async function action(name:string,payload:object={}){setBusy(true);setError("");try{accept(await learningCall(name,{date,...payload}));}catch(e){setError((e as Error).message);}finally{if(active.current)setBusy(false);}}
+ useEffect(()=>{if(enabled&&data?.personalization&&data.ai.ready&&data.day&&data.day.adaptation?.version!==2&&!data.day.quiet&&date===data.today&&!autoAsked.current){autoAsked.current=true;void ask("opening");}},[data?.personalization,data?.ai.ready,data?.day?.document_id,data?.day?.quiet,enabled]);
  const translation=useContentTranslation("lesson",data?.day?.date);
  const day=data?.day,done=!!day&&data?.completed.some(c=>c.document_id===day.document_id);
+ const questions=day?.questions.filter(q=>q.kind!=="recall")||[],latest=questions.at(-1),older=questions.slice(0,-1);
+ const memories=data?.memories.filter(m=>m.status==="suggested"&&m.source_date===date).slice(0,3)||[];
+ const note=(id:string,label:string)=><AutoNote key={`${date}:${id}`} owner={owner} date={date} noteKey={id} label={label} initial={day?.notes[id]} onSaved={()=>void load()}/>;
  if(!enabled)return <>{children}</>;
  return <NotesSync.Provider value={registerNotes}><div className="daily-journal"><TranslationStatus {...translation}/>
- {day&&<section className="daily-reading" aria-label="Ma lecture du jour"><div className="learning-meta"><BookOpen size={15}/><span>{t(day.snapshot.moduleTitle)}</span><span>{done?t("Lecture terminée"):t("À découvrir")}</span></div><h2>{t(day.snapshot.title)}</h2>
- {day.adaptation?.introduction&&<aside className="companion-copy"><Marie caption={t("Un mot pour votre journée")}/><p>{day.adaptation.introduction}</p></aside>}
+ <CoachPanel day={day} loading={!data&&!error} busy={busy} personalized={!!data?.personalization} ready={!!data?.ai.ready&&date===data.today} error={aiError} onRetry={()=>void ask(day?.adaptation?.version===2?"followup":"opening")} onOpen={onOpen}>
+  {day?.adaptation?.recall&&!data?.encrypted&&note(day.adaptation.recall.questionId,day.adaptation.recall.prompt)}
+ </CoachPanel>
+ {day&&<section className="daily-reading" aria-label={t("Ma lecture du jour","My daily reading")}><div className="learning-meta"><BookOpen size={15}/><span>{t(day.snapshot.moduleTitle)}</span><span>{done?t("Lecture terminée"):t("À découvrir")}</span></div><h2>{t(day.snapshot.title)}</h2>
+ {!day.quiet&&day.adaptation?.bridge&&<p className="coach-bridge"><span>{t("Le lien avec aujourd’hui","The connection to today")}</span>{day.adaptation.bridge}</p>}
  <div className="reading-prose">{t(day.snapshot.body).split("\n\n").map((p,i)=><p key={i}>{p.replace(/\[S\d+\]/g,"")}</p>)}</div>
- <aside className="learning-experiment"><strong><L text="Un petit pas à essayer" /></strong><p>{day.adaptation?.experiment||t(day.snapshot.action)}</p></aside>
+ <aside className="learning-experiment"><strong><L text="Un petit pas à essayer" /></strong><p>{(!day.quiet&&day.adaptation?.experiment)||t(day.snapshot.action)}</p></aside>
  <section className="learning-sources" aria-label={t("Références")}><h3><L text="Références :" /></h3><ul>{day.snapshot.sources.map(s=><li key={s.id}><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></li>)}</ul></section>
  <div className="learning-actions">{done?<span><Check size={15}/> <L text={" Lecture terminée"} /></span>:<button className="primary" disabled={busy||date!==data?.today} onClick={()=>void action("complete")}><L text={"J’ai terminé la lecture "} /><Check size={14}/></button>}<small><L text="Une nouvelle étape par jour." /></small></div>
- {!data?.encrypted&&<AutoNote key={`${date}:reflection`} owner={owner} date={date} noteKey="reflection" label={t(day.snapshot.question)} initial={day.notes.reflection} onSaved={()=>void load()}/>}
+ {!data?.encrypted&&note("reflection",t(day.snapshot.question))}
  </section>}
  {!day&&data&&<p className="learning-muted">{date===data.today?t("Votre prochaine lecture sera disponible lors de la publication du prochain jalon. Votre journal reste ouvert."):t("Votre page personnelle · aucune lecture attribuée à cette date.")}</p>}
  {error&&<p role="alert">{t(error)} <button className="text-button" onClick={()=>void load()}><L text="Réessayer" /></button></p>}
- <div className="daily-freewriting"><span className="eyebrow"><L text="MES MOTS, MON MOMENT" /></span>{children}</div>
- {day&&!data?.encrypted&&<section className="daily-followup"><Marie caption={t("Pour poursuivre votre réflexion")}/><h3><L text="On prend un moment pour vous?" /></h3>
- {day.questions.map(q=><div key={q.id}><small className="learning-muted"><L text="Une question de Marie · à votre rythme" /></small><AutoNote owner={owner} date={date} noteKey={q.id} label={q.text} initial={day.notes[q.id]} onSaved={()=>void load()}/></div>)}
- {!data?.personalization?<p className="learning-muted"><L text="Les questions personnalisées sont facultatives et s’activent dans vos préférences." /></p>:!data.ai.ready?<p className="learning-muted">{t(data.ai.reason)}</p>:<div className="learning-actions"><button className="secondary" disabled={busy||day.quiet||date!==data.today} onClick={()=>void ask()}><Sparkles size={14}/>{busy?t("Un instant…"):t("Demander une question à Marie")}</button><label><input type="checkbox" checked={day.quiet} onChange={e=>void action("quiet",{enabled:e.target.checked})}/> <L text={" Aujourd’hui, je préfère écrire librement"} /></label></div>}
- {done&&<p className="learning-muted"><L text="Votre lecture est terminée. La prochaine étape vous attendra demain, sans pression." /></p>}
+ {day&&!data?.encrypted&&<section className="daily-followup"><Marie compact caption={t("De la lecture à votre quotidien","From reading to everyday life")}/>
+ {!day.quiet&&<>{latest?note(latest.id,latest.text):<p className="learning-muted">{t("Qu’aimeriez-vous garder de cette lecture pour votre journée? Vous pouvez l’écrire avec vos propres mots ci-dessous.","What would you like to keep from this reading today? Put it in your own words below.")}</p>}
+ {older.length>0&&<details className="coach-previous"><summary>{t("Nos pistes précédentes","Our previous reflections")} · {older.length}</summary>{older.map(q=>note(q.id,q.text))}</details>}
+ {memories.length>0&&<details className="coach-memories"><summary>{t("Un repère pour la suite?","A reminder for next time?")}</summary><p className="learning-muted">{t("Gardez seulement ce qui vous ressemble. Marie pourra s’y référer lors d’une prochaine journée.","Keep only what feels right to you. Marie can refer back to it on a future day.")}</p>{memories.map(m=><div key={m.id}><p>{m.text}</p><button className="text-button" disabled={busy} onClick={()=>void action("memory",{operation:"confirm",id:m.id})}>{t("Garder ce repère","Keep this reminder")}</button><button className="text-button" disabled={busy} onClick={()=>void action("memory",{operation:"forget",id:m.id})}>{t("Ne pas garder","Don’t keep")}</button></div>)}</details>}
+ </>}
+ {data.personalization&&data.ai.ready&&<div className="learning-actions">{!day.quiet&&<button className="secondary" disabled={busy||date!==data.today} onClick={()=>void ask()}><Sparkles size={14}/>{busy?t("Un instant…"):t("Reprendre avec mes dernières notes","Continue with my latest notes")}</button>}<label><input type="checkbox" checked={day.quiet} disabled={busy||date!==data.today} onChange={e=>void action("quiet",{enabled:e.target.checked})}/> <L text={" Aujourd’hui, je préfère écrire librement"} /></label></div>}
  </section>}
+ <div className="daily-freewriting"><span className="eyebrow"><L text="MES MOTS, MON MOMENT" /></span>{children}</div>
  </div></NotesSync.Provider>;
 }
 export function LearningJourney({onOpen,entries=[]}:{onOpen:(date:string)=>void;entries:{date:string;text:string}[]}) {

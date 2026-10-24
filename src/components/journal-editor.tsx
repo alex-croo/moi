@@ -455,7 +455,7 @@ export function JournalEditor({
             ))}
           </span>
         </div>
-        <DailyJournal key={date} date={date} owner={ownerId} enabled={guided && active} beforeAI={() => sync.requireSynced()}>
+        <DailyJournal key={date} date={date} owner={ownerId} enabled={guided && active} beforeAI={() => sync.requireSynced()} onOpen={openPage}>
         {aiDisabled && (
           <p className="journal-privacy-hint">
             <LockKeyhole size={14} />
