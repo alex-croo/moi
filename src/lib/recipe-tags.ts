@@ -9,6 +9,7 @@ export const defaultRecipeTags: RecipeTag[] = [
     ["bowl", "Bols et riz", "Bowls & rice"], ["sandwich", "Burgers et sandwichs", "Burgers & sandwiches"],
     ["soup", "Soupes et mijotés", "Soups & stews"], ["salad", "Salades", "Salads"],
     ["flatbread", "Pains plats et tortillas", "Flatbreads & tortillas"],
+    ["dessert", "Desserts", "Desserts"],
   ].map(([id, label, label_en]) => ({ id, label, label_en, category: "type" as const })),
   ...[
     ["chicken", "Poulet", "Chicken"], ["beef", "Bœuf", "Beef"], ["pork", "Porc", "Pork"],
@@ -18,6 +19,7 @@ export const defaultRecipeTags: RecipeTag[] = [
 // Curated catalog assignments. New tags can be created by admins; assignments
 // are reviewed and shipped with the catalog, never inferred from private data.
 export const recipeTagAssignments: Record<string, string[]> = {
+  "tredmeal-pasteis-de-nata": ["vegetarian", "dessert"],
   "diy-01": [
     "omnivore",
     "main",
