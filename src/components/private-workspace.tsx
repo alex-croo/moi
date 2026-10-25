@@ -128,6 +128,26 @@ export function PrivateWorkspace({
         const originalCatalog = catalogRef.current;
         const isCooking = type === "shopping" && (value as {action?: string}).action === "cook";
         let mutation = value;
+        // A menu may stay open for hours while another device updates the journal
+        // or pantry. Rebase before sending, but only keep the approved deductions.
+        if (isCooking) {
+          const response = await fetch("/api/vault", { cache: "no-store" });
+          if (!response.ok) throw Error("save");
+          const fresh: LoadedWorkspace = await response.json();
+          if (!state.current) throw Error("locked");
+          if (!!fresh.envelope !== !!original.envelope) throw Error("conflict");
+          const remote = fresh.envelope && original.key
+            ? await decryptVault<PersonalData>(original.key, fresh.envelope, userId)
+            : fresh.standard;
+          if (!state.current) throw Error("locked");
+          if (!remote || !originalCatalog) throw Error("conflict");
+          current = { ...original, data: remote, envelope: fresh.envelope, revision: fresh.envelope?.revision ?? fresh.standardRevision ?? 0 };
+          state.current = current;
+          catalogRef.current = fresh.catalog;
+          setLoaded(fresh);
+          setData(remote);
+          if (reconcileCooking(original.data, remote, originalCatalog, fresh.catalog, value) === "acknowledged") return remote;
+        }
         for (let attempt = 0; attempt < 2; attempt++) {
           try {
             let next: PersonalData;
