@@ -1090,5 +1090,11 @@
   "recette": "receta",
   "Vos réserves ont changé. Les quantités ci-dessous sont à jour; vérifiez-les avant de confirmer à nouveau.": "Tus reservas cambiaron. Las cantidades de abajo están actualizadas; revísalas antes de confirmar de nuevo.",
   "Ce repas a été déplacé ou remplacé. Fermez cette fenêtre et ouvrez le repas dans votre menu à jour.": "Esta comida fue movida o reemplazada. Cierra esta ventana y abre la comida en tu menú actualizado.",
-  "Desserts": "Postres"
+  "Desserts": "Postres",
+  "Ce que Marie retient": "Lo que Marie recuerda",
+  "Marie retient automatiquement les observations utiles de vos notes. Vous pouvez les corriger ou exclure leur journée source de son accompagnement.": "Marie recuerda automáticamente las observaciones útiles de tus notas. Puedes corregirlas o excluir el día de origen de su acompañamiento.",
+  "Retenu automatiquement": "Guardado automáticamente",
+  "Enregistrer la correction": "Guardar corrección",
+  "Ne plus utiliser cette journée": "Dejar de usar este día",
+  "Avec votre accord, Fireworks et Ember-1 utilisent des extraits de vos notes et les repères retenus automatiquement pour adapter les questions et votre prochaine lecture. L’administration de l’application ne donne pas accès à votre journal; les opérateurs techniques peuvent toutefois accéder aux données hébergées.": "Con tu permiso, Fireworks y Ember-1 usan fragmentos de tus notas y recuerdos guardados automáticamente para adaptar las preguntas y tu próxima lectura. La administración de la aplicación no permite acceder a tu diario; los operadores técnicos sí pueden acceder a los datos alojados."
 }

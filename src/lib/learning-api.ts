@@ -7,7 +7,7 @@ import { fireworksStatus } from "./fireworks";
 const date = z.iso.date().optional(), rev = z.number().int().nonnegative();
 const base = { date };
 const personal = z.discriminatedUnion("action", [
- z.object({ action: z.enum(["state","ensure","complete"]), ...base, timeZone: z.string().max(100).optional() }).strict(),
+ z.object({ action: z.enum(["state","ensure","complete"]), ...base, timeZone: z.string().max(100).optional(), locale:z.enum(["fr","en","es","pt-BR"]).optional() }).strict(),
  z.object({ action: z.literal("note"), ...base, key: z.string().min(1).max(80), text: z.string().max(20000), expectedRevision: rev }).strict(),
  z.object({ action: z.enum(["quiet","skip","preferences"]), ...base, enabled: z.boolean() }).strict(),
  z.object({ action: z.literal("memory"), operation: z.enum(["forget","forget_all","confirm"]), id: z.uuid().optional(), text: z.string().min(1).max(400).optional() }).strict(),

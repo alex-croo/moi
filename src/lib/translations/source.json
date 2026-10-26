@@ -909,5 +909,11 @@
   "✓ Lecture": "✓ Reading",
   "✓ Journal": "✓ Journal",
   "Lecture terminée. La prochaine étape sera disponible demain. Vous pouvez poursuivre votre journal.": "Reading complete. The next step will be available tomorrow. You can continue writing in your journal.",
-  "Précisez la quantité ou le format reçu.": "Specify the received quantity or package size."
+  "Précisez la quantité ou le format reçu.": "Specify the received quantity or package size.",
+  "Ce que Marie retient": "What Marie remembers",
+  "Marie retient automatiquement les observations utiles de vos notes. Vous pouvez les corriger ou exclure leur journée source de son accompagnement.": "Marie automatically remembers useful observations from your notes. You can correct them or exclude their source day from her guidance.",
+  "Retenu automatiquement": "Remembered automatically",
+  "Enregistrer la correction": "Save correction",
+  "Ne plus utiliser cette journée": "Stop using this day",
+  "Avec votre accord, Fireworks et Ember-1 utilisent des extraits de vos notes et les repères retenus automatiquement pour adapter les questions et votre prochaine lecture. L’administration de l’application ne donne pas accès à votre journal; les opérateurs techniques peuvent toutefois accéder aux données hébergées.": "With your consent, Fireworks and Ember-1 use excerpts from your notes and automatically saved memories to adapt questions and your next reading. The application administration does not provide access to your journal; technical operators may access hosted data."
 }

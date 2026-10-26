@@ -42,6 +42,7 @@ test('daily program: isolated notes, one step per local date, resume, editorial 
  }finally{await db.close();}
 });
 test('private AI access is checked for the authenticated owner before loading journal context',async()=>{
- const route=await readFile('src/app/api/learning/companion/route.ts','utf8');const guard=route.indexOf('await requirePrivateFireworks(auth.user.id)');expect(guard).toBeGreaterThan(-1);expect(guard).toBeLessThan(route.indexOf('.from("standard_workspaces")'));
+ const route=await readFile('src/app/api/learning/companion/route.ts','utf8');const guard=route.indexOf('await requirePrivateFireworks(auth.user.id)');expect(guard).toBeGreaterThan(-1);expect(guard).toBeLessThan(route.indexOf('auth.db.rpc'));
+ const worker=await readFile('src/lib/marie-worker.ts','utf8');expect(worker.indexOf('await requirePrivateFireworks(lease.ownerId)')).toBeLessThan(worker.indexOf('workerRpc<Context>("load"'));
  const provider=await readFile('src/lib/fireworks.ts','utf8');expect(provider).toContain('store: false');expect(provider).toContain('result.model !== model');expect(provider).toContain('zeroDataRetention');expect(provider).toContain('FIREWORKS_ZDR_VERIFICATION');
 });
