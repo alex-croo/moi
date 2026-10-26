@@ -17,7 +17,7 @@ La sélection parcourt tout l’historique indexé, sans limite de 45 jours. Ell
 
 Le traitement vérifie l’accès Fireworks autorisé **avant** de charger les sources personnelles. Les règles existantes de consentement, de coffre et de pilote privé sont conservées. Il ne prétend pas que l’activation du pilote constitue une vérification contractuelle ZDR.
 
-`MARIE_WORKER_SECRET` est une valeur aléatoire réservée au serveur, distincte de toute clé Supabase globale. La base n’en conserve qu’une empreinte dans `coach_config`; le déclencheur planifié récupère la valeur dans Supabase Vault. Seul le protocole de traitement dédié est accessible avec ce secret. Les journaux et les pages préparées n’apparaissent ni dans les réponses techniques ni dans les commandes Cron.
+`MARIE_WORKER_SECRET` est une valeur aléatoire réservée au serveur, distincte de toute clé Supabase globale. La base n’en conserve qu’une empreinte dans `coach_config`; le déclencheur planifié récupère la valeur dans Supabase Vault pour signer une demande de démarrage valable deux minutes. La file pg_net ne reçoit jamais ce secret : sa signature ne permet pas de lire le protocole de données. Garder le schéma `net` hors des schémas exposés par l’API. Les journaux et les pages préparées n’apparaissent ni dans les réponses techniques ni dans les commandes Cron.
 
 Les préférences permettent de corriger un repère ou de ne plus utiliser sa journée source. L’exclusion empêche sa réapparition automatique et retire les anciennes adaptations dérivées, sans effacer les écrits de la personne. Les corrections manuelles restent prioritaires.
 

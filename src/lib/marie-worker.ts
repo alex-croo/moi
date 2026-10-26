@@ -1,5 +1,4 @@
 import "server-only";
-import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { fireworksText, requirePrivateFireworks } from "./fireworks";
 import { languageInstruction, localeOf } from "./locale";
@@ -10,12 +9,6 @@ import type { LearningDay } from "./learning-types";
 type Lease={ownerId:string;token:string};
 type Target={date:string;document_id:string;snapshot:LearningDay["snapshot"];quiet:boolean;opened:boolean};
 type Context={today:string;locale:string;fingerprint:string;sources:MemorySource[];indexed:{date:string;source_hash:string}[];memories:MarieMemory[];history:LearningDay[];completed:{document_id:string;completed_on:string}[];ignoredDates:string[];targets:(Target|null)[];pages:{date:string;fingerprint:string;locale:string;snapshot:LearningDay["snapshot"]}[]};
-export function workerAuthorized(value:string|null){
- const secret=process.env.MARIE_WORKER_SECRET;
- if(!secret||secret.length<40||!value)return false;
- const a=Buffer.from(value),b=Buffer.from(`Bearer ${secret}`);
- return a.length===b.length&&timingSafeEqual(a,b);
-}
 export async function workerRpc<T>(action:string,payload:object={}):Promise<T>{
  const secret=process.env.MARIE_WORKER_SECRET,url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
  if(!secret||secret.length<40||!url||!key)throw Error("worker_unconfigured");

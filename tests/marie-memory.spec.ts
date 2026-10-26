@@ -1,6 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {PGlite} from '@electric-sql/pglite';
-import {createHash} from 'node:crypto';
+import {createHash,createHmac} from 'node:crypto';
+import {workerAuthorized} from '../src/lib/marie-worker-auth';
 import {readFile,readdir} from 'node:fs/promises';
 import {selectMarieMemories,composeMarieContext,verifyExtraction,validateMariePage, type MarieMemory} from '../src/lib/marie-memory';
 import type {LearningDay} from '../src/lib/learning-types';
@@ -9,6 +10,19 @@ const key='synthetic-worker-credential-not-for-production-000000000000000';
 const lesson={title:'Préparer les repas',objective:'Simplifier la préparation des repas du soir',body:'Préparer un repas à l’avance peut simplifier les décisions du soir.',action:'Préparer une petite chose.',question:'Quel geste essayer?',sources:[],limits:'',adaptations:'',reviewedOn:'2026-10-01',moduleTitle:'Organisation',version:1};
 const mem=(id:string,date:string,text:string):MarieMemory=>({id,source_date:date,text,category:'observation',status:'confirmed',active:true,kind:'outcome',topic:'repas',origin:'automatic'});
 const day=(date:string):LearningDay=>({date,document_id:'doc',snapshot:lesson,revision:1,notes:{},questions:[],adaptation:null,quiet:false,reflection_skipped:false});
+
+test('scheduled kickoff signatures expire and cannot substitute for the operator credential',()=>{
+ const prior=process.env.MARIE_WORKER_SECRET;process.env.MARIE_WORKER_SECRET=key;
+ try{
+  const time='1793016000',now=Number(time)*1000;
+  const signed='Marie '+createHmac('sha256',key).update('marie-tick:'+time).digest('hex');
+  expect(workerAuthorized(signed,time,now)).toBe(true);
+  expect(workerAuthorized(signed,time,now+121000)).toBe(false);
+  expect(workerAuthorized(signed,null,now)).toBe(false);
+  expect(workerAuthorized('Bearer wrong',time,now)).toBe(false);
+  expect(workerAuthorized('Bearer '+key,null,now)).toBe(true);
+ }finally{if(prior===undefined)delete process.env.MARIE_WORKER_SECRET;else process.env.MARIE_WORKER_SECRET=prior;}
+});
 
 test('relevant old memories can outrank yesterday; recently repeated, excluded and inactive memories do not dominate',()=>{
  const old=mem(owner,'2026-07-01','Préparer les repas du soir me simplifie les décisions.');
