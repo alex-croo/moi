@@ -73,7 +73,7 @@ export function composeMarieContext(date:string, lesson:LearningDay["snapshot"],
   };
 }
 export function validateMariePage(value:MariePage, context:ReturnType<typeof composeMarieContext>) {
-  const ids=new Set(context.memories.map(m=>m.id));
+  const ids=new Set([...context.memories.map(m=>m.id),...context.previousExperiments.flatMap(e=>e.reportedObservations.map(m=>m.id))]);
   if(value.usedMemoryIds.some(id=>!ids.has(id)) || value.personalReferences.some(r=>r.memoryIds.some(id=>!ids.has(id)||!value.usedMemoryIds.includes(id))))throw Error("unknown_personal_reference");
   if(/vous (?:avez|aviez|evoqu|nomm|disiez|ecriv|notiez|remarqu|mention)|you (?:mentioned|noted|said|wrote|noticed)|voce (?:disse|escreveu|mencionou)|usted (?:dijo|escribio|menciono)/i.test(normalize(value.introduction)))throw Error("autobiographical_introduction");
   const repeated=context.previousQuestions.some(q=>

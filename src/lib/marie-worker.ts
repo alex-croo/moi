@@ -34,7 +34,8 @@ export async function runMarieWorker(ownerId?:string){
   if(pending.length){
    const sources=pending.slice(0,3);
    const experiments=context.history.filter(h=>h.adaptation?.experiment&&!context.ignoredDates.includes(h.date)).map(h=>({date:h.date,suggested:h.adaptation!.experiment}));
-   const raw=await fireworksText(memoryInstructions,{sources,experiments,existingMemories:context.memories.filter(m=>m.active!==false).map(m=>({id:m.id,text:m.text,sourceDate:m.source_date,kind:m.kind,topic:m.topic}))},true,true,lease.ownerId,{maxTokens:3500,reasoning:"none",timeoutMs:45000,schema:z.toJSONSchema(memoryExtraction)});
+   const existingMemories=context.memories.filter(m=>m.active!==false&&m.status==="confirmed"&&!sources.some(s=>s.date===m.source_date)&&(m.origin==="manual"||context.sources.some(s=>s.date===m.source_date&&s.hash===m.source_hash)));
+   const raw=await fireworksText(memoryInstructions,{sources,experiments,existingMemories:existingMemories.map(m=>({id:m.id,text:m.text,sourceDate:m.source_date,kind:m.kind,topic:m.topic}))},true,true,lease.ownerId,{maxTokens:3500,reasoning:"none",timeoutMs:45000,schema:z.toJSONSchema(memoryExtraction)});
    const result=verifyExtraction(memoryExtraction.parse(JSON.parse(raw)),sources,context.memories,experiments);
    for(const source of result)await workerRpc("remember",{...lease,...source});
    await workerRpc("finish",{...lease,more:true});return {status:"indexed",sources:result.length};
