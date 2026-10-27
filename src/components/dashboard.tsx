@@ -1,6 +1,7 @@
 "use client";
 import { Pagination, usePagination } from "./pagination";
 import { NavigationCacheProvider, useShoppingReport, useNavigationCache } from "./navigation-cache";
+import { useSectionScroll } from "./section-scroll";
 import { RecipeBook, PrepareBlend } from "./spice-library";
 import type { SpiceBlend } from "@/lib/spice-blends";
 import { useText } from "./locale-provider";
@@ -123,7 +124,7 @@ function DashboardBody({
   const [preparingBlend, setPreparingBlend] = useState<{blend:SpiceBlend;volumeMl:number}|null>(null);
   const [cooking, setCooking] = useState<MealSlot | null>(null);
   const [view, setView] = useState<View>("overview");
-  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [view]);
+  const sectionScroll = useSectionScroll(view);
   const [selectedWeek, setSelectedWeek] = useState(() => monday(today()));
   const [data, setData] = useState(initialData);
   const latestData = useRef(data); latestData.current = data;
@@ -226,6 +227,7 @@ function DashboardBody({
     );
   }
   function go(value: View, journalDate?: string) {
+    sectionScroll.remember(value);
     setPantryEditId(undefined);
     if (value === "journal") setJournalNavigation(current => ({ id: current.id + 1, date: journalDate }));
     setView(value);
@@ -657,7 +659,7 @@ function DashboardBody({
             </div>
           </div>
         </header>
-        <main id="main-content" className="main-content">
+        <main ref={sectionScroll.content} id="main-content" className="main-content">
           {view !== "journal" && <ThawReminders data={data} locale={locale} all={view === "pantry"} onSave={async m => { await mutate("shopping", m); }}/>}
           {privateActions && view === "program" && (
             <LearningJourney entries={data.journal} onOpen={date => go("journal", date)} />
