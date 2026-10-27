@@ -1,4 +1,6 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
+import { useRememberedState } from "./navigation-cache";
 import { useText } from "./locale-provider";
 
 import { L } from "@/components/locale-provider";
@@ -14,12 +16,13 @@ export function JournalLibrary({ pages, locale, onOpen }: {
   locale: Locale;
   onOpen: (date: string) => void;
 }) {
-  const [layout, setLayout] = useState<"grid" | "list">("grid");
-  const [query, setQuery] = useState("");
-  const [draftsOnly, setDraftsOnly] = useState(false);
+  const [layout, setLayout] = useRememberedState<"grid" | "list">("journal:layout", "grid");
+  const [query, setQuery] = useRememberedState("journal:query", "");
+  const [draftsOnly, setDraftsOnly] = useRememberedState("journal:drafts", false);
   const t = useText(locale);
   const filtered = filterJournalPages(pages, query, draftsOnly);
-  const groups = [...new Set(filtered.map(page => page.date.slice(0, 7)))];
+  const paged = usePagination(filtered, "journal", JSON.stringify([query, draftsOnly]));
+  const groups = [...new Set(paged.items.map(page => page.date.slice(0, 7)))];
   const format = (date: string, options: Intl.DateTimeFormatOptions) => new Date(`${date}T12:00:00Z`).toLocaleDateString(intlLocale(locale), { ...options, timeZone: "UTC" });
   const draftCount = pages.filter(page => page.dirty).length;
   return <div className={`journal-library layout-${layout}`}>
@@ -40,13 +43,13 @@ export function JournalLibrary({ pages, locale, onOpen }: {
       <div className="journal-layout-switch" aria-label={t("Disposition des pages", "Page layout")}><button aria-pressed={layout === "grid"} aria-label={t("Grille", "Grid")} onClick={() => setLayout("grid")}><LayoutGrid size={17}/></button><button aria-pressed={layout === "list"} aria-label={t("Liste", "List")} onClick={() => setLayout("list")}><List size={17}/></button></div><label className="journal-search"><Search size={16}/><input type="search" aria-label={t("Rechercher dans mon journal", "Search my journal")} placeholder={t("Retrouver une pensée…", "Find a thought…")} value={query} onChange={event => setQuery(event.target.value)}/></label>
     </div>
     {draftCount > 0 && <p className="journal-draft-notice">{t("Vos pages en cours restent accessibles ici. Leur état de synchronisation est indiqué à l’ouverture.", "Your pages in progress remain available here. Open a page to see its sync status.")}</p>}
-    {!filtered.length ? <div className="journal-library-empty">
+    <Pagination pagination={paged}/>{!filtered.length ? <div className="journal-library-empty">
       <FileText size={27}/><h2>{pages.length ? t("Aucune page pour le moment.", "No pages to show.") : t("Votre première page vous attend.", "Your first page is waiting.")}</h2>
       <p>{pages.length ? t("Essayez un autre mot ou affichez toutes vos pages.", "Try another word or show all your pages.") : t("Pas besoin de trouver les mots parfaits. Quelques lignes suffisent pour commencer.", "No need to find perfect words. A few lines are enough to start.")}</p>
       {pages.length ? <button className="text-button" onClick={() => { setQuery(""); setDraftsOnly(false); }}>{t("Voir toutes mes pages", "Show all my pages")}</button> : <button className="text-button" onClick={() => onOpen(localToday())}>{t("Commencer à écrire", "Start writing")}<ArrowUpRight size={16}/></button>}
     </div> : groups.map(month => <section key={month} className="journal-month">
       <h2>{format(`${month}-01`, { month: "long", year: "numeric" })}</h2>
-      <div className="journal-page-list">{filtered.filter(page => page.date.startsWith(month)).map(page => <button className="journal-page-row" key={page.date} onClick={() => onOpen(page.date)}>
+      <div className="journal-page-list">{paged.items.filter(page => page.date.startsWith(month)).map(page => <button className="journal-page-row" key={page.date} onClick={() => onOpen(page.date)}>
         <span className="journal-date-tile"><strong>{page.date.slice(-2)}</strong><small>{format(page.date, { weekday: "short" })}</small></span>
         <span className="journal-row-copy"><strong>{journalPageTitle(page, t("Sans titre", "Untitled"))}</strong><span>{page.text.trim().replace(/\s+/g, " ").slice(0, 180) || t("Votre page est prête à accueillir vos mots.", "Your page is ready for your words.")}</span></span>
         <span className={`journal-row-status ${page.dirty ? "is-draft" : ""}`}>{page.dirty ? t("En cours", "In progress") : t("Enregistrée", "Saved")}</span>

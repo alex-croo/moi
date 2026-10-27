@@ -1,0 +1,5 @@
+.list-pagination { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 0; color:var(--muted); font-size:12px; }
+.list-pagination>div { display:flex; align-items:center; gap:12px; }
+.list-pagination button.secondary { display:flex; align-items:center; justify-content:center; min-width:36px; min-height:36px; padding:6px; border-radius:10px; }
+.list-pagination button:disabled { opacity:.35; }
+.editorial-layout .list-pagination { flex-wrap:wrap; }

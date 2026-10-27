@@ -25,7 +25,8 @@ export async function GET(
   return new Response(Buffer.from(data.data, "base64"), {
     headers: {
       "Content-Type": data.mime,
-      "Cache-Control": "private, no-store",
+      "Cache-Control": "private, max-age=300",
+      "Vary": "Cookie",
       "X-Content-Type-Options": "nosniff",
     },
   });

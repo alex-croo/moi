@@ -1,4 +1,6 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
+import { useRememberedState, useShoppingReport } from "./navigation-cache";
 import { useText } from "./locale-provider";
 
 import { L } from "@/components/locale-provider";
@@ -29,15 +31,15 @@ export function GroceryList({ data, locale, week, onPlan, onOpen, onPantry, onSe
 }) {
   const t = useText(locale);
   const shopping = shoppingState(data), range = shopping.range || { start: week, end: addDays(week, 6) };
-  const [dates, setDates] = useState(range), [optional, setOptional] = useState(false), [filter, setFilter] = useState<InventoryStatus | "all">("buy");
+  const [dates, setDates] = useState(range), [optional, setOptional] = useRememberedState("groceries:optional", false), [filter, setFilter] = useRememberedState<InventoryStatus | "all">("groceries:filter", "buy");
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [status, setStatus] = useState("");
   const [editing, setEditing] = useState<{ mode: "store" | "online"; lines: PurchaseLine[]; initialGrocerId?: string } | null>(null);
   const [addingPersonal, setAddingPersonal] = useState(false);
   const [reserve, setReserve] = useState<(typeof items)[number] | null>(null);
-  const [detail, setDetail] = useState<string | null>(null), [query, setQuery] = useState("");
+  const [detail, setDetail] = useState<string | null>(null), [query, setQuery] = useRememberedState("groceries:query", "");
   const [actions, setActions] = useState<string | null>(null);
-  const result = useMemo(() => shoppingNeeds(data, data, range.start, range.end, optional), [data, range.start, range.end, optional]);
-  const items = result.items.sort((a, b) => (t(a.ingredient.name, a.ingredient.nameEn)).localeCompare(t(b.ingredient.name, b.ingredient.nameEn), locale));
+  const result = useShoppingReport(data, range.start, range.end, optional)!;
+  const items = [...result.items].sort((a, b) => (t(a.ingredient.name, a.ingredient.nameEn)).localeCompare(t(b.ingredient.name, b.ingredient.nameEn), locale));
   const selection = useShoppingSelection(range, shopping.selections[periodKey(range.start, range.end)] || [], onSave);
   const selected = selection.selected;
   const needs = items.filter(i => toBuyQuantity(i).value > 0 && inventoryStatus(i) !== "check").map(i => ({ ...i, quantity: toBuyQuantity(i) })), picked = needs.filter(i => selected.includes(i.ingredient.id));
@@ -73,6 +75,8 @@ export function GroceryList({ data, locale, week, onPlan, onOpen, onPantry, onSe
   }
   const labels = { buy: t("À acheter", "To buy"), covered: t("Couvert", "Covered"), pending: t("En commande", "On order"), check: t("À vérifier", "To check") };
   const shown = items.filter(i => (filter === "all" || inventoryStatus(i) === filter) && name(i).toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+  const ordered = aisles.flatMap(aisle => shown.filter(i => ingredientAisle(i.ingredient) === aisle));
+  const paged = usePagination(ordered, "groceries", JSON.stringify([filter, query, optional, range.start, range.end, locale]));
   const eligible = shown.filter(i => toBuyQuantity(i).value > 0 && inventoryStatus(i) !== "check");
   const checked = eligible.filter(i => selected.includes(i.ingredient.id));
   const q = (item: (typeof items)[number], value: number) => quantityLabel({...item.quantity, value}, data.preferences, locale, 1, t);
@@ -96,9 +100,9 @@ export function GroceryList({ data, locale, week, onPlan, onOpen, onPantry, onSe
       <header className="inventory-table-toolbar"><div><h2>{filter === "all" ? t("Tous mes ingrédients", "All my ingredients") : labels[filter]}</h2><small>{result.meals} {t("repas prévus", "planned meals")} · {range.start} — {range.end}</small></div><label><input type="search" value={query} onChange={e => setQuery(e.target.value)} aria-label={t("Rechercher un ingrédient", "Search ingredients")} placeholder={t("Rechercher un ingrédient", "Search ingredients")}/></label><button className="text-button" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>{t("Tout voir", "Show all")}</button><button className="secondary" onClick={() => void copy()}><Copy size={15}/>{t("Copier la liste", "Copy list")}</button></header>
       {filter === "check" && <p className="inventory-caption">{t("Un format ou une quantité reste à préciser. Vérifiez l’aliment avant d’en acheter davantage.", "A package size or quantity needs clarification. Check the food before buying more.")}</p>}
       {(selection.error || selection.saving) && <div className="grocery-selection-status" role="status">{selection.error ? <>{t("Sélection non enregistrée. Vos choix restent affichés.", "Selection not saved. Your choices are still shown.")} <button className="text-button" onClick={selection.retry}>{t("Réessayer", "Retry")}</button></> : t("Enregistrement de la sélection…", "Saving selection…")}</div>}
-      <div className="inventory-scroll"><div className="inventory-column-headings"><input type="checkbox" aria-label={t("Tout sélectionner", "Select all")} checked={eligible.length > 0 && checked.length === eligible.length} ref={el => { if(el) el.indeterminate = checked.length > 0 && checked.length < eligible.length; }} disabled={!eligible.length} onChange={e => selection.select(eligible.map(i => i.ingredient.id), e.target.checked)}/><span>{t("Ingrédient", "Ingredient")}</span><span>{t("À la maison", "At home")}</span><span>{t("Pour ces repas", "For these meals")}</span><span>{t("À acheter", "To buy")}</span><span>{t("Pour ces recettes", "For these recipes")}</span><span/></div>
+      <Pagination pagination={paged}/><div className="inventory-scroll"><div className="inventory-column-headings"><input type="checkbox" aria-label={t("Tout sélectionner", "Select all")} checked={eligible.length > 0 && checked.length === eligible.length} ref={el => { if(el) el.indeterminate = checked.length > 0 && checked.length < eligible.length; }} disabled={!eligible.length} onChange={e => selection.select(eligible.map(i => i.ingredient.id), e.target.checked)}/><span>{t("Ingrédient", "Ingredient")}</span><span>{t("À la maison", "At home")}</span><span>{t("Pour ces repas", "For these meals")}</span><span>{t("À acheter", "To buy")}</span><span>{t("Pour ces recettes", "For these recipes")}</span><span/></div>
       {aisles.map(aisle => {
-        const group = shown.filter(i => ingredientAisle(i.ingredient) === aisle);
+        const group = paged.items.filter(i => ingredientAisle(i.ingredient) === aisle);
         return group.length ? <section className="grocery-aisle" key={aisle}><h2>{aisleLabel(aisle, locale)} <small>{group.length}</small></h2><ul className="inventory-rows">{group.map(item => {
           const state = inventoryStatus(item), physical = inventoryQuantities(data, result, item.ingredient.id);
           return <li className={selected.includes(item.ingredient.id) ? "is-picked" : ""} key={item.ingredient.id}>

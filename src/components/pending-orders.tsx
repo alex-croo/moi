@@ -1,4 +1,5 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
 import { useText } from "./locale-provider";
 
 
@@ -23,7 +24,9 @@ export function PendingOrders({ data, locale, onSave, showEmpty = false }: {
   const pending = shopping.orders.filter(order => order.status === "pending")
     .sort((a, b) => a.expectedDate.localeCompare(b.expectedDate));
   const received = shopping.orders.filter(order => order.status === "received" && order.mode === "online")
-    .sort((a, b) => (b.receivedAt || "").localeCompare(a.receivedAt || "")).slice(0, 10);
+    .sort((a, b) => (b.receivedAt || "").localeCompare(a.receivedAt || ""));
+  const pendingPage = usePagination(pending, "pending-orders");
+  const receivedPage = usePagination(received, "received-orders");
   const [receiving, setReceiving] = useState<Purchase | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -44,7 +47,7 @@ export function PendingOrders({ data, locale, onSave, showEmpty = false }: {
     <p className="pending-orders-note">{pending.length
       ? t("Toutes vos livraisons et cueillettes, même à une date lointaine. Les quantités entrent dans vos réserves quand vous confirmez leur réception.", "All deliveries and pickups, including distant dates. Quantities enter your pantry when you confirm receipt.")
       : t("Aucune commande en attente. Vos prochains achats en ligne apparaîtront ici jusqu’à leur réception.", "No pending orders. Your next online purchases will appear here until you receive them.")}</p>
-    {pending.map(order => <div className="pending-order" key={order.id}>
+    <Pagination pagination={pendingPage}/>{pendingPage.items.map(order => <div className="pending-order" key={order.id}>
       <div><strong>{order.grocer || t("Commande en ligne", "Online order")}</strong>
         <small>{order.fulfillment === "delivery" ? t("Livraison", "Delivery") : t("Cueillette", "Pickup")} · <time dateTime={order.expectedDate}>{dateLabel(order.expectedDate)}</time>{order.deliveryWindow && ` · ${order.deliveryWindow.start}–${order.deliveryWindow.end}`} · {order.lines.length} {t("articles", "items")}</small>
         {order.expectedDate < localToday() && <small className="pending-order-overdue">{t("Date prévue dépassée · réception à confirmer", "Expected date passed · receipt still to confirm")}</small>}
@@ -65,7 +68,7 @@ export function PendingOrders({ data, locale, onSave, showEmpty = false }: {
     </div>)}
     {error && <p role="alert" className="form-error">{t(error)}</p>}
     {status && <p role="status" className="grocery-status">{t(status)}</p>}
-    {!!received.length && <details className="received-orders"><summary>{t("Mes dernières réceptions", "Recent receipts")} <span>{received.length}</span></summary>{received.map(order => <details key={order.id}><summary>{order.grocer || t("Commande en ligne", "Online order")} · {order.receivedAt && dateLabel(order.receivedAt.slice(0, 10))} · {(order.received || []).filter(l => l.quantity.value > 0).length} {t("articles reçus", "received items")}</summary><ul className="pending-order-items">{(order.received || []).map(line => <li key={purchaseLineKey(line)}><span>{line.name || t(data.ingredients.find(i => i.id === line.ingredientId)?.name || "", data.ingredients.find(i => i.id === line.ingredientId)?.nameEn || "") || line.ingredientId}</span><span>{quantityLabel(line.quantity, data.preferences, locale, 1, t)}</span></li>)}</ul></details>)}</details>}
+    {!!received.length && <details className="received-orders"><summary>{t("Mes dernières réceptions", "Recent receipts")} <span>{received.length}</span></summary><Pagination pagination={receivedPage}/>{receivedPage.items.map(order => <details key={order.id}><summary>{order.grocer || t("Commande en ligne", "Online order")} · {order.receivedAt && dateLabel(order.receivedAt.slice(0, 10))} · {(order.received || []).filter(l => l.quantity.value > 0).length} {t("articles reçus", "received items")}</summary><ul className="pending-order-items">{(order.received || []).map(line => <li key={purchaseLineKey(line)}><span>{line.name || t(data.ingredients.find(i => i.id === line.ingredientId)?.name || "", data.ingredients.find(i => i.id === line.ingredientId)?.nameEn || "") || line.ingredientId}</span><span>{quantityLabel(line.quantity, data.preferences, locale, 1, t)}</span></li>)}</ul></details>)}</details>}
     {receiving && <ReceiptEditor order={receiving} ingredients={data.ingredients} units={data.preferences} locale={locale} onClose={() => setReceiving(null)} onSave={async value => {
       await onSave(value);
       setStatus(t("Commande reçue. Les quantités confirmées sont ajoutées à vos réserves.", "Order received. Confirmed quantities have been added to your pantry."));

@@ -1,4 +1,6 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
+import { useRememberedState, useShoppingReport } from "./navigation-cache";
 import { useText } from "./locale-provider";
 
 import { tr as regionalTr, intlLocale } from "@/lib/locale";
@@ -67,13 +69,13 @@ export function Pantry({
   workspace?: ShoppingWorkspace; onMeals?: () => void;
 }) {
   const t = useText(locale);
-  const report = useMemo(() => workspace ? shoppingNeeds(workspace, workspace, "0001-01-01", "9999-12-31") : null, [workspace]);
+  const report = useShoppingReport(workspace, "0001-01-01", "9999-12-31");
   const [detail, setDetail] = useState<string | null>(null);
   const initialItem = items.find(p => p.id === initialItemId);
   const displayAmount = (q: Quantity | null | undefined) => q ? String(Number((q.value / pantryFactor(q.kind, units)).toPrecision(12))) : "";
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<PantryLocation | "all">("all");
-  const [showEmpty, setShowEmpty] = useState(false);
+  const [query, setQuery] = useRememberedState("pantry:query", "");
+  const [filter, setFilter] = useRememberedState<PantryLocation | "all">("pantry:filter", "all");
+  const [showEmpty, setShowEmpty] = useRememberedState("pantry:empty", false);
   const [editing, setEditing] = useState<PantryEntry | null>(initialItem || null);
   const [amount, setAmount] = useState(displayAmount(initialItem?.quantity));
   const [kind, setKind] = useState<Quantity["kind"]>(initialItem?.quantity?.kind || "volume");
@@ -95,6 +97,8 @@ export function Pantry({
   const filtered = items.filter((p) =>
     (showEmpty || p.inStock) && normalize(t(pantryName(p, ingredients, "fr"), pantryName(p, ingredients, "en"))).includes(normalize(query)) && (filter === "all" || p.location === filter),
   );
+  const ordered = aisles.flatMap(aisle => filtered.filter(p => pantryAisle(p, ingredients) === aisle).sort((a,b) => Number(b.inStock)-Number(a.inStock) || t(pantryName(a,ingredients,"fr"),pantryName(a,ingredients,"en")).localeCompare(t(pantryName(b,ingredients,"fr"),pantryName(b,ingredients,"en")),locale)));
+  const paged = usePagination(ordered, "pantry", JSON.stringify([query, filter, showEmpty, locale]));
   function closeEditor() {
     setEditing(null);
     setError("");
@@ -453,10 +457,10 @@ export function Pantry({
             )}
           </p>
         )}
-      <div className="pantry-groups pantry-list inventory-pantry">
+      <Pagination pagination={paged}/><div className="pantry-groups pantry-list inventory-pantry">
         {filtered.length > 0 && <div className="pantry-columns" aria-hidden="true"><span>{t("Aliment", "Food")}</span><span>{t("Emplacement", "Location")}</span><span>{t("À la maison", "At home")}</span><span>{t("Réservé aux repas", "Reserved for meals")}</span><span>{t("Libre", "Free")}</span><span/></div>}
         {aisles.map(aisle => {
-          const group = filtered.filter(p => pantryAisle(p, ingredients) === aisle).sort((a, b) => Number(b.inStock) - Number(a.inStock) || t(pantryName(a, ingredients, "fr"), pantryName(a, ingredients, "en")).localeCompare(t(pantryName(b, ingredients, "fr"), pantryName(b, ingredients, "en")), locale));
+          const group = paged.items.filter(p => pantryAisle(p, ingredients) === aisle).sort((a, b) => Number(b.inStock) - Number(a.inStock) || t(pantryName(a, ingredients, "fr"), pantryName(a, ingredients, "en")).localeCompare(t(pantryName(b, ingredients, "fr"), pantryName(b, ingredients, "en")), locale));
           return group.length ? <section className="pantry-group" key={aisle} aria-label={aisleLabel(aisle, locale)}>
             <h2>{aisleLabel(aisle, locale)} <small>{group.length}</small></h2>
             <ul>{group.map(item => <li key={item.id} className={item.inStock ? "" : "pantry-empty-item"}>

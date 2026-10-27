@@ -22,7 +22,7 @@ import {
 import { applyJournalSuggestion, journalChanges } from "@/lib/journal-revision";
 import { useJournalAutosave } from "@/hooks/use-journal-autosave";
 import { draftFromEntry, type JournalSyncBridge } from "@/lib/journal-autosave";
-import { DailyJournal, learningCall } from "./learning-journal";
+import { DailyJournal, useLearningCall } from "./learning-journal";
 import { JournalLibrary } from "./journal-library";
 import { journalPages, journalPageTitle, journalDraftKey as key, type JournalDraft as Draft } from "@/lib/journal-library";
 import { journalSelectionPosition, placeJournalToolbar } from "@/lib/journal-selection";
@@ -67,6 +67,7 @@ export function JournalEditor({
     expectedRevision: number;
   }) => Promise<JournalEntry>;
 }) {
+  const learningCall=useLearningCall();
   const [screen, setScreen] = useState<"library" | "editor">("library");
   const [providerReady,setProviderReady]=useState(false);
   const [guidedPages, setGuidedPages] = useState<{date:string;title:string}[]>([]);

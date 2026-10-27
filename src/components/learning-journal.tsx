@@ -1,4 +1,6 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
+import { useNavigationCache } from "./navigation-cache";
 import { useText, useLocale, useContentTranslation, TranslationStatus } from "./locale-provider";
 
 import { L } from "@/components/locale-provider";
@@ -14,8 +16,19 @@ export async function learningCall(action:string,payload:object={},admin=false) 
  if(!r.ok) throw Error(r.status===409?"Cette note a changé sur un autre appareil. Votre brouillon est conservé ici.":"La connexion n’a pas abouti. Vos mots restent sur cet appareil; réessayez.");
  return r.json();
 }
+export function useLearningCall() {
+ const cache=useNavigationCache();
+ return (action:string,payload:object={},admin=false) => {
+  const prefix=admin?"learning-admin:":"learning:";
+  if (["state","ensure","admin_list","admin_versions"].includes(action))
+   return cache.read(prefix+JSON.stringify([action,payload]),()=>learningCall(action,payload,admin));
+  cache.invalidate(prefix);
+  return learningCall(action,payload,admin).finally(()=>cache.invalidate(prefix));
+ };
+}
 const NotesSync = createContext<(flush:()=>Promise<void>)=>()=>void>(()=>()=>{});
 function AutoNote({owner,date,noteKey,label,initial,onSaved}:{owner:string;date:string;noteKey:string;label:string;initial?:{text:string;revision:number};onSaved:()=>void}) {
+ const learningCall=useLearningCall();
  const t=useText(); const locale=useLocale();
 
  const entry:JournalEntry={id:noteKey,date,title:"",mood:3,text:initial?.text||"",revision:initial?.revision||0};
@@ -36,6 +49,7 @@ function AutoNote({owner,date,noteKey,label,initial,onSaved}:{owner:string;date:
  return <label className="learning-note"><span>{label}</span><textarea disabled={!sync.ready} aria-label={label} value={draft.text} rows={3} maxLength={20000} placeholder={t("Quelques mots, à votre rythme…")} onBlur={()=>void sync.flush()} onChange={e=>sync.update(date,{...draft,text:e.target.value})}/>{status&&<small role="status">{t(status)}</small>}{state==="offline"&&<button type="button" className="text-button" onClick={()=>void sync.flush()}><L text="Réessayer maintenant" /></button>}{state==="conflict"&&<p><L text="Copiez votre brouillon avant de recharger pour comparer les versions." /></p>}</label>;
 }
 export function DailyJournal({date,owner,enabled,children,beforeAI,onOpen}:{date:string;owner:string;enabled:boolean;children:ReactNode;beforeAI:()=>Promise<void>;onOpen?:(date:string)=>void}) {
+ const learningCall=useLearningCall(), cache=useNavigationCache();
  const t=useText(); const locale=useLocale();
  const [data,setData]=useState<LearningState|null>(null),[error,setError]=useState(""),[aiError,setAiError]=useState(""),[busy,setBusy]=useState(false);
  const active=useRef(true), asking=useRef(false);
@@ -48,18 +62,20 @@ export function DailyJournal({date,owner,enabled,children,beforeAI,onOpen}:{date
   if(asking.current)return;asking.current=true;setBusy(true);setAiError("");
   try {
    await Promise.all([...noteFlushers.current].map(flush=>flush()));await beforeAI();
+   cache.invalidate("learning:");
    const r=await fetch("/api/learning/companion",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({date,locale,kind}),signal:AbortSignal.timeout(55000)});
    if(!r.ok)throw Error(r.status===429?t("Marie a déjà actualisé votre journée. Vous pouvez continuer à écrire; elle reprendra le fil demain.","Marie has already updated your day. Keep writing; she will pick up the thread tomorrow."):r.status===409?t("Vos notes ont changé pendant la préparation. Relancez Marie pour en tenir compte.","Your notes changed while Marie was preparing. Try again to include them."):t("Marie n’est pas disponible pour le moment. Vos notes sont conservées; vous pouvez réessayer.","Marie is unavailable for now. Your notes are safe; you can try again."));
    accept(await r.json());
    if(r.status===202){
     for(let attempt=0;attempt<35 && active.current;attempt++){
      await new Promise(resolve=>setTimeout(resolve,2000));
+     cache.invalidate("learning:");
      const next=await learningCall("state",{date,locale});
      if(next.day?.adaptation?.version===4){accept(await learningCall("ensure",{date,locale}));break;}
     }
    }
   }catch(e){if(active.current)setAiError(e instanceof Error&&e.name!=="TimeoutError"?e.message:t("Marie prend plus de temps que prévu. Réessayez dans un moment; votre journal reste accessible.","Marie is taking longer than expected. Try again shortly; your journal remains accessible."));}
-  finally{asking.current=false;if(active.current)setBusy(false);}
+  finally{cache.invalidate("learning:");asking.current=false;if(active.current)setBusy(false);}
  }
  async function action(name:string,payload:object={}){setBusy(true);setError("");try{accept(await learningCall(name,{date,...payload}));}catch(e){setError((e as Error).message);}finally{if(active.current)setBusy(false);}}
  const translation=useContentTranslation("lesson",data?.day?.date);
@@ -94,7 +110,9 @@ export function DailyJournal({date,owner,enabled,children,beforeAI,onOpen}:{date
 export function LearningJourney({onOpen,entries=[]}:{onOpen:(date:string)=>void;entries:{date:string;text:string}[]}) {
  const t=useText(); const locale=useLocale();
 
+ const learningCall=useLearningCall();
  const [data,setData]=useState<LearningState|null>(null),[error,setError]=useState("");
+ const paged=usePagination(data?.dates||[],"learning-days", "", !!data);
  useEffect(()=>{learningCall("ensure",{timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}).then(setData).catch(e=>setError(e.message));},[]);
  useEffect(()=>{
   if(!data)return;
@@ -106,12 +124,14 @@ export function LearningJourney({onOpen,entries=[]}:{onOpen:(date:string)=>void;
  return <section className="learning-journey"><TranslationStatus {...translation}/><header><span className="eyebrow"><L text="UN JOUR À LA FOIS" /></span><h1><L text="Votre chemin, à votre rythme." /></h1><p><L text="Une lecture, quelques mots et un petit pas dans votre quotidien." /></p></header>{error&&<p role="alert">{t(error)}</p>}{data&&<>
  <section className="learning-resume"><div><span className="eyebrow"><Flag size={14}/> {t(data.currentModule?.title)||t("Votre prochain jalon")}</span><h2>{t(data.day?.snapshot.title)||t("Un moment pour vous")}</h2><p>{data.waiting?t("Lecture terminée. La prochaine étape sera disponible demain. Vous pouvez poursuivre votre journal."):t("Reprenez là où vous en êtes. Une seule nouvelle lecture par jour.")}</p></div><button className="primary" onClick={()=>onOpen(data.today)}><L text={"Ouvrir ma journée "} /><ArrowRight size={16}/></button></section>
  {data.currentModule&&data.currentModule.completed===data.currentModule.total&&data.currentModule.total>0&&<p className="learning-milestone"><Flag size={16}/> <L text={" Jalon accompli · "} />{t(data.currentModule.title)}<L text=". Prenez un moment pour reconnaître le chemin parcouru." /></p>}
- <h2><L text="Mes journées" /></h2><div className="learning-history">{data.dates.map(date=>{const page=data.pages.find(p=>p.date===date);const c=data.completed.find(c=>c.completed_on===date || (page?.documentId===c.document_id));const journal=page?.journalDone||entries.some(e=>e.date===date&&e.text.trim());return <button key={date} onClick={()=>onOpen(date)}><span>{date}</span><strong>{t(page?.title||c?.title)||t("Lecture à poursuivre")}</strong><span>{c?t("✓ Lecture"):t("Lecture à poursuivre")} · {journal?t("✓ Journal"):t("Journal à écrire")}<ArrowRight size={14}/></span></button>;})}</div>
+ <h2><L text="Mes journées" /></h2><Pagination pagination={paged}/><div className="learning-history">{paged.items.map(date=>{const page=data.pages.find(p=>p.date===date);const c=data.completed.find(c=>c.completed_on===date || (page?.documentId===c.document_id));const journal=page?.journalDone||entries.some(e=>e.date===date&&e.text.trim());return <button key={date} onClick={()=>onOpen(date)}><span>{date}</span><strong>{t(page?.title||c?.title)||t("Lecture à poursuivre")}</strong><span>{c?t("✓ Lecture"):t("Lecture à poursuivre")} · {journal?t("✓ Journal"):t("Journal à écrire")}<ArrowRight size={14}/></span></button>;})}</div>
  </>}</section>;
 }
 export function LearningPreferences(){
  const t=useText(); const locale=useLocale();
-const [data,setData]=useState<LearningState|null>(null),[error,setError]=useState("");
+const learningCall=useLearningCall();
+ const [data,setData]=useState<LearningState|null>(null),[error,setError]=useState("");
+ const memoriesPage=usePagination(data?.memories||[],"memories", "", !!data);
  async function run(action="state",payload:object={}){try{setData(await learningCall(action,payload));setError("");}catch(e){setError((e as Error).message);}}useEffect(()=>{void run();},[]);
- return <section className="learning-preferences"><h2><L text="Marie, dans mon journal" /></h2><p><L text="Avec votre accord, Fireworks et Ember-1 utilisent des extraits de vos notes et les repères retenus automatiquement pour adapter les questions et votre prochaine lecture. L’administration de l’application ne donne pas accès à votre journal; les opérateurs techniques peuvent toutefois accéder aux données hébergées." /></p>{data&&<><label className="learning-consent"><input type="checkbox" checked={data.personalization} disabled={(!data.ai.ready||data.encrypted)&&!data.personalization} onChange={e=>void run("preferences",{enabled:e.target.checked})}/> <L text={" J’active la personnalisation de mon journal par l’IA"} /></label>{!data.ai.ready&&<p className="learning-muted">{t(data.ai.reason)}</p>}<h3><L text="Ce que Marie retient" /></h3><p className="learning-muted"><L text="Marie retient automatiquement les observations utiles de vos notes. Vous pouvez les corriger ou exclure leur journée source de son accompagnement." /></p>{data.memories.length===0&&<p><L text="Aucun repère enregistré pour le moment." /></p>}{data.memories.map(m=><div className="learning-memory" key={m.id}><textarea aria-label={t("Repère personnel")} defaultValue={m.text} maxLength={400} id={`memory-${m.id}`}/><small>{m.source_date} · {t("Retenu automatiquement")}</small><div className="learning-actions"><button className="secondary" onClick={()=>void run("memory",{operation:"confirm",id:m.id,text:(document.getElementById(`memory-${m.id}`) as HTMLTextAreaElement).value})}><L text="Enregistrer la correction" /></button><button className="text-button" onClick={()=>void run("memory",{operation:"forget",id:m.id})}><L text="Ne plus utiliser cette journée" /></button></div></div>)}</>}{error&&<p role="alert">{t(error)}</p>}</section>;
+ return <section className="learning-preferences"><h2><L text="Marie, dans mon journal" /></h2><p><L text="Avec votre accord, Fireworks et Ember-1 utilisent des extraits de vos notes et les repères retenus automatiquement pour adapter les questions et votre prochaine lecture. L’administration de l’application ne donne pas accès à votre journal; les opérateurs techniques peuvent toutefois accéder aux données hébergées." /></p>{data&&<><label className="learning-consent"><input type="checkbox" checked={data.personalization} disabled={(!data.ai.ready||data.encrypted)&&!data.personalization} onChange={e=>void run("preferences",{enabled:e.target.checked})}/> <L text={" J’active la personnalisation de mon journal par l’IA"} /></label>{!data.ai.ready&&<p className="learning-muted">{t(data.ai.reason)}</p>}<h3><L text="Ce que Marie retient" /></h3><p className="learning-muted"><L text="Marie retient automatiquement les observations utiles de vos notes. Vous pouvez les corriger ou exclure leur journée source de son accompagnement." /></p>{data.memories.length===0&&<p><L text="Aucun repère enregistré pour le moment." /></p>}<Pagination pagination={memoriesPage}/>{memoriesPage.items.map(m=><div className="learning-memory" key={m.id}><textarea aria-label={t("Repère personnel")} defaultValue={m.text} maxLength={400} id={`memory-${m.id}`}/><small>{m.source_date} · {t("Retenu automatiquement")}</small><div className="learning-actions"><button className="secondary" onClick={()=>void run("memory",{operation:"confirm",id:m.id,text:(document.getElementById(`memory-${m.id}`) as HTMLTextAreaElement).value})}><L text="Enregistrer la correction" /></button><button className="text-button" onClick={()=>void run("memory",{operation:"forget",id:m.id})}><L text="Ne plus utiliser cette journée" /></button></div></div>)}</>}{error&&<p role="alert">{t(error)}</p>}</section>;
 }

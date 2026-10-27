@@ -1,11 +1,13 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
+import { useNavigationCache, useRememberedState } from "./navigation-cache";
 import { recipeCookingIngredients, linkedPreparations, type SpiceBlend } from "@/lib/spice-blends";
 import { recipePreparations } from "@/lib/recipe-preparations";
 import { useText, useContentTranslation, TranslationStatus } from "./locale-provider";
 
 import { L } from "@/components/locale-provider";
 import { tr as regionalTr, intlLocale } from "@/lib/locale";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   ChefHat,
@@ -52,7 +54,7 @@ export function RecipeImage({
   const t=useText();
   const src = image || recipe?.image;
   return src ? (
-    <img src={src} alt={alt || t(recipe?.title,recipe?.titleEn) || ""} loading="lazy" />
+    <img src={src} alt={alt || t(recipe?.title,recipe?.titleEn) || ""} loading="lazy" decoding="async" />
   ) : (
     <Plate kind="bowl" />
   );
@@ -68,12 +70,15 @@ export function RecipeLibrary({
   onOpen: (r: Recipe) => void;
   onChoose?: (r: Recipe) => void;
 }) {
-  const [query, setQuery] = useState("");
+  const scope = onChoose ? "recipe-picker" : "recipes";
+  const cache = useNavigationCache();
+  const [query, setQuery] = useRememberedState(scope+":query", "");
   const t = useText(locale);
   const [vocabulary, setVocabulary] = useState<RecipeTag[]>(defaultRecipeTags);
-  const [diet, setDiet] = useState(""), [type, setType] = useState(""), [tags, setTags] = useState<string[]>([]);
-  useEffect(() => { let alive = true; fetch("/api/recipes/tags").then(async r => { if (r.ok) { const data = await r.json(); if (alive) setVocabulary(mergeRecipeTags(data.tags)); } }).catch(() => {}); return () => { alive = false; }; }, []);
-  const filtered = recipes.filter(recipe => matchesRecipe(recipe, { query: "", diet, type, tags }, vocabulary) && (!query || `${t(recipe.title,recipe.titleEn)} ${t(recipe.subtitle,recipe.subtitleEn)}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase().includes(query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase())));
+  const [diet, setDiet] = useRememberedState(scope+":diet", ""), [type, setType] = useRememberedState(scope+":type", ""), [tags, setTags] = useRememberedState<string[]>(scope+":tags", []);
+  useEffect(() => { let alive = true; cache.read("recipe-tags", async () => { const r = await fetch("/api/recipes/tags"); if (!r.ok) throw Error("tags"); return r.json(); }, 300000).then(data => { if (alive) setVocabulary(mergeRecipeTags(data.tags)); }).catch(() => {}); return () => { alive = false; }; }, []);
+  const filtered = useMemo(() => recipes.filter(recipe => matchesRecipe(recipe, { query: "", diet, type, tags }, vocabulary) && (!query || `${t(recipe.title,recipe.titleEn)} ${t(recipe.subtitle,recipe.subtitleEn)}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase().includes(query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase()))), [recipes, query, diet, type, tags, vocabulary, t]);
+  const paged = usePagination(filtered, scope, JSON.stringify([query, diet, type, tags, locale]));
   const filteredActive = !!(query || diet || type || tags.length);
   const label = (tag: RecipeTag) => t(tag.label, tag.label_en);
   return (
@@ -116,8 +121,8 @@ export function RecipeLibrary({
           )}
         </p>
       )}
-      <div className="recipe-grid">
-        {filtered.map((recipe) => (
+      <Pagination pagination={paged}/><div className="recipe-grid">
+        {paged.items.map((recipe) => (
           <article className="recipe-card" key={recipe.id}>
             <button className="recipe-open" onClick={() => onOpen(recipe)}>
               <div className="recipe-cover">
@@ -140,6 +145,7 @@ export function RecipeLibrary({
           </article>
         ))}
       </div>
+      <Pagination pagination={paged}/>
     </>
   );
 }

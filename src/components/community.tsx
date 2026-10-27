@@ -1,4 +1,6 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
+import { useNavigationCache } from "./navigation-cache";
 import { useText } from "./locale-provider";
 
 import { tr as regionalTr, intlLocale } from "@/lib/locale";
@@ -70,10 +72,9 @@ export function Community({
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [confirmShare, setConfirmShare] = useState(false);
+  const cache=useNavigationCache();
   async function load() {
-    const r = await fetch("/api/community", { cache: "no-store" });
-    if (!r.ok) throw Error();
-    setData(await r.json());
+    setData(await cache.read("community", async () => { const r=await fetch("/api/community",{cache:"no-store"}); if(!r.ok)throw Error(); return r.json(); }));
   }
   useEffect(() => {
     void load().catch(() =>
@@ -98,6 +99,7 @@ export function Community({
       });
       if (!r.ok) throw Error();
       const result = await r.json();
+      cache.invalidate("community");
       await load();
       if (action === "create" || action === "accept") setSelected(result.id);
       if (action === "invite") setEmail("");
@@ -123,6 +125,7 @@ export function Community({
         !data.circles.some((c) => c.id === i.circle_id) &&
         new Date(i.expires_at) > new Date(),
     ) || [];
+  const incomingPage=usePagination(incoming,"circle-incoming","",!!data), circlesPage=usePagination(data?.circles||[],"circles","",!!data), eventsPage=usePagination(data?.events.filter(e=>e.circle_id===circle?.id)||[],"circle-events",circle?.id,!!data), membersPage=usePagination(data?.members.filter(m=>m.circle_id===circle?.id)||[],"circle-members",circle?.id,!!data), invitesPage=usePagination(data?.invitations.filter(i=>i.circle_id===circle?.id)||[],"circle-invites",circle?.id,!!data);
   return (
     <section className="community-page">
       <div className="page-heading community-heading">
@@ -161,7 +164,7 @@ export function Community({
               onChange={(e) => setAlias(e.target.value)}
             />
           </label>
-          {incoming.map((i) => (
+          <Pagination pagination={incomingPage}/>{incomingPage.items.map((i) => (
             <div className="member-row" key={i.id}>
               <span>
                 <strong>{i.circle_name}</strong> ·{" "}
@@ -239,7 +242,7 @@ export function Community({
             </p>
           ) : (
             <div className="circle-tabs">
-              {data.circles.map((c) => (
+              <Pagination pagination={circlesPage}/>{circlesPage.items.map((c) => (
                 <button
                   key={c.id}
                   className={circle?.id === c.id ? "primary" : "secondary"}
@@ -325,9 +328,7 @@ export function Community({
                   )}
                 </p>
               )}
-              {data.events
-                .filter((e) => e.circle_id === circle.id)
-                .map((e) => (
+              <Pagination pagination={eventsPage}/>{eventsPage.items.map((e) => (
                   <article key={e.id}>
                     <Heart size={19} />
                     <div>
@@ -349,9 +350,7 @@ export function Community({
           </section>
           <section className="card">
             <h2>{t("Les membres du cercle", "Circle members")}</h2>
-            {data.members
-              .filter((m) => m.circle_id === circle.id)
-              .map((m) => (
+            <Pagination pagination={membersPage}/>{membersPage.items.map((m) => (
                 <div className="member-row" key={m.user_id}>
                   <span>
                     {m.alias}
@@ -405,9 +404,7 @@ export function Community({
                     )}
                   </button>
                 </form>
-                {data.invitations
-                  .filter((i) => i.circle_id === circle.id)
-                  .map((i) => (
+                <Pagination pagination={invitesPage}/>{invitesPage.items.map((i) => (
                     <div className="member-row" key={i.id}>
                       <span>
                         {i.email} ·{" "}

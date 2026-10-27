@@ -1,4 +1,5 @@
 "use client";
+import { useNavigationCache } from "./navigation-cache";
 import { useText } from "./locale-provider";
 
 import { tr as regionalTr, intlLocale } from "@/lib/locale";
@@ -15,7 +16,8 @@ export function ThawReminders({ data, locale, all = false, widget = false, onSav
   const [now, setNow] = useState(Date.now), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const t = useText(locale);
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(timer); }, []);
-  const upcoming = thawReminders(data, data, now), visible = all ? upcoming : upcoming.filter(r => r.dueAt <= now);
+  const cache=useNavigationCache();
+  const upcoming = cache.calculate(data, `thaw:${Math.floor(now/60000)}`, () => thawReminders(data, data, now)), visible = all ? upcoming : upcoming.filter(r => r.dueAt <= now);
   if (!visible.length && !widget) return null;
   const date = (time: number) => new Date(time).toLocaleString(intlLocale(locale), { timeZone: "America/Toronto", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   return <section className={`thaw-reminders${widget ? " journal-widget journal-reminders-widget" : ""}`} aria-label={widget ? t("Mes rappels", "My reminders") : t("Décongélation à prévoir", "Plan to thaw")}>

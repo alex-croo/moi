@@ -1,4 +1,6 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
+import { NavigationCacheProvider, useShoppingReport, useNavigationCache } from "./navigation-cache";
 import { RecipeBook, PrepareBlend } from "./spice-library";
 import type { SpiceBlend } from "@/lib/spice-blends";
 import { useText } from "./locale-provider";
@@ -10,7 +12,7 @@ import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { LearningJourney } from "./learning-journal";
 import { AppSelect } from "./app-select";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -110,6 +112,7 @@ function DashboardBody({
   initialData: WorkspaceData;
   privateActions?: PrivateActions;
 }) {
+  const navigationCache=useNavigationCache();
   const [journalPrompt, setJournalPrompt] = useState<JournalPrompt | null>(
     null,
   );
@@ -135,9 +138,10 @@ function DashboardBody({
   const dialog = useRef<HTMLDialogElement>(null);
   const t = useText(locale);
   const demo = mode === "demo";
-  const weights = [...data.weights].sort((a, b) =>
-    a.date.localeCompare(b.date),
-  );
+  const weights = useMemo(() => [...data.weights].sort((a, b) => a.date.localeCompare(b.date)), [data.weights]);
+  const weightPage = usePagination([...weights].reverse(), "weights");
+  const documentPage = usePagination(data.documents, "documents");
+  const menuReport = useShoppingReport(data, selectedWeek, addDays(selectedWeek, 6), false, view === "menus");
   const latestWeight = weights.at(-1);
   const weekStart = monday(today());
   const recipes = data.slots.filter(
@@ -365,6 +369,7 @@ function DashboardBody({
       next = await refresh.json();
     }
     if (demo && ["pantry", "pantryDelete", "slot"].includes(type)) next = recordInventory(data, next, type);
+    navigationCache.invalidate("learning:");
     latestData.current = next;
     setData(next);
     return next;
@@ -384,7 +389,7 @@ function DashboardBody({
         locale={locale}
         onOpen={setSelectedRecipe}
         cooked={shoppingState(data).cooked}
-        availability={shoppingNeeds(data, data, selectedWeek, addDays(selectedWeek, 6)).availability}
+        availability={menuReport?.availability || {}}
         onCook={setCooking}
         onUndoCook={async id => { await mutate("shopping", { action: "undoCook", id }); }}
         onSave={async (value) => {
@@ -507,7 +512,7 @@ function DashboardBody({
         {full && weights.length > 0 && (
           <div className="history">
             <h3>{t("Mes mesures", "My measurements")}</h3>
-            {[...weights].reverse().map((w) => (
+            <Pagination pagination={weightPage}/>{weightPage.items.map((w) => (
               <div key={w.id}>
                 <span>
                   {dateLabel(w.date, {
@@ -991,8 +996,8 @@ function DashboardBody({
                   {t("Non connecté", "Not connected")}
                 </span>
               </div>
-              <div className="document-grid">
-                {data.documents.map((d) => (
+              <Pagination pagination={documentPage}/><div className="document-grid">
+                {documentPage.items.map((d) => (
                   <a
                     className="document-card"
                     key={d.id}
@@ -1299,5 +1304,5 @@ function DashboardBody({
 
 export function Dashboard(props: Omit<React.ComponentProps<typeof DashboardBody>, "onLanguageChange">) {
  const [locale,setLocale]=useState(props.locale);
- return <LocaleProvider locale={locale} enabled={props.mode==="private"} catalog={props.initialData}><DashboardBody {...props} locale={locale} onLanguageChange={setLocale}/></LocaleProvider>;
+ return <NavigationCacheProvider key={props.privateActions?.userId || props.mode}><LocaleProvider locale={locale} enabled={props.mode==="private"} catalog={props.initialData}><DashboardBody {...props} locale={locale} onLanguageChange={setLocale}/></LocaleProvider></NavigationCacheProvider>;
 }

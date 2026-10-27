@@ -1,4 +1,5 @@
 "use client";
+import { Pagination, usePagination } from "./pagination";
 import { useText } from "./locale-provider";
 
 import { tr as regionalTr, intlLocale } from "@/lib/locale";
@@ -31,6 +32,8 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
     [error, setError] = useState(""),
     [status, setStatus] = useState(""),
     [preview, setPreview] = useState(false);
+  const membersPage=usePagination(data?.members||[], "admin-members", "", !!data);
+  const invitationsPage=usePagination(data?.invitations||[], "admin-invitations", "", !!data);
   async function run(action: string, target = "") {
     setBusy(true);
     setError("");
@@ -170,11 +173,11 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
       {error && <p role="alert">{t(error)}</p>}
       {status && <p role="status">{t(status)}</p>}
       <section className="card">
-        <h2>{t("Les comptes", "Accounts")}</h2>
+        <h2>{t("Les comptes", "Accounts")}</h2><Pagination pagination={membersPage}/>
         {!data ? (
           <p>{t("Chargement…", "Loading…")}</p>
         ) : (
-          data.members.map((m) => (
+          membersPage.items.map((m) => (
             <div className="member-row" key={m.id}>
               <div>
                 <strong>{m.email}</strong>
@@ -224,7 +227,7 @@ export function PlatformAdmin({ locale }: { locale: Locale }) {
         {data?.invitations.length === 0 && (
           <p>{t("Aucune invitation pour le moment.", "No invitations yet.")}</p>
         )}
-        {data?.invitations.map((i) => (
+        <Pagination pagination={invitationsPage}/>{invitationsPage.items.map((i) => (
           <div className="member-row" key={i.id}>
             <div>
               <strong>{i.email}</strong>

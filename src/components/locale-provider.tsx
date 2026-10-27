@@ -1,12 +1,12 @@
 "use client";
-import {createContext,useContext,useEffect,useRef,useState,useCallback,type ReactNode} from "react";
+import {createContext,useContext,useEffect,useRef,useState,useCallback,useMemo,type ReactNode} from "react";
 import type { Recipe, Ingredient } from "@/lib/types";
 import {tr,type Locale} from "@/lib/locale";
 type Kind="catalog"|"recipe"|"lesson";
 type State={locale:Locale;strings:Record<string,string>;load:(kind:Kind,id?:string)=>Promise<void>};
 const LocaleContext=createContext<State>({locale:"fr",strings:{},load:async()=>{}});
 export function LocaleProvider({locale,children,enabled=false,catalog}:{locale:Locale;children:ReactNode;enabled?:boolean;catalog?:{recipes:Recipe[];ingredients:Ingredient[]}}){
- const baked:Record<string,string>=Object.assign({},...(catalog?.recipes||[]).map(r=>r.translations?.[locale]||{}),...(catalog?.ingredients||[]).map(i=>i.translations?.[locale]||{}));
+ const baked=useMemo<Record<string,string>>(()=>Object.assign({},...(catalog?.recipes||[]).map(r=>r.translations?.[locale]||{}),...(catalog?.ingredients||[]).map(i=>i.translations?.[locale]||{})),[catalog?.recipes,catalog?.ingredients,locale]);
  const bakedReady=!!catalog?.recipes.length&&catalog.recipes.every(r=>r.importVersion===2&&r.translations?.[locale]);
  const [catalogs,setCatalogs]=useState<Record<string,Record<string,string>>>({});
  const canonical=useRef<Record<string,Record<string,string>>>({});
@@ -28,10 +28,11 @@ export function LocaleProvider({locale,children,enabled=false,catalog}:{locale:L
   requests.current.set(key,pending);return pending;
  },[locale,enabled,bakedReady]);
  useEffect(()=>{void load('catalog').catch(()=>{});},[load]);
- return <LocaleContext.Provider value={{locale,strings:{...catalogs[locale],...baked},load}}>{children}</LocaleContext.Provider>;
+ const value=useMemo(()=>({locale,strings:{...catalogs[locale],...baked},load}),[locale,catalogs,baked,load]);
+ return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 export function useLocale(){return useContext(LocaleContext).locale;}
-export function useText(locale?:Locale){const context=useContext(LocaleContext);const language=locale||context.locale;return (fr:string|undefined,en:string|undefined=fr)=>language!=="fr"&&language===context.locale&&context.strings[fr||""]!==undefined?context.strings[fr||""]:tr(language,fr||"",en||fr||"");}
+export function useText(locale?:Locale){const context=useContext(LocaleContext);const language=locale||context.locale;return useCallback((fr:string|undefined,en:string|undefined=fr)=>language!=="fr"&&language===context.locale&&context.strings[fr||""]!==undefined?context.strings[fr||""]:tr(language,fr||"",en||fr||""),[language,context.locale,context.strings]);}
 export function L({text,en}:{text:string;en?:string}){const t=useText();return <>{text.match(/^\s*/)?.[0]}{t(text.trim(),en)}{text.match(/\s*$/)?.[0]}</>;}
 export function useContentTranslation(kind:Kind,id?:string){
  const {load,locale}=useContext(LocaleContext);const [status,setStatus]=useState<'ready'|'loading'|'error'>('ready');
