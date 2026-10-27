@@ -5,16 +5,19 @@ import { shoppingNeeds } from "@/lib/shopping";
 import type { ShoppingWorkspace } from "@/lib/shopping-types";
 
 const Context = createContext<NavigationCache | null>(null);
-export function NavigationCacheProvider({ children }: { children: ReactNode }) {
+export function NavigationCacheProvider({ children, ownerId }: { children: ReactNode; ownerId?: string }) {
   const [cache] = useState(() => new NavigationCache());
+  const [ready, setReady] = useState(!ownerId);
   useEffect(() => {
+    if (ownerId) { try { cache.restore(ownerId, window.localStorage); } catch { /* Device storage blocked. */ } }
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    setReady(true);
     const invalidate = () => cache.invalidate();
-    const clear = () => cache.clear();
     window.addEventListener("focus", invalidate);
-    window.addEventListener("pagehide", clear);
-    return () => { window.removeEventListener("focus", invalidate); window.removeEventListener("pagehide", clear); cache.clear(); };
-  }, [cache]);
-  return <Context.Provider value={cache}>{children}</Context.Provider>;
+    return () => { window.history.scrollRestoration = previous; window.removeEventListener("focus", invalidate); cache.flush(); cache.clear(); };
+  }, [cache, ownerId]);
+  return <Context.Provider value={cache}>{ready ? children : null}</Context.Provider>;
 }
 export function useNavigationCache() {
   const context = useContext(Context);
@@ -28,7 +31,7 @@ export function useRememberedState<T>(key: string, initial: T) {
   const latest = useRef(value); latest.current = value;
   const update = (action: SetStateAction<T>) => {
     const next = typeof action === "function" ? (action as (previous: T) => T)(latest.current) : action;
-    latest.current = next; cache.views.set(key, next); setValue(next);
+    latest.current = next; cache.remember(key, next); setValue(next);
   };
   return [value, update] as const;
 }

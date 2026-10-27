@@ -1,4 +1,5 @@
 "use client";
+import { useRememberedState } from "./navigation-cache";
 import { Pagination, usePagination } from "./pagination";
 import { useNavigationCache } from "./navigation-cache";
 import { useText } from "./locale-provider";
@@ -64,7 +65,7 @@ export function Community({
 }) {
   const t = useText(locale);
   const [data, setData] = useState<CommunityData | null>(null),
-    [selected, setSelected] = useState(""),
+    [selected, setSelected] = useRememberedState("circles:selected", ""),
     [name, setName] = useState(""),
     [alias, setAlias] = useState(""),
     [email, setEmail] = useState(""),

@@ -1,5 +1,6 @@
 "use client";
 import { useText } from "./locale-provider";
+import { useRememberedState } from "./navigation-cache";
 
 import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -68,13 +69,13 @@ export function JournalEditor({
   }) => Promise<JournalEntry>;
 }) {
   const learningCall=useLearningCall();
-  const [screen, setScreen] = useState<"library" | "editor">("library");
+  const [screen, setScreen] = useRememberedState<"library" | "editor">("journal:screen", "library");
   const [providerReady,setProviderReady]=useState(false);
   const [guidedPages, setGuidedPages] = useState<{date:string;title:string}[]>([]);
   useEffect(() => { if(guided && active) learningCall("state").then(s=>{setGuidedPages(s.pages||[]);setProviderReady(s.ai?.ready===true);}).catch(()=>{}); }, [guided,active,screen]);
-  const [openDates, setOpenDates] = useState<string[]>([]);
+  const [openDates, setOpenDates] = useRememberedState<string[]>("journal:tabs", []);
   const pageRoot = useRef<HTMLElement>(null);
-  const [date, setDate] = useState(localToday);
+  const [date, setDate] = useRememberedState("journal:date", localToday());
   const sync = useJournalAutosave(entries, onSave, ownerId, recoveryKey, syncBridge);
   const drafts = sync.drafts;
   const editor = useRef<HTMLTextAreaElement>(null);
@@ -130,6 +131,7 @@ export function JournalEditor({
     });
   }
   useEffect(() => {
+    if (!navigation?.id) return;
     cancelAi();
     setProposal(null);
     setSelection({ start: 0, end: 0 });

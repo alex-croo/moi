@@ -1,26 +1,29 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useNavigationCache } from "./navigation-cache";
 
 /** Remember before unmount: a shorter destination can clamp window.scrollY. */
 export function useSectionScroll(section: string) {
   const cache = useNavigationCache();
   const content = useRef<HTMLElement>(null);
+  const restoring = useRef(false);
 
   function remember(nextSection: string) {
     if (nextSection !== section) {
-      cache.views.set(`scroll:${section}`, Math.max(0, window.scrollY));
+      cache.remember(`scroll:${section}`, Math.max(0, window.scrollY));
     }
   }
 
   useLayoutEffect(() => {
+    restoring.current = true;
     const top = Number(cache.views.get(`scroll:${section}`)) || 0;
     let observer: ResizeObserver | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let stopped = false;
 
     function stop() {
+      restoring.current = false;
       stopped = true;
       observer?.disconnect();
       clearTimeout(timer);
@@ -49,6 +52,25 @@ export function useSectionScroll(section: string) {
       timer = setTimeout(stop, 3000);
     }
     return stop;
+  }, [cache, section]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const save = () => {
+      clearTimeout(timer); timer = undefined;
+      if (!restoring.current) cache.remember(`scroll:${section}`, Math.max(0, window.scrollY));
+    };
+    const scroll = () => { if (!timer) timer = setTimeout(save, 200); };
+    const hide = () => { if (document.visibilityState === "hidden") save(); };
+    window.addEventListener("scroll", scroll, { passive: true });
+    window.addEventListener("pagehide", save);
+    document.addEventListener("visibilitychange", hide);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", scroll);
+      window.removeEventListener("pagehide", save);
+      document.removeEventListener("visibilitychange", hide);
+    };
   }, [cache, section]);
 
   return { content, remember };

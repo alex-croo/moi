@@ -113,7 +113,9 @@ export function Login({
           )}
           {error && (
             <p className="form-error" role="alert">
-              {error === "access"
+              {error === "session"
+                ? t("Votre session a expiré. Connectez-vous pour reprendre.", "Your session has expired. Sign in to pick up where you left off.")
+                : error === "access"
                 ? t(
                     "Ce compte n’a pas accès à cet espace.",
                     "This account does not have access to this space.",

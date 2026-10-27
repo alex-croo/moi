@@ -1,6 +1,28 @@
+import { navigationPreference, navigationStorageKey, readNavigation } from "./navigation-preferences";
+
 // Instances belong to one mounted dashboard, never to the server or another account.
 export class NavigationCache {
   readonly views = new Map<string, unknown>();
+  private storage?: Pick<Storage, "getItem" | "setItem">;
+  private storageKey = "";
+  restore(owner: string, storage: Pick<Storage, "getItem" | "setItem">) {
+    this.storage = storage; this.storageKey = navigationStorageKey(owner);
+    try { for (const [key, value] of readNavigation(storage.getItem(this.storageKey))) this.views.set(key, value); }
+    catch { /* Storage can be unavailable in private browsing. */ }
+  }
+  remember(key: string, value: unknown) {
+    this.views.set(key, value);
+    this.flush();
+  }
+  flush() {
+    if (!this.storage) return;
+    const entries = [...this.views].flatMap(([key, value]) => {
+      const safe = navigationPreference(key, value);
+      return safe === undefined ? [] : [[key, safe]];
+    });
+    try { this.storage.setItem(this.storageKey, JSON.stringify({ version: 1, entries })); }
+    catch { /* In-memory navigation still works if the device cannot save it. */ }
+  }
   private snapshots = new WeakMap<object, Map<string, unknown>>();
   private requests = new Map<string, { expires: number; promise: Promise<unknown> }>();
 

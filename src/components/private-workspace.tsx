@@ -1,5 +1,6 @@
 "use client";
 import { useText } from "./locale-provider";
+import { useSessionActivity } from "./session-activity";
 
 import { tr as regionalTr, intlLocale } from "@/lib/locale";
 import { useEffect, useRef, useState } from "react";
@@ -43,6 +44,7 @@ export function PrivateWorkspace({
   userId: string;
   admin: boolean;
 }) {
+  useSessionActivity(locale);
   const t = useText(locale);
   const [loaded, setLoaded] = useState<LoadedWorkspace | null>(null),
     [data, setData] = useState<PersonalData | null>(null);

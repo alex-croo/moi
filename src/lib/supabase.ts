@@ -31,7 +31,7 @@ export async function supabaseServer() {
     },
   );
 }
-export async function authorizedClient() {
+export async function authorizedClient(touch = false) {
   const db = await supabaseServer();
   if (!db) return null;
   const {
@@ -39,7 +39,7 @@ export async function authorizedClient() {
     error,
   } = await db.auth.getUser();
   if (error || !user || !user.email_confirmed_at) return null;
-  const { data: allowed, error: denied } = await db.rpc("current_user_allowed");
-  if (denied || allowed !== true) return null;
-  return { db, user };
+  const { data: session, error: denied } = await db.rpc("app_session_status", { touch });
+  if (denied || session?.active !== true) return null;
+  return { db, user, sessionExpiry: session.expiresAt as string };
 }

@@ -1099,5 +1099,6 @@
   "Avec votre accord, Fireworks et Ember-1 utilisent des extraits de vos notes et les repères retenus automatiquement pour adapter les questions et votre prochaine lecture. L’administration de l’application ne donne pas accès à votre journal; les opérateurs techniques peuvent toutefois accéder aux données hébergées.": "Con tu permiso, Fireworks y Ember-1 usan fragmentos de tus notas y recuerdos guardados automáticamente para adaptar las preguntas y tu próxima lectura. La administración de la aplicación no permite acceder a tu diario; los operadores técnicos sí pueden acceder a los datos alojados.",
   "Pagination": "Paginación",
   "Page précédente": "Página anterior",
-  "Page suivante": "Página siguiente"
+  "Page suivante": "Página siguiente",
+  "Votre session a expiré. Connectez-vous pour reprendre.": "Tu sesión ha caducado. Inicia sesión para continuar donde lo dejaste."
 }

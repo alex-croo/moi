@@ -1,6 +1,6 @@
 "use client";
 import { Pagination, usePagination } from "./pagination";
-import { NavigationCacheProvider, useShoppingReport, useNavigationCache } from "./navigation-cache";
+import { NavigationCacheProvider, useShoppingReport, useNavigationCache, useRememberedState } from "./navigation-cache";
 import { useSectionScroll } from "./section-scroll";
 import { RecipeBook, PrepareBlend } from "./spice-library";
 import type { SpiceBlend } from "@/lib/spice-blends";
@@ -123,9 +123,10 @@ function DashboardBody({
   const [pantryEditId, setPantryEditId] = useState<string | undefined>();
   const [preparingBlend, setPreparingBlend] = useState<{blend:SpiceBlend;volumeMl:number}|null>(null);
   const [cooking, setCooking] = useState<MealSlot | null>(null);
-  const [view, setView] = useState<View>("overview");
+  const [view, setView] = useRememberedState<View>("section", "overview");
   const sectionScroll = useSectionScroll(view);
-  const [selectedWeek, setSelectedWeek] = useState(() => monday(today()));
+  const [selectedWeek, setSelectedWeek] = useRememberedState("menus:week", monday(today()));
+  useEffect(() => { if (view === "admin" && !privateActions?.admin) setView("overview"); }, [view, privateActions?.admin]);
   const [data, setData] = useState(initialData);
   const latestData = useRef(data); latestData.current = data;
   // Conflict recovery can refresh the parent without completing a mutation.
@@ -1306,5 +1307,5 @@ function DashboardBody({
 
 export function Dashboard(props: Omit<React.ComponentProps<typeof DashboardBody>, "onLanguageChange">) {
  const [locale,setLocale]=useState(props.locale);
- return <NavigationCacheProvider key={props.privateActions?.userId || props.mode}><LocaleProvider locale={locale} enabled={props.mode==="private"} catalog={props.initialData}><DashboardBody {...props} locale={locale} onLanguageChange={setLocale}/></LocaleProvider></NavigationCacheProvider>;
+ return <NavigationCacheProvider key={props.privateActions?.userId || props.mode} ownerId={props.privateActions?.userId}><LocaleProvider locale={locale} enabled={props.mode==="private"} catalog={props.initialData}><DashboardBody {...props} locale={locale} onLanguageChange={setLocale}/></LocaleProvider></NavigationCacheProvider>;
 }

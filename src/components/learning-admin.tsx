@@ -1,4 +1,5 @@
 "use client";
+import { useRememberedState } from "./navigation-cache";
 import { Pagination, usePagination } from "./pagination";
 import { useText, useLocale, useContentTranslation, TranslationStatus } from "./locale-provider";
 
@@ -15,7 +16,7 @@ export function LearningAdmin(){
  const learningCall=useLearningCall();
  const t=useText(); const locale=useLocale();
 
- const [data,setData]=useState<Editorial|null>(null),[selected,setSelected]=useState<LearningDocument|null>(null),[form,setForm]=useState<LearningContent>(blank),[module,setModule]=useState(""),[filter,setFilter]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[reviewed,setReviewed]=useState(false),[preview,setPreview]=useState(false),[versions,setVersions]=useState<{revision:number;status:string;created_at:string}[]>([]),[moduleName,setModuleName]=useState(""),[newEntry,setNewEntry]=useState(false);
+ const [data,setData]=useState<Editorial|null>(null),[selected,setSelected]=useState<LearningDocument|null>(null),[form,setForm]=useState<LearningContent>(blank),[module,setModule]=useState(""),[filter,setFilter]=useRememberedState("learning-admin:filter", ""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[reviewed,setReviewed]=useState(false),[preview,setPreview]=useState(false),[versions,setVersions]=useState<{revision:number;status:string;created_at:string}[]>([]),[moduleName,setModuleName]=useState(""),[newEntry,setNewEntry]=useState(false);
  const currentForm=useRef(form);currentForm.current=form;
  async function load(){try{const d=await learningCall("admin_list",{},true);setData(d);setModule(m=>m||d.modules[0]?.id);}catch(e){setError((e as Error).message);}}useEffect(()=>{void load();},[]);
  function edit(d:LearningDocument){setSelected(d);setForm(d.draft);setModule(d.module_id);setVersions([]);setReviewed(false);setNewEntry(false);setError("");setPreview(false);}
